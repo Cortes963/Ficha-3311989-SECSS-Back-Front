@@ -1,4 +1,4 @@
-# Ficha-3311989-SECSS-Backend
+# Ficha-3311989-SECSS-Backend-Frontend
 
 ## Guía de Buenas Prácticas: GitKraken, Git Flow y Estándares de Desarrollo
 

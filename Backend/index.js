@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const input_output = require('./routes/input_output/input_output.js');
 const quota = require('./routes/quota/quota.js');
+const vehicle = require('./routes/vehicle/vehicle.js');
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 // Declaración de Rutas de la API    
 app.use('/api/register', input_output);
 app.use('/api/quota', quota);
+app.use('/api/vehiculo', vehicle);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

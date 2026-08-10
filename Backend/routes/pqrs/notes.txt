@@ -1,0 +1,22 @@
+
+## Endpoints
+
+| Método | Ruta                          | Descripción                                              |
+| POST   | `/api/pqrs`                   | Crear una PQRS. Body: `id_usuario, asunto, cuerpo`         |
+| GET    | `/api/pqrs`                   | Listar PQRS. Filtros: `?estado=&id_usuario=&pagina=&limite=` |
+| GET    | `/api/pqrs/:id`               | Detalle de una PQRS, incluye su respuesta si existe        |
+| POST   | `/api/pqrs/:id/respuesta`     | Responder una PQRS. Body: `id_usuario_administrador, asunto, cuerpo` |
+| PUT    | `/api/pqrs/:id/estado`        | Cambiar el estado manualmente. Body: `estado` (0-3)         |
+
+
+
+### Estados 
+
+| Valor | Significado |
+|-------|-------------|
+| 0     | Pendiente   |
+| 1     | En proceso  |
+| 2     | Respondida  |
+| 3     | Cerrada     |
+
+

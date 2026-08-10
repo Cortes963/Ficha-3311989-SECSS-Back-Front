@@ -1,7 +1,7 @@
-const db = require('..db.js');
+import db from require('..db.js');
 
 // Obtener la lista de cupos
-const obtenerCupos = async (req, res) => {
+export const obtenerCupos = async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM cupo');
     res.json({ status: 'success', data: rows });
@@ -11,7 +11,7 @@ const obtenerCupos = async (req, res) => {
 };
 
 // Asignar o registrar un cupo
-const asignarCupo = async (req, res) => {
+export const asignarCupo = async (req, res) => {
   const { id_usuario, id_vehiculo, estado, id_usuario_administrador } = req.body;
 
   if (!id_usuario || !id_vehiculo || estado === undefined || !id_usuario_administrador) {
@@ -35,3 +35,5 @@ module.exports = {
   obtenerCupos,
   asignarCupo
 };
+
+//  filtrar consultas, para que sean mas especificas

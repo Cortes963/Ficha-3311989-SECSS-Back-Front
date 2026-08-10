@@ -1,9 +1,9 @@
-const db = require ('../db.js');
+import db from require ('../db.js');
 
 
 // Guardar todos los registros de entrada y salida 
 
-const ObtenerRegistros = async (req, res) => {
+export const ObtenerRegistros = async (req, res) => {
     try {
         const [rows] = await db.query ('SELECT * FROM entrada_salida');
         res.json({ status: 'success', data: rows });
@@ -14,7 +14,7 @@ const ObtenerRegistros = async (req, res) => {
 
 // crear nuevo registro 
 
-const crearRegistro = async (req, res) => {
+export const crearRegistro = async (req, res) => {
   const { id_usuario_entra, id_vehiculo, fecha_hora, id_usuario_celador, tipo_registro } = req.body;
 
   if (!id_usuario_entra || !id_vehiculo || !id_usuario_celador || !tipo_registro) {
@@ -22,7 +22,7 @@ const crearRegistro = async (req, res) => {
   }
 
   try {
-    const query = `
+     const query = `
       INSERT INTO entrada_salida (id_usuario_entra, id_vehiculo, fecha_hora, id_usuario_celador, tipo_registro)
       VALUES (?, ?, ?, ?, ?)
     `;

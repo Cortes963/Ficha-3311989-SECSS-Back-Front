@@ -1,9 +1,9 @@
 // controllers/pqrsController.js
-const pool = require('../config/db');
+import pool from require('../config/db');
 
 // Estados posibles de una PQRS
 // usar siempre estas constantes evita números regados en el código.
-const ESTADOS_PQRS = {
+export const ESTADOS_PQRS = {
   PENDIENTE: 0,
   EN_PROCESO: 1,
   RESPONDIDA: 2,
@@ -23,12 +23,12 @@ async function crearPqrs(req, res) {
       });
     }
 
-    const [usuarioExiste] = await pool.query('SELECT id FROM usuario WHERE id = ?', [id_usuario]);
+    export const [usuarioExiste] = await pool.query('SELECT id FROM usuario WHERE id = ?', [id_usuario]);
     if (usuarioExiste.length === 0) {
       return res.status(404).json({ ok: false, mensaje: 'El usuario indicado no existe' });
     }
 
-    const [resultado] = await pool.query(
+    export const [resultado] = await pool.query(
       `INSERT INTO pqrs (id_usuario, asunto, cuerpo, estado, fecha_hora)
        VALUES (?, ?, ?, ?, NOW())`,
       [id_usuario, asunto, cuerpo, ESTADOS_PQRS.PENDIENTE]

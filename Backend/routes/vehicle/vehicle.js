@@ -1,7 +1,12 @@
 import express from 'express';
-const router = express.Router();
-const db = require('../../db.js');
-const { crearDetalleMoto } = require('./motorcycle_details.js');
-const { crearDetalleBicicleta } = require('./bicycle_details.js');
+import router from express.Router();
+import db from require('../../db.js');
+import { crearDetalleMoto,  } from require('../controller/vehicle/motorcycle.js');
+import { crearDetalleBicicleta } from require('../controller/vehicle/bicycle.js');
+import { crearRegistroVehiculo } from require('../controller/vehicle/vehicle.js');
 
+router.get('/', crearDetalleBicicleta);
+router.post('/', crearDetalleMoto);
+router.post('/registro', crearRegistroVehiculo);
 
+module.exports = router;

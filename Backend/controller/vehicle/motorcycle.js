@@ -1,4 +1,4 @@
-import db from '../../db.js';
+import pool from '../../db.js';
 
 //Guardar detalle de la moto
 export const crearDetalleMoto = async (connection, idVehiculo, datos) => {

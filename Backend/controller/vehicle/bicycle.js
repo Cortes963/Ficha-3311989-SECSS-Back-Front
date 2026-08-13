@@ -1,4 +1,4 @@
-import db from '../../db.js';
+import pool from '../../db.js';
 
 //Guardar detalle de la bicicleta
 export const crearDetalleBicicleta = async (connection, idVehiculo, datos) => {

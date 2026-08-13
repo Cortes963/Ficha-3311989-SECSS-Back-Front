@@ -1,4 +1,4 @@
-import db from '../../db.js';
+import pool from '../../db.js';
 
 // Obtener la lista de cupos
 export const obtenerCupos = async (req, res) => {

@@ -1,4 +1,4 @@
-import db from '../../db.js';
+import pool from '../../db.js';
 
 
 //crear registro de vehiculo

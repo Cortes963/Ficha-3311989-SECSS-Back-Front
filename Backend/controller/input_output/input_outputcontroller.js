@@ -1,4 +1,4 @@
-import db from require ('../db.js');
+import db from '../../db.js';
 
 
 // Guardar todos los registros de entrada y salida 

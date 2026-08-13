@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import input_output from './routes/input_output/input_output.js';
 import quota from './routes/quota/quota.js';
 import vehicle from './routes/vehicle/vehicle.js';
-import pqrsRoutes from './routes/pqrs/pqrsRoutes.js'; // Ajusta la ruta si es necesario
+/* import pqrsRoutes from '../routes/pqrs/pqrsRoutes.js';*/ // Ajusta la ruta si es necesario
 
 // Configuración de variables de entorno
 dotenv.config();

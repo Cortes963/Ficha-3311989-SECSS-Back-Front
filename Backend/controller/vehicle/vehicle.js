@@ -1,4 +1,4 @@
-import db from require('..db.js');
+import db from '../../db.js';
 
 
 //crear registro de vehiculo
@@ -26,7 +26,7 @@ import db from require('..db.js');
     return res.status(400).json({ status: 'error', message: 'tipo_vehiculo debe ser "moto" o "bicicleta"' });
   }
 
-   export const connection = await db.getConnection();
+  const connection = await db.getConnection();
 
   try {
     await connection.beginTransaction();
@@ -41,7 +41,7 @@ import db from require('..db.js');
       imagen_url_targeta_propiedad, imagen_url_identificacion_vehiculo, imagen_url_vehiculo
     ]);
 
-     export const idVehiculo = resultVehiculo.insertId;
+    const idVehiculo = resultVehiculo.insertId;
 
     if (tipo_vehiculo === 'moto') {
       await crearDetalleMoto(connection, idVehiculo, { placa, cilindraje, modelo, imagen_url_soat, imagen_url_tecnomecanica_vigente });
@@ -71,6 +71,3 @@ import db from require('..db.js');
   }
 };
 
-router.post('/vehiculo', crearRegistroVehiculo);
-
-module.exports = router;

@@ -1,4 +1,4 @@
-import db from require('..db.js');
+import db from '../../db.js';
 
 //Guardar detalle de la moto
 export const crearDetalleMoto = async (connection, idVehiculo, datos) => {
@@ -13,4 +13,3 @@ export const crearDetalleMoto = async (connection, idVehiculo, datos) => {
   await connection.query(query, [idVehiculo, placa, cilindraje, modelo, imagen_url_soat, imagen_url_tecnomecanica_vigente]);
 };
 
-module.exports = { crearDetalleMoto };

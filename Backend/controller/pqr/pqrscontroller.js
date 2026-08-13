@@ -1,8 +1,7 @@
 // controllers/pqrsController.js
-import pool from require('../config/db');
+import pool from '../../db.js';
 
 // Estados posibles de una PQRS
-// usar siempre estas constantes evita números regados en el código.
 export const ESTADOS_PQRS = {
   PENDIENTE: 0,
   EN_PROCESO: 1,
@@ -10,9 +9,8 @@ export const ESTADOS_PQRS = {
   CERRADA: 3
 };
 
-
-// Radica una nueva PQRS para un usuario (en este caso aprendiz).
-async function crearPqrs(req, res) {
+// Radica una nueva PQRS para un usuario (aprendiz).
+export async function crearPqrs(req, res) {
   try {
     const { id_usuario, asunto, cuerpo } = req.body;
 
@@ -23,12 +21,13 @@ async function crearPqrs(req, res) {
       });
     }
 
-    export const [usuarioExiste] = await pool.query('SELECT id FROM usuario WHERE id = ?', [id_usuario]);
+    // Corregido: Se quitó el "export" interno de las variables
+    const [usuarioExiste] = await pool.query('SELECT id FROM usuario WHERE id = ?', [id_usuario]);
     if (usuarioExiste.length === 0) {
       return res.status(404).json({ ok: false, mensaje: 'El usuario indicado no existe' });
     }
 
-    export const [resultado] = await pool.query(
+    const [resultado] = await pool.query(
       `INSERT INTO pqrs (id_usuario, asunto, cuerpo, estado, fecha_hora)
        VALUES (?, ?, ?, ?, NOW())`,
       [id_usuario, asunto, cuerpo, ESTADOS_PQRS.PENDIENTE]
@@ -45,10 +44,8 @@ async function crearPqrs(req, res) {
   }
 }
 
-
 // Lista las PQRS. Admite filtros opcionales
-//   ?pagina=1&limite=20  -> paginación simple
-async function listarPqrs(req, res) {
+export async function listarPqrs(req, res) {
   try {
     const { estado, id_usuario } = req.query;
     const pagina = Math.max(Number(req.query.pagina) || 1, 1);
@@ -67,11 +64,11 @@ async function listarPqrs(req, res) {
     `;
     const parametros = [];
 
-    if (estado !== undefined) {              //   ?estado=0            -> filtra por estado
+    if (estado !== undefined) {
       sql += ' AND p.estado = ?';
       parametros.push(estado);
     }
-    if (id_usuario !== undefined) {           //   ?id_usuario=15       -> filtra por usuario que la radicó
+    if (id_usuario !== undefined) {
       sql += ' AND p.id_usuario = ?';
       parametros.push(id_usuario);
     }
@@ -87,9 +84,8 @@ async function listarPqrs(req, res) {
   }
 }
 
-
 // Detalle de una PQRS puntual, incluyendo su respuesta si ya existe.
-async function obtenerPqrsPorId(req, res) {
+export async function obtenerPqrsPorId(req, res) {
   try {
     const { id } = req.params;
 
@@ -130,13 +126,8 @@ async function obtenerPqrsPorId(req, res) {
   }
 }
 
-// POST /api/pqrs/:id/respuesta
 // Registra la respuesta de un administrador a una PQRS puntual.
-// Solo se permite UNA respuesta por PQRS (coincide con la restricción
-// uc_id_pqrs del modelo) y al responder se actualiza el estado a
-// RESPONDIDA dentro de una transacción para que ambas escrituras
-// se confirmen o se reviertan juntas.
-async function responderPqrs(req, res) {
+export async function responderPqrs(req, res) {
   const { id } = req.params;
   const { id_usuario_administrador, asunto, cuerpo } = req.body;
 
@@ -151,8 +142,6 @@ async function responderPqrs(req, res) {
   try {
     await conexion.beginTransaction();
 
-    // FOR UPDATE bloquea la fila mientras dura la transacción, para evitar
-    // que dos administradores (jefe de seguridad y administardor de edificio)respondan la misma PQRS al mismo tiempo.
     const [pqrsFilas] = await conexion.query('SELECT id FROM pqrs WHERE id = ? FOR UPDATE', [id]);
     if (pqrsFilas.length === 0) {
       await conexion.rollback();
@@ -184,9 +173,8 @@ async function responderPqrs(req, res) {
   }
 }
 
-// Permite mover manualmente una PQRS a "en proceso" o "cerrada",
-// independientemente de si ya tiene respuesta registrada.
-async function actualizarEstado(req, res) {
+// Permite cambiar el estado de una PQRS
+export async function actualizarEstado(req, res) {
   try {
     const { id } = req.params;
     const { estado } = req.body;
@@ -210,13 +198,4 @@ async function actualizarEstado(req, res) {
     console.error('Error al actualizar estado:', error);
     return res.status(500).json({ ok: false, mensaje: 'Error interno al actualizar el estado' });
   }
-}
-
-module.exports = {
-  ESTADOS_PQRS,
-  crearPqrs,
-  listarPqrs,
-  obtenerPqrsPorId,
-  responderPqrs,
-  actualizarEstado
 };

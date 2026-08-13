@@ -1,4 +1,4 @@
-
+/*/ 
 const ESTADOS = {
   0: 'Pendiente',
   1: 'En proceso',
@@ -184,3 +184,4 @@ function formatearFecha(fechaHora) {
 }
 
 cargarPqrs();
+*/

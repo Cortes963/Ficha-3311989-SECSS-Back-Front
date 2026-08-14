@@ -1,6 +1,11 @@
+// Debe ser el primer import: en ES Modules las dependencias se ejecutan
+// antes que el cuerpo de este archivo, así que si dotenv.config() se llama
+// más abajo, db.js ya habría leído process.env vacío. Este import con efecto
+// secundario carga el .env antes de que cualquier otro módulo lo necesite.
+import 'dotenv/config';
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -8,10 +13,7 @@ import { fileURLToPath } from 'url';
 import input_output from './routes/input_output/input_output.js';
 import quota from './routes/quota/quota.js';
 import vehicle from './routes/vehicle/vehicle.js';
-/* import pqrsRoutes from '../routes/pqrs/pqrsRoutes.js';*/ // Ajusta la ruta si es necesario
-
-// Configuración de variables de entorno
-dotenv.config();
+import pqrsRoutes from './routes/pqrs/pqrsRoutes.js';
 
 // Configuración equivalente a __dirname en ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -36,7 +38,9 @@ app.use('/api', (req, res) => {
 });
 
 // Inicio del servidor
-const PORT = process.env.PORT || 3306;
+const PORT = process.env.PORT || 4000;
+// Nota: 3306 (el valor anterior) es el puerto por defecto de MySQL — usarlo
+// aquí también generaba riesgo de choque con el propio motor de base de datos.
 app.listen(PORT, () => {
     console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
 });

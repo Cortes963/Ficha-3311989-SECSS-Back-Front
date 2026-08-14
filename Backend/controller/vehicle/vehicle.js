@@ -1,5 +1,6 @@
 import pool from '../../db.js';
-
+import { crearDetalleMoto } from './motorcycle.js';
+import { crearDetalleBicicleta } from './bicycle.js';
 
 //crear registro de vehiculo
  export const crearRegistroVehiculo = async (req, res) => {
@@ -26,7 +27,7 @@ import pool from '../../db.js';
     return res.status(400).json({ status: 'error', message: 'tipo_vehiculo debe ser "moto" o "bicicleta"' });
   }
 
-  const connection = await db.getConnection();
+  const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();

@@ -1,11 +1,11 @@
 import express from 'express';
-import db from '../../db.js';
-import { crearDetalleMoto,  } from '../../controller/vehicle/motorcycle.js';
-import { crearDetalleBicicleta } from '../../controller/vehicle/bicycle.js';
 import { crearRegistroVehiculo } from '../../controller/vehicle/vehicle.js';
 
-router.get('/', crearDetalleBicicleta);
-router.post('/', crearDetalleMoto);
-router.post('/registro', crearRegistroVehiculo);
+const router = express.Router();
 
-module.exports = router;
+// TODO: falta un endpoint de listado (GET /) — hoy no existe una función
+// "listarVehiculos" en el controller. Lo dejamos pendiente en vez de inventar
+// un handler falso.
+router.post('/', crearRegistroVehiculo);
+
+export default router;

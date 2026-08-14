@@ -1,9 +1,11 @@
 import pool from '../../db.js';
 
 // Obtener la lista de cupos
+// TODO: soportar filtros por query params (estado, id_usuario) como en pqrscontroller.listarPqrs,
+// hoy siempre trae la tabla completa.
 export const obtenerCupos = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM cupo');
+    const [rows] = await pool.query('SELECT * FROM cupo');
     res.json({ status: 'success', data: rows });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
@@ -23,17 +25,10 @@ export const asignarCupo = async (req, res) => {
       INSERT INTO cupo (id_usuario, id_vehiculo, estado, id_usuario_administrador)
       VALUES (?, ?, ?, ?)
     `;
-    await db.query(query, [id_usuario, id_vehiculo, estado, id_usuario_administrador]);
+    await pool.query(query, [id_usuario, id_vehiculo, estado, id_usuario_administrador]);
 
     res.status(201).json({ status: 'success', message: 'Cupo asignado correctamente' });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
   }
 };
-
-module.exports = {
-  obtenerCupos,
-  asignarCupo
-};
-
-//  filtrar consultas, para que sean mas especificas

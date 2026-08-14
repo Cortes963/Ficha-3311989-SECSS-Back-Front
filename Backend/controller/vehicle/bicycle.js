@@ -1,5 +1,3 @@
-import pool from '../../db.js';
-
 //Guardar detalle de la bicicleta
 export const crearDetalleBicicleta = async (connection, idVehiculo, datos) => {
   const { numero_marco, clase_bicicleta } = datos;
@@ -13,4 +11,3 @@ export const crearDetalleBicicleta = async (connection, idVehiculo, datos) => {
   await connection.query(query, [idVehiculo, numero_marco, clase_bicicleta]);
 };
 
-module.exports = { crearDetalleBicicleta };

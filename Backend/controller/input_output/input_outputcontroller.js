@@ -3,12 +3,12 @@ import db from '../../db.js';
 
 // Guardar todos los registros de entrada y salida 
 
-export const ObtenerRegistros = async (req, res) => {
+export const obtenerRegistros = async (req, res) => {
     try {
         const [rows] = await db.query ('SELECT * FROM entrada_salida');
         res.json({ status: 'success', data: rows });
     } catch (error){
-        res.status(500).json ({ status: 'error', mesage: error.message});
+        res.status(500).json ({ status: 'error', message: error.message});
     }
 };
 
@@ -42,11 +42,6 @@ export const crearRegistro = async (req, res) => {
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
   }
-};
-
-module.exports = {
-  obtenerRegistros,
-  crearRegistro
 };
 
 

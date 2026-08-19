@@ -6,12 +6,12 @@ import { crearDetalleBicicleta } from './bicycle.js';
  export const crearRegistroVehiculo = async (req, res) => {
   const {
     tipo_vehiculo, marca, color,
-    imagen_url_targeta_propiedad, imagen_url_identificacion_vehiculo, imagen_url_vehiculo,
+    imagen_url_tarjeta_propiedad, imagen_url_identificacion_vehiculo, imagen_url_vehiculo,
     placa, cilindraje, modelo, imagen_url_soat, imagen_url_tecnomecanica_vigente,
     numero_marco, clase_bicicleta
   } = req.body;
 
-  if (!tipo_vehiculo || !marca || !color || !imagen_url_targeta_propiedad || !imagen_url_identificacion_vehiculo || !imagen_url_vehiculo) {
+  if (!tipo_vehiculo || !marca || !color || !imagen_url_tarjeta_propiedad || !imagen_url_identificacion_vehiculo || !imagen_url_vehiculo) {
     return res.status(400).json({ status: 'error', message: 'Faltan campos obligatorios del vehículo' });
   }
 
@@ -34,12 +34,12 @@ import { crearDetalleBicicleta } from './bicycle.js';
 
     const queryVehiculo = `
       INSERT INTO vehiculo 
-      (tipo_vehiculo, marca, color, imagen_url_targeta_propiedad, imagen_url_identificacion_vehiculo, imagen_url_vehiculo)
+      (tipo_vehiculo, marca, color, imagen_url_tarjeta_propiedad, imagen_url_identificacion_vehiculo, imagen_url_vehiculo)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
     const [resultVehiculo] = await connection.query(queryVehiculo, [
       tipo_vehiculo, marca, color,
-      imagen_url_targeta_propiedad, imagen_url_identificacion_vehiculo, imagen_url_vehiculo
+      imagen_url_tarjeta_propiedad, imagen_url_identificacion_vehiculo, imagen_url_vehiculo
     ]);
 
     const idVehiculo = resultVehiculo.insertId;

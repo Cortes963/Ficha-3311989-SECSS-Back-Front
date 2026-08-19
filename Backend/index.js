@@ -14,6 +14,11 @@ import input_output from './routes/input_output/input_output.js';
 import quota from './routes/quota/quota.js';
 import vehicle from './routes/vehicle/vehicle.js';
 import pqrsRoutes from './routes/pqrs/pqrsRoutes.js';
+// Rutas agregadas
+import authRoutes from './routes/auth/auth.routes.js';
+import userRoutes from './routes/user/user.routes.js';
+import dashboardRoutes from './routes/dashboard/dashboard.routes.js';
+import coreRoutes from './routes/core/core.routes.js';
 
 // Configuración equivalente a __dirname en ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -31,6 +36,10 @@ app.use('/api/register', input_output);
 app.use('/api/quota', quota);
 app.use('/api/vehiculo', vehicle);
 app.use('/api/pqrs', pqrsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/core', coreRoutes);
 
 // Manejador para rutas de la API que no existen
 app.use('/api', (req, res) => {

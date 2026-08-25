@@ -1,73 +1,41 @@
 // src/modules/auth/context/AuthContext.jsx
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
+import { login as loginRequest } from '@/modules/auth/services/authService';
 
 // 1. Instanciamos el contexto de seguridad
 const AuthContext = createContext(null);
 
 // 2. Proveedor de estado global
 export const AuthProvider = ({ children }) => {
-  const [usuarios, setUsuarios] = useState([]); 
   const [user, setUser] = useState(null);       // Información del usuario en sesión
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);  
 
-  // Sincronización inicial con el backend simulado
-  useEffect(() => {
-    const cargarUsuarios = async () => {
-      try {
-        const respuesta = await fetch('http://localhost:3000/usuarios');
-        if (!respuesta.ok) throw new Error('Fallo en la comunicación con el servidor.');
-        
-        const datos = await respuesta.json();
-        setUsuarios(datos);
-      } catch (err) {
-        console.error("Error de infraestructura:", err.message);
-        setError("Servicio de autenticación no disponible.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    cargarUsuarios();
-  }, []);
+  // Ya no hay una carga inicial de "todos los usuarios" que esperar (esa fue
+  // la causa raíz del problema de seguridad original: exponía las contraseñas
+  // de todo el sistema al navegador antes de que nadie iniciara sesión). El
+  // login ahora es una sola llamada bajo demanda, por eso no hay estado de
+  // carga inicial que bloquee el render.
+  const loading = false;
 
   /**
-   * Procesa las credenciales contra la base de datos en memoria.
-   * Tolerante a diferentes nomenclaturas en el esquema JSON.
+   * Procesa las credenciales contra el backend real (POST /api/auth/login).
+   *
+   * Nota de alcance: esta llamada funciona hoy contra el endpoint tal como
+   * está — que todavía compara la contraseña en texto plano del lado del
+   * servidor. Eso queda pendiente de una fase aparte (bcrypt + JWT), según
+   * lo acordado. Este cambio solo conecta el flujo, no lo asegura.
    */
-/**
-   * Procesa las credenciales utilizando el Número de Documento de identidad.
-   * Modificado para acoplarse a las reglas de negocio de SECSS.
-   */
-  const login = (documento, password) => {
+  const login = async (documento, password) => {
     setError(null);
-    
-    if (usuarios.length === 0) {
-      setError("Sistema inicializando, intente nuevamente.");
-      return false;
-    }
 
-    // Búsqueda del usuario por su número de documento de identidad
-    const cuentaEncontrada = usuarios.find(u => u.numero_documento === documento);
-
-    if (!cuentaEncontrada) {
-      setError("Número de documento o contraseña incorrectos.");
-      setIsAuthenticated(false);
-      return false; 
-    }
-
-    // Validación de la contraseña (soporta texto plano o hash del db.json)
-    const contraseniaValida = 
-      cuentaEncontrada.password_hash === password || 
-      cuentaEncontrada.password === password ||
-      cuentaEncontrada.contrasena === password;
-
-    if (contraseniaValida) {
-      setUser(cuentaEncontrada);
+    try {
+      const respuesta = await loginRequest(documento, password);
+      setUser(respuesta.usuario);
       setIsAuthenticated(true);
       return true;
-    } else {
-      setError("Número de documento o contraseña incorrectos.");
+    } catch (err) {
+      setError(err.message || 'Número de documento o contraseña incorrectos.');
       setIsAuthenticated(false);
       return false;
     }

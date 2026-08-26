@@ -12,12 +12,13 @@ export const login = async (req, res) => {
   }
 
   try {
-    //  Buscar la cuenta asociando el correo o nombre_usuario
+    //  Buscar la cuenta asociando el correo o el número de documento
+    // (cuenta.nombre_usuario no existe en el DDL actual)
     const [cuentas] = await db.query(
       `SELECT c.*, u.tipo_documento, u.numero_documento, u.primer_nombre, u.primer_apellido, u.estado AS estado_usuario
        FROM cuenta c
        INNER JOIN usuario u ON c.id_usuario = u.id
-       WHERE c.nombre_usuario = ? OR c.correo = ?`,
+       WHERE c.correo = ? OR u.numero_documento = ?`,
       [nombre_usuario, nombre_usuario]
     );
 

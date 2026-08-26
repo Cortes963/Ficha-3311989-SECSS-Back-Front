@@ -12,7 +12,7 @@ export const getDashboardSummary = async (req, res) => {
 
     // . Cupos activos otorgados por tipo
     const [cupos] = await db.query(
-      'SELECT COUNT(*) AS total_cupos_activos FROM cupo WHERE estado = 1'
+      'SELECT COUNT(*) AS total_cupos_activos FROM auth_vehiculo WHERE estado = 1'
     );
 
     // . PQRS radicadas sin resolver

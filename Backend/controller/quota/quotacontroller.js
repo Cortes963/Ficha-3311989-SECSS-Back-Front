@@ -5,7 +5,7 @@ import pool from '../../db.js';
 // hoy siempre trae la tabla completa.
 export const obtenerCupos = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM cupo');
+    const [rows] = await pool.query('SELECT * FROM auth_vehiculo');
     res.json({ status: 'success', data: rows });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
@@ -22,7 +22,7 @@ export const asignarCupo = async (req, res) => {
 
   try {
     const query = `
-      INSERT INTO cupo (id_usuario, id_vehiculo, estado, id_usuario_administrador)
+      INSERT INTO auth_vehiculo (id_usuario, id_vehiculo, estado, id_usuario_administrador)
       VALUES (?, ?, ?, ?)
     `;
     await pool.query(query, [id_usuario, id_vehiculo, estado, id_usuario_administrador]);

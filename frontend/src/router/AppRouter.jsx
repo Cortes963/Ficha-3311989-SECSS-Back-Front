@@ -25,6 +25,7 @@ import { UserDetailPage } from '@/modules/user/pages/UserDetailPage';
 import { QuotaListPage } from '@/modules/quota/pages/QuotaListPage';
 import { QuotaDetailPage } from '@/modules/quota/pages/QuotaDetailPage'; // 🌟 Solo para Admin / Celador
 import { MyQuotaPage } from '@/modules/quota/pages/MyQuotaPage'; // 🌟 Autoservicio para Aprendices / Invitados
+import { ReportForm } from '@/modules/pqrs/components/ReportForm';
 
 // Nombres de rol confirmados por el DML real (INSERT INTO rol...): ADMINISTRADOR,
 // JEFE_SEGURIDAD, CELADOR, APRENDIZ, INVITADO — reemplaza el supuesto anterior
@@ -55,6 +56,7 @@ const router = createBrowserRouter([
           // Información General y Operación de Tránsito — cualquier rol autenticado
           { path: "noticias", element: <NewsPage /> },
           { path: "pico-placa", element: <PickPlatePage /> },
+          { path: "pqrs", element: <ReportForm /> },
 
           // Control operativo diario: quien registra entradas/salidas y ve cupos
           {

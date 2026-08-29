@@ -8,7 +8,7 @@ export const roleCardsData = {
     actions: [
       { label: 'Aprendices', path: '/aprendices', icon: 'bi-people' },
       { label: 'Cupos', path: '/cupos', icon: 'bi-car-front' },
-      { label: 'PQRS', path: '/configuracion', icon: 'bi-info-circle' }
+      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
     ]
   },
   JEFE_SEGURIDAD: {
@@ -21,7 +21,7 @@ export const roleCardsData = {
       { label: 'Registros vehiculares', path: '/bitacora/diaria', icon: 'bi-journal-text' },
       { label: 'Cupos', path: '/cupos', icon: 'bi-car-front' },
       { label: 'Reportes', path: '/configuracion', icon: 'bi-exclamation-diamond' },
-      { label: 'PQRS', path: '/configuracion', icon: 'bi-info-circle' }
+      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
     ]
   },
   CELADOR: {
@@ -34,7 +34,7 @@ export const roleCardsData = {
       { label: 'Registrar invitado', path: '/LogbookPage', icon: 'bi-people' },
       { label: 'Cupos', path: '/cupos', icon: 'bi-car-front' },
       { label: 'Reportes', path: '/configuracion', icon: 'bi-exclamation-diamond' },
-      { label: 'PQRS', path: '/configuracion', icon: 'bi-info-circle' }
+      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
     ]
   },
   APRENDIZ: {
@@ -45,7 +45,7 @@ export const roleCardsData = {
     actions: [
       { label: 'Cupo', path: '/mi-cupo', icon: 'bi-car-front' },
       { label: 'Registros vehiculares', path: '/bitacora/diaria', icon: 'bi-journal-text' },
-      { label: 'PQRS', path: '/configuracion', icon: 'bi-info-circle' }
+      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
     ]
   },
   INVITADO: {
@@ -56,7 +56,7 @@ export const roleCardsData = {
     actions: [
       { label: 'Cupo', path: '/mi-cupo', icon: 'bi-car-front' },
       { label: 'Registros vehiculares', path: '/bitacora/diaria', icon: 'bi-journal-text' },
-      { label: 'PQRS', path: '/configuracion', icon: 'bi-info-circle' }
+      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
     ]
   }
 };
@@ -71,7 +71,7 @@ export const navOptions = {
       { label: 'Aprendices', path: '/ApprenConsullPage', icon: 'bi-people' },
       { label: 'Cupos', path: '/cupos', icon: 'bi-car-front' },
       { label: 'Vehículos', path: '/auditoria', icon: 'bi-bicycle' },
-      { label: 'PQRS', path: '/configuracion', icon: 'bi-info-circle' }
+      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
     ]
   }
 };

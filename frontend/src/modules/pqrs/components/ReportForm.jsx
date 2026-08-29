@@ -1,67 +1,56 @@
-// src/modules/reports/components/ReportForm.jsx
 import { useState } from 'react';
+import { useAuth } from '@/modules/auth/context/AuthContext';
+import { radicarPqrs } from '@/modules/pqrs/services/pqrsService';
 
 export const ReportForm = () => {
-  const [reportData, setReportData] = useState({
-    tipo: 'NOVEDAD_VEHICULO',
-    asunto: '',
-    descripcion: '',
-    prioridad: 'MEDIA'
-  });
+  const { user } = useAuth();
+  const [reportData, setReportData] = useState({ asunto: '', cuerpo: '' });
+  const [enviando, setEnviando] = useState(false);
+  const [mensaje, setMensaje] = useState(null);
+
+  const actualizarCampo = ({ target: { name, value } }) =>
+    setReportData((anterior) => ({ ...anterior, [name]: value }));
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setMensaje(null);
+    setEnviando(true);
+    try {
+      const respuesta = await radicarPqrs({
+        id_usuario: user.id,
+        asunto: reportData.asunto.trim(),
+        cuerpo: reportData.cuerpo.trim()
+      });
+      setMensaje({ tipo: 'success', texto: `${respuesta.mensaje}. Radicado: ${respuesta.id_pqrs}.` });
+      setReportData({ asunto: '', cuerpo: '' });
+    } catch (error) {
+      setMensaje({ tipo: 'danger', texto: error.message || 'No fue posible radicar la PQRS.' });
+    } finally {
+      setEnviando(false);
+    }
+  };
 
   return (
     <div className="card shadow-sm border-0 border-top border-danger border-4">
       <div className="card-header bg-white p-3 border-bottom-0">
-        <h4 className="text-danger m-0 fw-bold">
-          <i className="bi bi-exclamation-triangle-fill me-2"></i>Generación de Reporte / PQRS
-        </h4>
+        <h4 className="text-danger m-0 fw-bold">Generación de PQRS</h4>
       </div>
       <div className="card-body p-4">
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form onSubmit={handleSubmit}>
           <div className="row g-3">
-            <div className="col-md-6">
-              <label className="form-label fw-bold small">Clasificación del Reporte</label>
-              <select className="form-select" value={reportData.tipo} onChange={(e) => setReportData({...reportData, tipo: e.target.value})}>
-                <optgroup label="Seguridad y Control">
-                  <option value="NOVEDAD_VEHICULO">Novedad con Vehículo / Cupo</option>
-                  <option value="INCIDENTE_ACCESO">Incidente en Control de Acceso</option>
-                </optgroup>
-                <optgroup label="Administrativo (PQRS)">
-                  <option value="PETICION">Petición</option>
-                  <option value="QUEJA">Queja</option>
-                  <option value="RECLAMO">Reclamo</option>
-                </optgroup>
-              </select>
-            </div>
-            
-            <div className="col-md-6">
-              <label className="form-label fw-bold small">Nivel de Prioridad</label>
-              <select className="form-select" value={reportData.prioridad} onChange={(e) => setReportData({...reportData, prioridad: e.target.value})}>
-                <option value="ALTA">🔴 Alta (Requiere atención inmediata)</option>
-                <option value="MEDIA">🟡 Media (Revisión estándar)</option>
-                <option value="BAJA">🟢 Baja (Informativo)</option>
-              </select>
-            </div>
-
             <div className="col-12">
-              <label className="form-label fw-bold small">Asunto Breve</label>
-              <input type="text" className="form-control" placeholder="Ej: Daño en talanquera, Vehículo bloqueando salida..." required />
+              <label className="form-label fw-bold small" htmlFor="asunto">Asunto breve</label>
+              <input id="asunto" type="text" name="asunto" className="form-control" placeholder="Ej: Daño en talanquera" value={reportData.asunto} onChange={actualizarCampo} required />
             </div>
-
             <div className="col-12">
-              <label className="form-label fw-bold small">Descripción Detallada de los Hechos</label>
-              <textarea className="form-control" rows="5" placeholder="Describa el incidente con fechas, horas y personas involucradas si las hay..." required></textarea>
+              <label className="form-label fw-bold small" htmlFor="cuerpo">Descripción detallada</label>
+              <textarea id="cuerpo" name="cuerpo" className="form-control" rows="5" placeholder="Describa los hechos, fechas y horas..." value={reportData.cuerpo} onChange={actualizarCampo} required />
+              <div className="form-text">La API actual registra asunto y descripción; los adjuntos se implementan en una fase posterior.</div>
             </div>
-
-            <div className="col-12">
-              <label className="form-label fw-bold small">Evidencia Adjunta (Opcional)</label>
-              <input type="file" className="form-control" accept="image/*,.pdf" multiple />
-              <div className="form-text">Puede adjuntar fotografías o documentos (Max 5MB).</div>
-            </div>
-
+            {mensaje && <div className={`col-12 alert alert-${mensaje.tipo} mb-0`} role="alert">{mensaje.texto}</div>}
             <div className="col-12 text-end mt-4">
-              <button className="btn btn-light me-2">Cancelar</button>
-              <button type="submit" className="btn btn-danger px-4 fw-bold">Radicar Reporte</button>
+              <button type="button" className="btn btn-light me-2" onClick={() => setReportData({ asunto: '', cuerpo: '' })}>Limpiar</button>
+              <button type="submit" className="btn btn-danger px-4 fw-bold" disabled={enviando}>{enviando ? 'Radicando…' : 'Radicar PQRS'}</button>
             </div>
           </div>
         </form>

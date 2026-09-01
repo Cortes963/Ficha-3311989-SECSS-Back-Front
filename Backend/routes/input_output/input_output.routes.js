@@ -1,5 +1,5 @@
 import express from 'express';
-import { obtenerRegistros, registrarEntrada, registrarSalida } from '../../controller/input_output/input_outputcontroller.js';
+import { obtenerRegistros, registrarEntrada, registrarSalida } from '../../controller/input_output/input_output.controller.js';
 
 const router = express.Router();
 

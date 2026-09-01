@@ -11,6 +11,8 @@ export const obtenerRegistros = async (req, res) => {
     }
 };
 
+//Agregar otras opciciones para filtrar consultas, por ejemplo por usuario, por vehículo, por fecha, etc.
+
 // Registra el INGRESO de un usuario con su vehículo.
 // Antes de insertar valida que no exista ya un registro abierto (sin salida)
 // para el mismo usuario y vehículo, para no permitir dos ingresos seguidos

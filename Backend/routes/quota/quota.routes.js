@@ -1,5 +1,5 @@
 import express from 'express';
-import { obtenerCupos, asignarCupo } from '../../controller/quota/quotacontroller.js';
+import { obtenerCupos, asignarCupo } from '../../controller/quota/quota.controller.js';
 
 const router = express.Router();
 

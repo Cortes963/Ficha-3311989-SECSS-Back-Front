@@ -10,14 +10,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // Rutas
-import input_output from './routes/input_output/input_output.js';
-import quota from './routes/quota/quota.js';
-import vehicle from './routes/vehicle/vehicle.js';
-import pqrsRoutes from './routes/pqrs/pqrsRoutes.js';
-import authRoutes from './routes/auth/auth.routes.js';
-import userRoutes from './routes/user/user.routes.js';
-import dashboardRoutes from './routes/dashboard/dashboard.routes.js';
-import coreRoutes from './routes/core/core.routes.js';
+import input_output from './routes/input_output/input_output.routes.js';
+import quota from './routes/quota/quota.routes.js';
+import vehicle from './routes/vehicle/vehicle.routes.js';
+import pqrs from './routes/pqrs/pqrs.routes.js';
+import auth from './routes/auth/auth.routes.js';
+import user  from './routes/user/user.routes.js';
+import dashboard from './routes/dashboard/dashboard.routes.js';
+import core from './routes/core/core.routes.js';
 
 // Configuración equivalente a __dirname en ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -31,14 +31,14 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Declaración de Rutas de la API
-app.use('/api/register', input_output);
+app.use('/api/input_output', input_output);
 app.use('/api/quota', quota);
-app.use('/api/vehiculo', vehicle);
-app.use('/api/pqrs', pqrsRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/core', coreRoutes);
+app.use('/api/vehicle', vehicle);
+app.use('/api/pqrs', pqrs);
+app.use('/api/auth', auth);
+app.use('/api/user', user);
+app.use('/api/dashboard', dashboard);
+app.use('/api/core', core);
 
 // Manejador para rutas de la API 
 app.use('/api', (req, res) => {

@@ -5,7 +5,7 @@ import {
   obtenerPqrsPorId,
   responderPqrs,
   actualizarEstado
-} from '../../controller/pqr/pqrscontroller.js';
+} from '../../controller/pqrs/pqrscontroller.js';
 
 const router = express.Router();
 

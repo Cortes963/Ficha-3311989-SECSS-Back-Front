@@ -1,600 +1,401 @@
-/* style.css - Identidad Corporativa SECSS */
+/* style.css - Identidad Corporativa SECSS (versión simplificada) */
 
 :root {
-  /* Variables de la paleta corporativa */
+  /* --- Verdes SENA / SECSS --- */
   --sena-verde: #39A900;
   --sena-verde-oscuro: #2e8500;
   --sena-texto-oscuro: #0b5d1e;
+
+  --secss-green-dark: #1b5e20;
+  --secss-green-main: #39a900;
+  --secss-green-light: #e8f5e9;
+
+  --sena-green: #39A900;
+  --sena-dark-green: #2e8600;
+
+  --sena-color: #39A900;
+
+  /* --- Azul / gris CEET --- */
+  --ceet-blue-tech: #00324d;
+  --ceet-silver: #eceff1;
+
+  --secss-dark: #00324D;
+  --secss-light: #F2F4F7;
+
+  /* --- Neutros --- */
+  --secss-gray-dark: #212529;
+  --secss-gray-light: #f8f9fa;
+  --secss-white: #ffffff;
+
+  /* --- Otros --- */
+  --font-principal: 'Work Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
-/* Modificadores de texto */
+/* ======================================================
+   ESTILOS GENERALES Y CONFIGURACIÓN BASE
+   ====================================================== */
+html, body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  font-family: var(--font-principal);
+  color: var(--secss-gray-dark);
+  background-color: #f4f6f7; /* Fondo gris claro industrial */
+}
+
+.main-content, main {
+  flex: 1 0 auto; /* Obliga al footer a quedarse abajo */
+}
+
+.border-top {
+  border-top: 1px solid #dee2e6 !important;
+}
+
+.border-bottom {
+  border-bottom: 2px solid #e9ecef !important;
+}
+
+/* ======================================================
+   TEXTOS Y ENLACES
+   ====================================================== */
 .text-sena { color: var(--sena-texto-oscuro) !important; }
 .text-sena-light { color: var(--sena-verde) !important; }
+.text-secss, h4, h5 { color: var(--secss-green-dark) !important; }
+.text-secss-title { color: var(--secss-dark); font-weight: 700; }
+.text-success { color: var(--sena-color) !important; }
 
-/* Botón corporativo estandarizado */
+.font-weight-bold { font-weight: 600 !important; }
+.font-weight-medium { font-weight: 500; }
+
+.link-sena { color: var(--sena-verde); text-decoration: none; font-weight: 600; }
+.link-sena:hover { text-decoration: underline; color: var(--sena-verde-oscuro); }
+
+.link-secss { color: var(--secss-green-main); text-decoration: none; font-weight: 500; }
+.link-secss:hover { color: var(--secss-green-dark); text-decoration: underline; }
+
+/* ======================================================
+   HEADER Y NAVBAR
+   ====================================================== */
+header, .header-secss {
+  background-color: var(--secss-green-dark) !important;
+  border-bottom: 4px solid var(--secss-green-main);
+  color: var(--secss-white) !important;
+}
+
+header h1, header small, header p, header a {
+  color: var(--secss-white) !important;
+}
+
+/* Badge del SENA en el Header (versión consolidada) */
+.badge-sena {
+  background-color: var(--sena-color);
+  color: var(--secss-white) !important;
+  font-weight: bold;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Navbar con toque Azul CEET */
+.navbar, .bg-secss-main {
+  background-color: var(--ceet-blue-tech) !important;
+  border-bottom: 3px solid var(--secss-green-main);
+}
+
+.navbar .nav-link {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-weight: 500;
+  padding: 8px 16px !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+  color: var(--secss-white) !important;
+  background-color: var(--secss-green-main) !important;
+  border-radius: 4px;
+}
+
+/* Botón "Cerrar sesión" en el menú (versión consolidada) */
+.btn-secss-light {
+  background-color: var(--secss-green-light) !important;
+  color: var(--secss-green-dark) !important;
+  font-weight: bold;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secss-light:hover {
+  background-color: var(--secss-white) !important;
+  color: var(--secss-green-main) !important;
+}
+
+/* ======================================================
+   BOTONES
+   ====================================================== */
 .btn-sena {
   background-color: var(--sena-verde) !important;
   color: #ffffff;
   font-weight: bold;
   transition: background-color 0.3s ease;
 }
-
-.border-sena {
-  border: 2px solid var(--sena-verde) !important;
-}
-
 .btn-sena:hover {
   background-color: var(--sena-verde-oscuro);
   color: #ffffff;
 }
 
-/* Enlaces corporativos */
-.link-sena {
-  color: var(--sena-verde);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.link-sena:hover {
-  text-decoration: underline;
-  color: var(--sena-verde-oscuro);
-}
-
-
-
-/* Banner de Bienvenida con degradado tecnológico usando el Azul CEET y Verde SENA */
-.welcome-banner {
-    background: linear-gradient(135deg, var(--ceet-blue-tech) 0%, var(--secss-green-dark) 100%);
-    border-left: 6px solid var(--secss-green-main);
-}
-
-/* Indicador de rol en el navbar */
-.role-indicator {
-    background-color: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    font-weight: 500;
-}
-
-/* Efectos Base para las Tarjetas de Roles (Hereda la estructura general de tu CSS) */
-.role-card {
-    border-radius: 8px !important;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-}
-
-.role-card:hover {
-    transform: translateY(-5px) !important;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important;
-}
-
-/* Personalización de la parte superior de cada tarjeta */
-.card-header-role {
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-/* Estilos de las sub-listas de acciones */
-.role-card .list-group-item {
-    border-left: none;
-    border-right: none;
-    padding: 10px 0px;
-    background-color: transparent;
-    transition: padding-left 0.2s ease;
-}
-
-.role-card .list-group-item:hover {
-    padding-left: 6px;
-    background-color: var(--secss-green-light);
-    color: var(--secss-green-dark);
-}
-
-/* Segmentación de Bordes y Encabezados usando la Jerarquía de Colores */
-
-/* Administrador */
-.bg-admin {
-    background-color: #2798d4 !important;
-}
-.border-admin {
-    border-top: 4px solid var(--secss-green-main) !important;
-}
-
-/* Jefe de Seguridad  */
-.bg-seguridad {
-    background-color: var(--ceet-blue-tech) !important;
-}
-.border-seguridad {
-    border-top: 4px solid var(--ceet-blue-tech) !important;
-}
-
-/* Aprendiz  */
-.bg-aprendiz {
-    background-color: var(--secss-green-main) !important;
-}
-.border-aprendiz {
-    border-top: 4px solid var(--secss-green-main) !important;
-}
-
-/* Invitado  */
-.bg-invitado {
-    background-color: #6c757d !important;
-}
-.border-invitado {
-    border-top: 4px solid #6c757d !important;
-}
-
-/* Forzar color negro en los textos e iconos de los encabezados de las tarjetas */
-.card-header-role, 
-.card-header-role h5, 
-.card-header-role i {
-    color: #000000 !important;
-}
-
-:root {
-    /* Paleta de Verdes SENA - CEET */
-    --secss-green-dark: #1b5e20;   /* Verde oscuro institucional */
-    --secss-green-main: #39a900;   /* Verde principal SENA */
-    --secss-green-light: #e8f5e9;  /* Verde claro de fondo */
-    
-    /* Identidad CEET (Electricidad, Electrónica y Telecomunicaciones) */
-    --ceet-blue-tech: #00324d;     /* Azul profundo tecnológico de telecomunicaciones */
-    --ceet-silver: #eceff1;        /* Gris claro metalizado industrial */
-    
-    /* Neutros */
-    --secss-gray-dark: #212529;    /* Gris oscuro para textos */
-    --secss-white: #ffffff;
-    
-    /* Tipografía */
-    --font-principal: 'Work Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-
-/* 
-   ESTILOS GENERALES Y CONFIGURACIÓN BASE
-    */
-html, body {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-body {
-    font-family: var(--font-principal);
-    color: var(--secss-gray-dark);
-    background-color: #f4f6f7; /* Fondo gris claro industrial */
-}
-
-.main-content, main {
-    flex: 1 0 auto; /* Obliga al footer a quedarse abajo */
-}
-
-/* 
-   HEADER Y MENÚ DE NAVEGACIÓN (Corrección de visibilidad de la imagen)
-    */
-
-/* Forzamos el fondo del header a verde oscuro para que el texto blanco resalte */
-header, .header-secss {
-    background-color: var(--secss-green-dark) !important;
-    border-bottom: 4px solid var(--secss-green-main);
-    color: var(--secss-white) !important;
-}
-
-header h1, header small, header p, header a {
-    color: var(--secss-white) !important;
-}
-
-/* Badge del SENA en el Header */
-.badge-sena {
-    background-color: var(--secss-green-main);
-    color: var(--secss-white) !important;
-    font-weight: bold;
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-
-/* Menú de Navegación (Navbar) con toque Azul CEET */
-.navbar, .bg-secss-main {
-    background-color: var(--ceet-blue-tech) !important; /* Azul tecnológico CEET */
-    border-bottom: 3px solid var(--secss-green-main);
-}
-
-.navbar .nav-link {
-    color: rgba(255, 255, 255, 0.85) !important;
-    font-weight: 500;
-    padding: 8px 16px !important;
-    transition: all 0.2s ease-in-out;
-}
-
-.navbar .nav-link:hover, 
-.navbar .nav-link.active {
-    color: var(--secss-white) !important;
-    background-color: var(--secss-green-main) !important;
-    border-radius: 4px;
-}
-
-/* Botón de Cerrar Sesión en el menú */
-.btn-secss-light {
-    background-color: var(--secss-green-light) !important;
-    color: var(--secss-green-dark) !important;
-    font-weight: bold;
-    border: none;
-}
-
-.btn-secss-light:hover {
-    background-color: var(--secss-white) !important;
-    color: var(--secss-green-main) !important;
-}
-
-/* 
-   COMPONENTES DE CONTENIDO (Tarjetas, Alertas, Botones)
-    */
-
-/* Tarjetas principales del prototipo (Panel de control, Inventarios, Usuarios) */
-.card, .card-secss, .border.bg-white {
-    border: 1px solid rgba(0, 50, 77, 0.12) !important; /* Borde con sutil azul CEET */
-    border-top: 4px solid var(--secss-green-main) !important; /* Línea verde superior */
-    background-color: var(--secss-white) !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card:hover, .border.bg-white:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Títulos dentro de componentes */
-.text-secss, h4, h5 {
-    color: var(--secss-green-dark) !important;
-}
-
-/* Botones del Sistema */
 .btn-secss {
-    background-color: var(--secss-green-main) !important;
-    color: var(--secss-white) !important;
-    border: none;
-    font-weight: 500;
+  background-color: var(--secss-green-main) !important;
+  color: var(--secss-white) !important;
+  border: none;
+  font-weight: 500;
 }
-
 .btn-secss:hover {
-    background-color: var(--secss-green-dark) !important;
+  background-color: var(--secss-green-dark) !important;
 }
 
-/* Botón Opciones del Prototipo */
+/* NOTA: se corrigió var(--secss-green) / var(--secss-dark-green), que no existían,
+   por var(--sena-green) / var(--sena-dark-green), que sí están definidas. */
+.btn-secss-search {
+  background-color: var(--sena-green);
+  color: #ffffff;
+  font-weight: 500;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+.btn-secss-search:hover {
+  background-color: var(--sena-dark-green);
+  color: #ffffff;
+}
+
 .dropdown-toggle.btn-dark {
-    background-color: var(--ceet-blue-tech) !important;
-    border: none !important;
+  background-color: var(--ceet-blue-tech) !important;
+  border: none !important;
 }
 .dropdown-toggle.btn-dark:hover {
-    background-color: var(--secss-green-dark) !important;
+  background-color: var(--secss-green-dark) !important;
 }
 
-/* Alerta Personalizada */
+.border-sena { border: 2px solid var(--sena-verde) !important; }
+
+/* ======================================================
+   TARJETAS (CARDS)
+   ====================================================== */
+.card, .card-secss, .border.bg-white {
+  border: 1px solid rgba(0, 50, 77, 0.12) !important;
+  border-top: 4px solid var(--secss-green-main) !important;
+  background-color: var(--secss-white) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover, .border.bg-white:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Tarjeta del perfil del aprendiz */
+.card-profile-apprentice {
+  background-color: #ffffff;
+  border-top: 4px solid var(--secss-dark) !important;
+}
+.avatar-wrapper .apprentice-photo {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border: 3px solid #e9ecef;
+}
+
+/* Caja de búsqueda */
+.search-box-container {
+  border-left: 5px solid var(--sena-green) !important;
+  background-color: #ffffff;
+}
+
+/* Enlaces de archivos */
+.file-url {
+  display: block;
+  font-family: 'Courier New', Courier, monospace;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ======================================================
+   TARJETAS DE ROL (dashboard de roles)
+   ====================================================== */
+.welcome-banner {
+  background: linear-gradient(135deg, var(--ceet-blue-tech) 0%, var(--secss-green-dark) 100%);
+  border-left: 6px solid var(--secss-green-main);
+}
+
+.role-indicator {
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-weight: 500;
+}
+
+.role-card {
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+.role-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Encabezado de cada tarjeta de rol (texto/íconos forzados a negro) */
+.card-header-role,
+.card-header-role h5,
+.card-header-role i {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #000000 !important;
+}
+
+.role-card .list-group-item {
+  border-left: none;
+  border-right: none;
+  padding: 10px 0px;
+  background-color: transparent;
+  transition: padding-left 0.2s ease;
+}
+.role-card .list-group-item:hover {
+  padding-left: 6px;
+  background-color: var(--secss-green-light);
+  color: var(--secss-green-dark);
+}
+
+/* Segmentación por rol */
+.bg-admin { background-color: #2798d4 !important; }
+.border-admin { border-top: 4px solid var(--secss-green-main) !important; }
+
+.bg-seguridad { background-color: var(--ceet-blue-tech) !important; }
+.border-seguridad { border-top: 4px solid var(--ceet-blue-tech) !important; }
+
+.bg-aprendiz { background-color: var(--secss-green-main) !important; }
+.border-aprendiz { border-top: 4px solid var(--secss-green-main) !important; }
+
+.bg-invitado { background-color: #6c757d !important; }
+.border-invitado { border-top: 4px solid #6c757d !important; }
+
+/* ======================================================
+   ALERTAS, TABLAS Y SPINNER
+   ====================================================== */
 .alert-secss, .alert-success {
-    background-color: var(--secss-green-light) !important;
-    border: none !important;
-    border-left: 5px solid var(--secss-green-main) !important;
-    color: var(--secss-gray-dark) !important;
+  background-color: var(--secss-green-light) !important;
+  border: none !important;
+  border-left: 5px solid var(--secss-green-main) !important;
+  color: var(--secss-gray-dark) !important;
 }
 
-/* Tablas de datos */
 .table-secss thead, .table thead {
-    background-color: var(--ceet-blue-tech) !important;
-    color: var(--secss-white) !important;
+  background-color: var(--ceet-blue-tech) !important;
+  color: var(--secss-white) !important;
 }
 
-/* Animación del Spinner */
 .spinner-secss, .spinner-border {
-    border: 0.25em solid var(--secss-green-light) !important;
-    border-right-color: var(--secss-green-main) !important;
+  border: 0.25em solid var(--secss-green-light) !important;
+  border-right-color: var(--secss-green-main) !important;
 }
 
-/* Enlaces */
-.link-secss {
-    color: var(--secss-green-main);
-    text-decoration: none;
-    font-weight: 500;
-}
-.link-secss:hover {
-    color: var(--secss-green-dark);
-    text-decoration: underline;
-}
-
-/*
-   FOOTER (Pie de Página) */
+/* ======================================================
+   FOOTER
+   ====================================================== */
 footer, .footer-secss {
-    background-color: var(--secss-gray-dark) !important;
-    border-top: 5px solid var(--secss-green-main);
-    color: rgba(255, 255, 255, 0.7) !important;
-    flex-shrink: 0;
+  background-color: var(--secss-gray-dark) !important;
+  border-top: 5px solid var(--secss-green-main);
+  color: rgba(255, 255, 255, 0.7) !important;
+  flex-shrink: 0;
 }
 
 footer h5, footer h6 {
-    color: var(--secss-white) !important;
+  color: var(--secss-white) !important;
 }
 
 .footer-links a {
-    color: rgba(255, 255, 255, 0.6);
-    text-decoration: none;
-    transition: color 0.2s ease;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
-
 .footer-links a:hover {
-    color: var(--secss-green-main);
+  color: var(--secss-green-main);
 }
 
-:root {
-    --sena-green: #39A900;
-    --sena-dark-green: #2e8600;
-    --secss-dark: #00324b;
-    --secss-gray-light: #f8f9fa;
-}
-
-/* Títulos y tipografías */
-.text-secss-title {
-    color: var(--secss-dark);
-    font-weight: 700;
-}
-
-.font-weight-bold {
-    font-weight: 600 !important;
-}
-
-.font-weight-medium {
-    font-weight: 500;
-}
-
-/* Caja de Búsqueda */
-.search-box-container {
-    border-left: 5px solid var(--secss-green) !important;
-    background-color: #ffffff;
-}
-
-.btn-secss-search {
-    background-color: var(--secss-green);
-    color: #ffffff;
-    font-weight: 500;
-    border: none;
-    transition: background-color 0.3s ease;
-}
-
-.btn-secss-search:hover {
-    background-color: var(--secss-dark-green);
-    color: #ffffff;
-}
-
-/* Tarjeta del Perfil del Aprendiz */
-.card-profile-apprentice {
-    background-color: #ffffff;
-    border-top: 4px solid var(--secss-dark) !important;
-}
-
-.avatar-wrapper .apprentice-photo {
-    width: 140px;
-    height: 140px;
-    object-fit: cover;
-    border: 3px solid #e9ecef;
-}
-
-/* Secciones de Datos y Enlaces de Archivos */
-.text-success {
-    color: var(--secss-green) !important;
-}
-
-.bg-secss-main {
-    background-color: var(--secss-dark) !important;
-}
-
-.file-url {
-    display: block;
-    font-family: 'Courier New', Courier, monospace;
-    max-width: 180px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Componentes Interactivos */
-.border-top {
-    border-top: 1px solid #dee2e6 !important;
-}
-
-.border-bottom {
-    border-bottom: 2px solid #e9ecef !important;
-}
-
-/* Colores institucionales y variables del sistema SECSS */
-:root {
-    --sena-color: #39A900;
-    --secss-dark: #00324D;
-    --secss-light: #F2F4F7;
-    --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-}
-
-/* Estilos de la plantilla General / Navbar */
-.bg-secss-main {
-    background-color: var(--secss-dark) !important;
-}
-.header-secss {
-    background: linear-gradient(135deg, #001A29 0%, var(--secss-dark) 100%);
-}
-.badge-sena {
-    background-color: var(--sena-color);
-    color: white;
-    padding: 5px 12px;
-    font-weight: bold;
-    border-radius: 4px;
-}
-.btn-secss-light {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-.btn-secss-light:hover {
-    background-color: white;
-    color: var(--secss-dark);
-}
-.footer-secss {
-    background-color: #001A29;
-}
-
-/* --- Estilos Específicos para la consulta de Cupos --- */
+/* ======================================================
+   MÓDULO DE CUPOS (moto / bicicleta)
+   ====================================================== */
 .cupo-card {
-    border: none;
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    transition: transform 0.2s ease;
-    background: white;
+  border: none;
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s ease;
+  background: white;
 }
 .cupo-card:hover {
-    transform: translateY(-5px);
-}
-.card-icon-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-}
-.bg-moto-light {
-    background-color: rgba(13, 110, 253, 0.1);
-    color: #0d6efd;
-}
-.bg-bici-light {
-    background-color: rgba(57, 169, 0, 0.1);
-    color: var(--sena-color);
-}
-.progress {
-    border-radius: 8px;
-    background-color: #E9ECEF;
-}
-.progress-bar-sena {
-    background-color: var(--sena-color);
-}
-.table-responsive-custom {
-    box-shadow: var(--card-shadow);
-    border-radius: 10px;
-    overflow: hidden;
-    background: white;
-}
-.table-custom-header {
-    background-color: var(--secss-dark);
-    color: white;
-}
-.status-pill {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-.status-active {
-    background-color: rgba(57, 169, 0, 0.15);
-    color: var(--sena-color);
-}
-.img-thumbnail-preview {
-    width: 45px;
-    height: 45px;
-    object-fit: cover;
-    border-radius: 6px;
-    cursor: pointer;
-}/* Colores institucionales y variables del sistema SECSS */
-:root {
-    --sena-color: #39A900;
-    --secss-dark: #00324D;
-    --secss-light: #F2F4F7;
-    --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
 }
 
-/* Estilos de la plantilla General / Navbar */
-.bg-secss-main {
-    background-color: var(--secss-dark) !important;
-}
-.header-secss {
-    background: linear-gradient(135deg, #001A29 0%, var(--secss-dark) 100%);
-}
-.badge-sena {
-    background-color: var(--sena-color);
-    color: white;
-    padding: 5px 12px;
-    font-weight: bold;
-    border-radius: 4px;
-}
-.btn-secss-light {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-.btn-secss-light:hover {
-    background-color: white;
-    color: var(--secss-dark);
-}
-.footer-secss {
-    background-color: #001A29;
+.card-icon-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
 }
 
-/* --- Estilos Específicos para la consulta de Cupos --- */
-.cupo-card {
-    border: none;
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    transition: transform 0.2s ease;
-    background: white;
-}
-.cupo-card:hover {
-    transform: translateY(-5px);
-}
-.card-icon-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-}
 .bg-moto-light {
-    background-color: rgba(13, 110, 253, 0.1);
-    color: #0d6efd;
+  background-color: rgba(13, 110, 253, 0.1);
+  color: #0d6efd;
 }
 .bg-bici-light {
-    background-color: rgba(57, 169, 0, 0.1);
-    color: var(--sena-color);
+  background-color: rgba(57, 169, 0, 0.1);
+  color: var(--sena-color);
 }
+
 .progress {
-    border-radius: 8px;
-    background-color: #E9ECEF;
+  border-radius: 8px;
+  background-color: #E9ECEF;
 }
 .progress-bar-sena {
-    background-color: var(--sena-color);
+  background-color: var(--sena-color);
 }
+
 .table-responsive-custom {
-    box-shadow: var(--card-shadow);
-    border-radius: 10px;
-    overflow: hidden;
-    background: white;
+  box-shadow: var(--card-shadow);
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
 }
 .table-custom-header {
-    background-color: var(--secss-dark);
-    color: white;
+  background-color: var(--secss-dark);
+  color: white;
 }
+
 .status-pill {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 .status-active {
-    background-color: rgba(57, 169, 0, 0.15);
-    color: var(--sena-color);
+  background-color: rgba(57, 169, 0, 0.15);
+  color: var(--sena-color);
 }
+
 .img-thumbnail-preview {
-    width: 45px;
-    height: 45px;
-    object-fit: cover;
-    border-radius: 6px;
-    cursor: pointer;
+  width: 45px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
 }

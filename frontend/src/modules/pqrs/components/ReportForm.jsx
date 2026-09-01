@@ -31,9 +31,9 @@ export const ReportForm = () => {
   };
 
   return (
-    <div className="card shadow-sm border-0 border-top border-danger border-4">
+    <div className="card shadow-sm border-0 border-top  border-4">
       <div className="card-header bg-white p-3 border-bottom-0">
-        <h4 className="text-danger m-0 fw-bold">Generación de PQRS</h4>
+        <h4 className="m-0 fw-bold">Generación de PQRS</h4>
       </div>
       <div className="card-body p-4">
         <form onSubmit={handleSubmit}>
@@ -49,8 +49,8 @@ export const ReportForm = () => {
             </div>
             {mensaje && <div className={`col-12 alert alert-${mensaje.tipo} mb-0`} role="alert">{mensaje.texto}</div>}
             <div className="col-12 text-end mt-4">
-              <button type="button" className="btn btn-light me-2" onClick={() => setReportData({ asunto: '', cuerpo: '' })}>Limpiar</button>
-              <button type="submit" className="btn btn-danger px-4 fw-bold" disabled={enviando}>{enviando ? 'Radicando…' : 'Radicar PQRS'}</button>
+              <button type="button" className="btn btn-sena me-2" onClick={() => setReportData({ asunto: '', cuerpo: '' })}>Limpiar</button>
+              <button type="submit" className="btn btn-sena px-4 progress-bar-sena" disabled={enviando}>{enviando ? 'Radicando…' : 'Radicar PQRS'}</button>
             </div>
           </div>
         </form>

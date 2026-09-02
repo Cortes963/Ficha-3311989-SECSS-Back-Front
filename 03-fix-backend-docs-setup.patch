@@ -1,0 +1,70 @@
+diff --git a/Backend/.env.example b/Backend/.env.example
+new file mode 100644
+index 0000000..8fbcfb4
+--- /dev/null
++++ b/Backend/.env.example
+@@ -0,0 +1,12 @@
++# Copia este archivo a .env y completa con tus valores reales.
++# .env NUNCA debe subirse al repositorio (ya está en .gitignore).
++
++DB_HOST=localhost
++DB_USER=root
++DB_PASSWORD=
++DB_NAME=SECSS
++
++# Puerto en el que corre el servidor Express. 3306 es el puerto por defecto
++# de MySQL — evita usarlo aquí para no confundir logs ni chocar con el motor
++# de base de datos si corre en la misma máquina.
++PORT=4000
+diff --git a/Backend/README.md b/Backend/README.md
+new file mode 100644
+index 0000000..c6fc4d3
+--- /dev/null
++++ b/Backend/README.md
+@@ -0,0 +1,46 @@
++# Backend — SECSS
++
++API en Node.js (Express 5) + MySQL para el sistema de control vehicular SECSS.
++
++## Requisitos
++
++- Node.js 18 o superior
++- MySQL corriendo (local o remoto) con la base de datos ya creada
++
++## Cómo levantar el proyecto
++
++```bash
++cd Backend
++npm install
++cp .env.example .env
++```
++
++Edita `.env` con tus credenciales reales de MySQL. Luego:
++
++```bash
++npm start
++```
++
++Si todo está bien, deberías ver:
++
++```
++Servidor ejecutándose en http://localhost:4000
++```
++
++## Si acabas de hacer `git pull` y te aparece `Cannot find package '...'`
++
++`node_modules/` no está versionado (a propósito — nunca debe subirse a git). Eso significa que **cada vez que clonas el repo por primera vez, o cambias de rama, tienes que correr `npm install` de nuevo** para regenerarlo. No es un error del código, es un paso de instalación que falta.
++
++## Variables de entorno
++
++Ver `.env.example` para la lista completa. Ninguna variable tiene un valor por defecto sensible hardcodeado en el código — todas se leen desde `.env`.
++
++## Estructura
++
++```
++Backend/
++├── controller/     # Lógica de negocio por módulo
++├── routes/         # Definición de endpoints Express, uno por módulo
++├── db.js           # Pool de conexión a MySQL
++└── index.js        # Punto de entrada del servidor
++```

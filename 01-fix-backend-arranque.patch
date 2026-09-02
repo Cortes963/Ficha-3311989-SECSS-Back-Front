@@ -1,0 +1,233 @@
+diff --git a/Backend/controller/input_output/input_outputcontroller.js b/Backend/controller/input_output/input_outputcontroller.js
+index f6a0978..2851961 100644
+--- a/Backend/controller/input_output/input_outputcontroller.js
++++ b/Backend/controller/input_output/input_outputcontroller.js
+@@ -3,12 +3,12 @@ import db from '../../db.js';
+ 
+ // Guardar todos los registros de entrada y salida 
+ 
+-export const ObtenerRegistros = async (req, res) => {
++export const obtenerRegistros = async (req, res) => {
+     try {
+         const [rows] = await db.query ('SELECT * FROM entrada_salida');
+         res.json({ status: 'success', data: rows });
+     } catch (error){
+-        res.status(500).json ({ status: 'error', mesage: error.message});
++        res.status(500).json ({ status: 'error', message: error.message});
+     }
+ };
+ 
+@@ -44,9 +44,4 @@ export const crearRegistro = async (req, res) => {
+   }
+ };
+ 
+-module.exports = {
+-  obtenerRegistros,
+-  crearRegistro
+-};
+-
+ 
+diff --git a/Backend/controller/quota/quotacontroller.js b/Backend/controller/quota/quotacontroller.js
+index c6810a6..65fdc89 100644
+--- a/Backend/controller/quota/quotacontroller.js
++++ b/Backend/controller/quota/quotacontroller.js
+@@ -1,9 +1,11 @@
+ import pool from '../../db.js';
+ 
+ // Obtener la lista de cupos
++// TODO: soportar filtros por query params (estado, id_usuario) como en pqrscontroller.listarPqrs,
++// hoy siempre trae la tabla completa.
+ export const obtenerCupos = async (req, res) => {
+   try {
+-    const [rows] = await db.query('SELECT * FROM cupo');
++    const [rows] = await pool.query('SELECT * FROM cupo');
+     res.json({ status: 'success', data: rows });
+   } catch (error) {
+     res.status(500).json({ status: 'error', message: error.message });
+@@ -23,17 +25,10 @@ export const asignarCupo = async (req, res) => {
+       INSERT INTO cupo (id_usuario, id_vehiculo, estado, id_usuario_administrador)
+       VALUES (?, ?, ?, ?)
+     `;
+-    await db.query(query, [id_usuario, id_vehiculo, estado, id_usuario_administrador]);
++    await pool.query(query, [id_usuario, id_vehiculo, estado, id_usuario_administrador]);
+ 
+     res.status(201).json({ status: 'success', message: 'Cupo asignado correctamente' });
+   } catch (error) {
+     res.status(500).json({ status: 'error', message: error.message });
+   }
+ };
+-
+-module.exports = {
+-  obtenerCupos,
+-  asignarCupo
+-};
+-
+-//  filtrar consultas, para que sean mas especificas
+diff --git a/Backend/controller/vehicle/bicycle.js b/Backend/controller/vehicle/bicycle.js
+index e7f653d..0a3d7fa 100644
+--- a/Backend/controller/vehicle/bicycle.js
++++ b/Backend/controller/vehicle/bicycle.js
+@@ -1,5 +1,3 @@
+-import pool from '../../db.js';
+-
+ //Guardar detalle de la bicicleta
+ export const crearDetalleBicicleta = async (connection, idVehiculo, datos) => {
+   const { numero_marco, clase_bicicleta } = datos;
+@@ -13,4 +11,3 @@ export const crearDetalleBicicleta = async (connection, idVehiculo, datos) => {
+   await connection.query(query, [idVehiculo, numero_marco, clase_bicicleta]);
+ };
+ 
+-module.exports = { crearDetalleBicicleta };
+\ No newline at end of file
+diff --git a/Backend/controller/vehicle/motorcycle.js b/Backend/controller/vehicle/motorcycle.js
+index 612b8c4..b1e6905 100644
+--- a/Backend/controller/vehicle/motorcycle.js
++++ b/Backend/controller/vehicle/motorcycle.js
+@@ -1,5 +1,3 @@
+-import pool from '../../db.js';
+-
+ //Guardar detalle de la moto
+ export const crearDetalleMoto = async (connection, idVehiculo, datos) => {
+   const { placa, cilindraje, modelo, imagen_url_soat, imagen_url_tecnomecanica_vigente } = datos;
+diff --git a/Backend/controller/vehicle/vehicle.js b/Backend/controller/vehicle/vehicle.js
+index 93ae80a..7084444 100644
+--- a/Backend/controller/vehicle/vehicle.js
++++ b/Backend/controller/vehicle/vehicle.js
+@@ -1,5 +1,6 @@
+ import pool from '../../db.js';
+-
++import { crearDetalleMoto } from './motorcycle.js';
++import { crearDetalleBicicleta } from './bicycle.js';
+ 
+ //crear registro de vehiculo
+  export const crearRegistroVehiculo = async (req, res) => {
+@@ -26,7 +27,7 @@ import pool from '../../db.js';
+     return res.status(400).json({ status: 'error', message: 'tipo_vehiculo debe ser "moto" o "bicicleta"' });
+   }
+ 
+-  const connection = await db.getConnection();
++  const connection = await pool.getConnection();
+ 
+   try {
+     await connection.beginTransaction();
+diff --git a/Backend/index.js b/Backend/index.js
+index 7775f8b..11441d3 100644
+--- a/Backend/index.js
++++ b/Backend/index.js
+@@ -1,6 +1,11 @@
++// Debe ser el primer import: en ES Modules las dependencias se ejecutan
++// antes que el cuerpo de este archivo, así que si dotenv.config() se llama
++// más abajo, db.js ya habría leído process.env vacío. Este import con efecto
++// secundario carga el .env antes de que cualquier otro módulo lo necesite.
++import 'dotenv/config';
++
+ import express from 'express';
+ import cors from 'cors';
+-import dotenv from 'dotenv';
+ import path from 'path';
+ import { fileURLToPath } from 'url';
+ 
+@@ -8,10 +13,7 @@ import { fileURLToPath } from 'url';
+ import input_output from './routes/input_output/input_output.js';
+ import quota from './routes/quota/quota.js';
+ import vehicle from './routes/vehicle/vehicle.js';
+-/* import pqrsRoutes from '../routes/pqrs/pqrsRoutes.js';*/ // Ajusta la ruta si es necesario
+-
+-// Configuración de variables de entorno
+-dotenv.config();
++import pqrsRoutes from './routes/pqrs/pqrsRoutes.js';
+ 
+ // Configuración equivalente a __dirname en ES Modules
+ const __filename = fileURLToPath(import.meta.url);
+@@ -36,7 +38,9 @@ app.use('/api', (req, res) => {
+ });
+ 
+ // Inicio del servidor
+-const PORT = process.env.PORT || 3306;
++const PORT = process.env.PORT || 4000;
++// Nota: 3306 (el valor anterior) es el puerto por defecto de MySQL — usarlo
++// aquí también generaba riesgo de choque con el propio motor de base de datos.
+ app.listen(PORT, () => {
+     console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+ });
+\ No newline at end of file
+diff --git a/Backend/routes/input_output/input_output.js b/Backend/routes/input_output/input_output.js
+index c8be7dc..7923db3 100644
+--- a/Backend/routes/input_output/input_output.js
++++ b/Backend/routes/input_output/input_output.js
+@@ -1,8 +1,10 @@
+ import express from 'express';
+ import { obtenerRegistros, crearRegistro } from '../../controller/input_output/input_outputcontroller.js';
+ 
++const router = express.Router();
++
+ router.get('/', obtenerRegistros);
+ router.post('/', crearRegistro);
+ 
+-module.exports = router;
++export default router;
+ 
+diff --git a/Backend/routes/pqrs/pqrsRoutes.js b/Backend/routes/pqrs/pqrsRoutes.js
+index e69de29..338a643 100644
+--- a/Backend/routes/pqrs/pqrsRoutes.js
++++ b/Backend/routes/pqrs/pqrsRoutes.js
+@@ -0,0 +1,18 @@
++import express from 'express';
++import {
++  crearPqrs,
++  listarPqrs,
++  obtenerPqrsPorId,
++  responderPqrs,
++  actualizarEstado
++} from '../../controller/pqr/pqrscontroller.js';
++
++const router = express.Router();
++
++router.post('/', crearPqrs);
++router.get('/', listarPqrs);
++router.get('/:id', obtenerPqrsPorId);
++router.post('/:id/respuesta', responderPqrs);
++router.patch('/:id/estado', actualizarEstado);
++
++export default router;
+diff --git a/Backend/routes/quota/quota.js b/Backend/routes/quota/quota.js
+index 3c4b90c..a2c1751 100644
+--- a/Backend/routes/quota/quota.js
++++ b/Backend/routes/quota/quota.js
+@@ -1,8 +1,10 @@
+ import express from 'express';
+ import { obtenerCupos, asignarCupo } from '../../controller/quota/quotacontroller.js';
+ 
++const router = express.Router();
++
+ router.get('/', obtenerCupos);
+ router.post('/', asignarCupo);
+ 
+-module.exports = router;
++export default router;
+ 
+diff --git a/Backend/routes/vehicle/vehicle.js b/Backend/routes/vehicle/vehicle.js
+index d4ab990..51014f8 100644
+--- a/Backend/routes/vehicle/vehicle.js
++++ b/Backend/routes/vehicle/vehicle.js
+@@ -1,11 +1,11 @@
+ import express from 'express';
+-import db from '../../db.js';
+-import { crearDetalleMoto,  } from '../../controller/vehicle/motorcycle.js';
+-import { crearDetalleBicicleta } from '../../controller/vehicle/bicycle.js';
+ import { crearRegistroVehiculo } from '../../controller/vehicle/vehicle.js';
+ 
+-router.get('/', crearDetalleBicicleta);
+-router.post('/', crearDetalleMoto);
+-router.post('/registro', crearRegistroVehiculo);
++const router = express.Router();
+ 
+-module.exports = router;
+\ No newline at end of file
++// TODO: falta un endpoint de listado (GET /) — hoy no existe una función
++// "listarVehiculos" en el controller. Lo dejamos pendiente en vez de inventar
++// un handler falso.
++router.post('/', crearRegistroVehiculo);
++
++export default router;
+\ No newline at end of file

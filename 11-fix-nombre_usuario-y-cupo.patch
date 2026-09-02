@@ -1,0 +1,55 @@
+diff --git a/Backend/controller/auth/auth.controller.js b/Backend/controller/auth/auth.controller.js
+index 31a646b..2437384 100644
+--- a/Backend/controller/auth/auth.controller.js
++++ b/Backend/controller/auth/auth.controller.js
+@@ -12,12 +12,13 @@ export const login = async (req, res) => {
+   }
+ 
+   try {
+-    //  Buscar la cuenta asociando el correo o nombre_usuario
++    //  Buscar la cuenta asociando el correo o el número de documento
++    // (cuenta.nombre_usuario no existe en el DDL actual)
+     const [cuentas] = await db.query(
+       `SELECT c.*, u.tipo_documento, u.numero_documento, u.primer_nombre, u.primer_apellido, u.estado AS estado_usuario
+        FROM cuenta c
+        INNER JOIN usuario u ON c.id_usuario = u.id
+-       WHERE c.nombre_usuario = ? OR c.correo = ?`,
++       WHERE c.correo = ? OR u.numero_documento = ?`,
+       [nombre_usuario, nombre_usuario]
+     );
+ 
+diff --git a/Backend/controller/dashboard/dashboard.controller.js b/Backend/controller/dashboard/dashboard.controller.js
+index edcdb54..11398de 100644
+--- a/Backend/controller/dashboard/dashboard.controller.js
++++ b/Backend/controller/dashboard/dashboard.controller.js
+@@ -12,7 +12,7 @@ export const getDashboardSummary = async (req, res) => {
+ 
+     // . Cupos activos otorgados por tipo
+     const [cupos] = await db.query(
+-      'SELECT COUNT(*) AS total_cupos_activos FROM cupo WHERE estado = 1'
++      'SELECT COUNT(*) AS total_cupos_activos FROM auth_vehiculo WHERE estado = 1'
+     );
+ 
+     // . PQRS radicadas sin resolver
+diff --git a/Backend/controller/quota/quotacontroller.js b/Backend/controller/quota/quotacontroller.js
+index 65fdc89..9250d8f 100644
+--- a/Backend/controller/quota/quotacontroller.js
++++ b/Backend/controller/quota/quotacontroller.js
+@@ -5,7 +5,7 @@ import pool from '../../db.js';
+ // hoy siempre trae la tabla completa.
+ export const obtenerCupos = async (req, res) => {
+   try {
+-    const [rows] = await pool.query('SELECT * FROM cupo');
++    const [rows] = await pool.query('SELECT * FROM auth_vehiculo');
+     res.json({ status: 'success', data: rows });
+   } catch (error) {
+     res.status(500).json({ status: 'error', message: error.message });
+@@ -22,7 +22,7 @@ export const asignarCupo = async (req, res) => {
+ 
+   try {
+     const query = `
+-      INSERT INTO cupo (id_usuario, id_vehiculo, estado, id_usuario_administrador)
++      INSERT INTO auth_vehiculo (id_usuario, id_vehiculo, estado, id_usuario_administrador)
+       VALUES (?, ?, ?, ?)
+     `;
+     await pool.query(query, [id_usuario, id_vehiculo, estado, id_usuario_administrador]);

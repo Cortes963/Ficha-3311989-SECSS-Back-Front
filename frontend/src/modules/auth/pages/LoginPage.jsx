@@ -106,6 +106,17 @@ export const LoginPage = () => {
           </form>
         </div>
       </div>
+      
+        {/* Columna derecha: imagen, oculta en pantallas pequeñas */}
+        <div className="d-none d-md-block flex-grow-1">
+          <img
+            src="/assets/SECSS.jpg"
+            alt="Bienvenida a SECSS"
+            className="w-100 h-100"
+            style={{ objectFit: 'cover' }}
+          />
+        </div>
     </div>
+    
   );
 };

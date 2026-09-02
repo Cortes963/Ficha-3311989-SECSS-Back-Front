@@ -1,25 +1,20 @@
-// src/modules/users/pages/ApprenListPage.jsx
+// src/modules/user/pages/ApprenListPage.jsx
 import { useState, useEffect } from 'react';
 import { MasterTableList } from '@/components/layout/MasterTableList';
 import { Link } from 'react-router-dom';
+import { getUsuarios } from '@/modules/user/services/userService';
 
 export const ApprenListPage = () => {
-  // 1. Estado para almacenar los datos que vendrán de la API
   const [aprendices, setAprendices] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 2. Fetch para obtener datos del JSON Server
   useEffect(() => {
     const fetchAprendices = async () => {
       try {
-        const response = await fetch('http://localhost:3000/usuarios');
-        const data = await response.json();
-        
-        // Filtramos para asegurar que solo cargue aprendices
-        const filtrados = data.filter(u => u.roles && u.roles.includes('APRENDIZ'));
-        setAprendices(filtrados);
+        const data = await getUsuarios('APRENDIZ'); // ya viene desempacado
+        setAprendices(data);
       } catch (error) {
-        console.error("Error al conectar con la base de datos:", error);
+        console.error("Error al conectar con el backend:", error);
       } finally {
         setLoading(false);
       }
@@ -27,14 +22,13 @@ export const ApprenListPage = () => {
     fetchAprendices();
   }, []);
 
-  // 3. Mapeo dinámico (Mantiene tu diseño original)
   const vistaDatos = aprendices.map(aprendiz => ({
     "Tipo de documento": aprendiz.tipo_documento,
     "N° de documento": aprendiz.numero_documento,
-    "Nombre Completo": aprendiz.nombre_completo,
-    "Ficha": <span className="badge bg-success">{aprendiz.detalle_aprendiz?.ficha || 'N/A'}</span>,
-    "Fecha de vinculación": aprendiz.fecha_vinculacion,
-    "Fecha de terminación": aprendiz.fecha_terminacion,
+    "Nombre Completo": `${aprendiz.primer_nombre} ${aprendiz.segundo_nombre || ''} ${aprendiz.primer_apellido} ${aprendiz.segundo_apellido || ''}`.replace(/\s+/g, ' ').trim(),
+    "Ficha": <span className="badge bg-success">{aprendiz.ficha || 'N/A'}</span>,
+    "Fecha de vinculación": aprendiz.fecha_vinculacion ? aprendiz.fecha_vinculacion.substring(0, 10) : '—',
+    "Fecha de terminación": aprendiz.fecha_terminacion ? aprendiz.fecha_terminacion.substring(0, 10) : '—',
     "Acciones": (
       <Link to={`/cupos/${aprendiz.id}`} className="btn btn-sm btn-outline-primary">
         <i className="bi bi-eye"></i> Ver Perfil Completo

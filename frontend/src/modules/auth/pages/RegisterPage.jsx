@@ -3,56 +3,63 @@ import { useState } from 'react';
 import { UserAccountForm } from '@/modules/user/components/UserAccountForm';
 import { ApprenForm } from '@/modules/user/components/ApprenForm';
 import { useNavigate } from 'react-router-dom';
+import { crearUsuario } from '@/modules/user/services/userService';
 
 export const RegisterPage = () => {
   const [esAprendiz, setEsAprendiz] = useState(false);
   const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
 
-  const registrarUsuarioAPI = async (usuarioFinal) => {
+  const registrarUsuarioAPI = async (payload) => {
     try {
-      // json-server genera el ID automáticamente en POST
-      const response = await fetch('http://localhost:3000/usuarios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(usuarioFinal)
-      });
-
-      if (!response.ok) throw new Error("Error en la transacción");
-      alert("Registro exitoso en el sistema de base de datos.");
-      navigate('/login'); 
+      await crearUsuario(payload);
+      alert("Registro exitoso en el sistema.");
+      navigate('/login');
     } catch (error) {
       console.error(error);
-      alert("No se pudo completar el registro.");
+      alert(error.message || "No se pudo completar el registro.");
     }
   };
 
   const handleUserSubmit = (datosUsuario) => {
+    const [primer_nombre, segundo_nombre, primer_apellido, segundo_apellido] =
+      datosUsuario.nombre_completo.split(' ');
+
+    const usuarioBase = {
+      tipo_documento: datosUsuario.tipo_documento,
+      numero_documento: datosUsuario.numero_documento,
+      primer_nombre,
+      segundo_nombre: segundo_nombre || null,
+      primer_apellido: primer_apellido || '',
+      segundo_apellido: segundo_apellido || null,
+      n_celular: datosUsuario.n_celular,
+      correo: datosUsuario.correo,
+      password_hash: datosUsuario.password,
+    };
+
     if (!esAprendiz) {
-      const payload = {
-        ...datosUsuario,
-        roles: ["INVITADO"],
-        estado: 1 
-      };
-      registrarUsuarioAPI(payload);
+      registrarUsuarioAPI({ ...usuarioBase, nombre_rol: 'INVITADO' });
     } else {
-      setUserData(datosUsuario);
+      setUserData(usuarioBase);
     }
   };
 
   const handleApprenSubmit = (datosAprendiz) => {
     if (!userData) return alert("Debes completar primero tus datos personales.");
 
-    const payloadFinal = {
+    registrarUsuarioAPI({
       ...userData,
-      roles: ["APRENDIZ"],
-      estado: 1,
+      nombre_rol: 'APRENDIZ',
       detalle_aprendiz: {
-        ...datosAprendiz,
-        ficha: parseInt(datosAprendiz.numeroFicha) 
+        nombre_centro: datosAprendiz.nombre_centro,
+        ficha: datosAprendiz.ficha,
+        direccion: datosAprendiz.direccion,
+        fecha_vinculacion: datosAprendiz.fechaVinculacion || null,
+        imagen_url_identificacion: 'PENDIENTE',
+        imagen_url_carnet_sena: 'PENDIENTE',
+        imagen_url_aprendiz: 'PENDIENTE'
       }
-    };
-    registrarUsuarioAPI(payloadFinal);
+    });
   };
 
   return (

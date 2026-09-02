@@ -1,25 +1,20 @@
-// src/modules/users/pages/ApprenListPage.jsx
+// src/modules/user/pages/SecureListPage.jsx
 import { useState, useEffect } from 'react';
 import { MasterTableList } from '@/components/layout/MasterTableList';
 import { Link } from 'react-router-dom';
+import { getUsuarios } from '@/modules/user/services/userService';
 
 export const SecureListPage = () => {
-  // 1. Estado para almacenar los datos que vendrán de la API
   const [celadores, setCeladores] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 2. Fetch para obtener datos del JSON Server
   useEffect(() => {
     const fetchCeladores = async () => {
       try {
-        const response = await fetch('http://localhost:3000/usuarios');
-        const data = await response.json();
-        
-        // Filtramos para asegurar que solo cargue celadores
-        const filtrados = data.filter(u => u.roles && u.roles.includes('CELADOR'));
-        setCeladores(filtrados);
+        const data = await getUsuarios('CELADOR');
+        setCeladores(data);
       } catch (error) {
-        console.error("Error al conectar con la base de datos:", error);
+        console.error("Error al conectar con el backend:", error);
       } finally {
         setLoading(false);
       }
@@ -27,11 +22,10 @@ export const SecureListPage = () => {
     fetchCeladores();
   }, []);
 
-  // 3. Mapeo dinámico (Mantiene tu diseño original)
   const vistaDatos = celadores.map(celador => ({
     "Tipo de documento": celador.tipo_documento,
     "N° de documento": celador.numero_documento,
-    "Nombre Completo": celador.nombre_completo,
+    "Nombre Completo": `${celador.primer_nombre} ${celador.segundo_nombre || ''} ${celador.primer_apellido} ${celador.segundo_apellido || ''}`.replace(/\s+/g, ' ').trim(),
     "Acciones": (
       <Link to={`/celadores/${celador.id}`} className="btn btn-sm btn-outline-primary">
         <i className="bi bi-eye"></i> Ver Perfil Completo

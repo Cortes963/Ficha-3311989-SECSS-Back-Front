@@ -14,6 +14,13 @@ export const listarCupos = async () => {
   return data;
 };
 
+// Detalle de cupo/vehículo de un usuario puntual: ¿tiene vehículo?, ¿está
+// habilitado?, ¿está dentro de las instalaciones ahora mismo?
+export const obtenerCupoPorUsuario = async (idUsuario) => {
+  const { data } = await apiClient.get(`/quota/usuario/${idUsuario}`);
+  return data;
+};
+
 /**
  * Asigna/registra un cupo para un usuario y vehículo.
  * Campos obligatorios
@@ -21,3 +28,7 @@ export const listarCupos = async () => {
  */
 export const asignarCupo = ({ id_usuario, id_vehiculo, estado, id_usuario_administrador }) =>
   apiClient.post('/quota', { id_usuario, id_vehiculo, estado, id_usuario_administrador });
+
+// Habilita (estado=1) o deshabilita (estado=0) un cupo ya existente.
+export const actualizarEstadoCupo = (idUsuario, idVehiculo, estado) =>
+  apiClient.patch(`/quota/${idUsuario}/${idVehiculo}`, { estado });

@@ -4,15 +4,6 @@ import { springApiClient as apiClient } from '@/services/springApiClient';
 export const radicarPqrs = ({ idUsuario, asunto, cuerpo }) =>
   apiClient.post('/pqrs', { idUsuario, asunto, cuerpo });
 
-/**
- * Lista PQRS paginadas, con filtros opcionales.
- * @param {Object} options - Opciones de filtrado.
- * @param {number} options.estado - Filtro por estado.
- * @param {number} options.idUsuario - Filtro por ID de usuario.
- * @param {number} options.pagina - Página a mostrar (base 0).
- * @param {number} options.limite - Cantidad de elementos por página.
- * @returns {Promise<Object>} - Objeto con la lista de PQRS y metadatos de paginación.
- */
 
 export const listarPqrs = ({ estado, idUsuario, pagina = 0, limite = 20 } = {}) => {
   const parametros = new URLSearchParams({ pagina, limite });

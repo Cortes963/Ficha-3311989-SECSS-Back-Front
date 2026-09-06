@@ -27,6 +27,10 @@ import { QuotaDetailPage } from '@/modules/quota/pages/QuotaDetailPage'; // 🌟
 import { MyQuotaPage } from '@/modules/quota/pages/MyQuotaPage'; // 🌟 Autoservicio para Aprendices / Invitados
 import { ReportForm } from '@/modules/pqrs/components/ReportForm';
 
+
+// Módulo de Reportes (celadores)
+import { ReporteForm } from '@/modules/reporte/components/ReporteForm';
+
 // Nombres de rol confirmados por el DML real (INSERT INTO rol...): ADMINISTRADOR,
 // JEFE_SEGURIDAD, CELADOR, APRENDIZ, INVITADO — reemplaza el supuesto anterior
 // (aprendiz/celador/administrador en minúscula, sin JEFE_SEGURIDAD ni INVITADO).
@@ -65,6 +69,7 @@ const router = createBrowserRouter([
               { path: "bitacora/diaria", element: <LogbookDailyPage /> },
               { path: "cupos", element: <QuotaListPage /> },
               { path: "cupos/:id", element: <QuotaDetailPage /> },
+              { path: "reportes", element: <ReporteForm /> },
             ]
           },
 
@@ -108,6 +113,8 @@ const router = createBrowserRouter([
     element: <div className="p-5 text-center"><h3>404 - Recurso No Encontrado</h3></div>
   }
 ]);
+
+
 
 export const AppRouter = () => {
   return (

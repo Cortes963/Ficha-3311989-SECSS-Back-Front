@@ -8,7 +8,7 @@ import {
   actualizarEstado,
   actualizarPqrs,
   eliminarPqrs
-} from '../../controller/pqrs/pqrscontroller.js';
+} from '../../controller/pqrs/pqrs.controller.js';
 
 const router = express.Router();
 

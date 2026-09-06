@@ -1,4 +1,4 @@
-import { springApiClient as apiClient } from '@/services/springApiClient';
+import { apiClient } from '@/services/apiClient';
 
 /** Radica una nueva PQRS. Devuelve la entidad Pqrs creada (incluye su `id`). */
 export const radicarPqrs = ({ idUsuario, asunto, cuerpo }) =>

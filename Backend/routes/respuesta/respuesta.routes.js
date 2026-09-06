@@ -1,6 +1,6 @@
 import express from 'express';
 import { listarRespuestas } from '../../controller/respuesta/respuestaList.js';
-import { obtenerRespuestaPorId } from '../../controller/respuesta/respuestaSearchID.js';
+import { obtenerRespuestaPorId } from '../../controller/respuesta/respuestaSearchList.js';
 import { actualizarRespuesta } from '../../controller/respuesta/respuestaUpdate.js';
 import { eliminarRespuesta } from '../../controller/respuesta/respuestaDelete.js';
 

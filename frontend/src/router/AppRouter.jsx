@@ -29,7 +29,7 @@ import { ReportForm } from '@/modules/pqrs/components/ReportForm';
 
 
 // Módulo de Reportes (celadores)
-import { ReporteForm } from '@/modules/reporte/components/ReporteForm';
+//import { ReporteForm } from '@/modules/reporte/components/ReporteForm';
 
 // Nombres de rol confirmados por el DML real (INSERT INTO rol...): ADMINISTRADOR,
 // JEFE_SEGURIDAD, CELADOR, APRENDIZ, INVITADO — reemplaza el supuesto anterior
@@ -69,7 +69,7 @@ const router = createBrowserRouter([
               { path: "bitacora/diaria", element: <LogbookDailyPage /> },
               { path: "cupos", element: <QuotaListPage /> },
               { path: "cupos/:id", element: <QuotaDetailPage /> },
-              { path: "reportes", element: <ReporteForm /> },
+              //{ path: "reportes", element: <ReporteForm /> },
             ]
           },
 

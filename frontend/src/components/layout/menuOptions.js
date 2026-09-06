@@ -20,7 +20,7 @@ export const roleCardsData = {
       { label: 'Celadores', path: '/celadores', icon: 'bi-people' },
       { label: 'Registros vehiculares', path: '/bitacora/diaria', icon: 'bi-journal-text' },
       { label: 'Cupos', path: '/cupos', icon: 'bi-car-front' },
-      { label: 'Reportes', path: '/configuracion', icon: 'bi-exclamation-diamond' },
+      { label: 'Reportes', path: '/reportes', icon: 'bi-exclamation-diamond' },
       { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
     ]
   },
@@ -33,7 +33,7 @@ export const roleCardsData = {
       { label: 'Registros vehiculares', path: '/bitacora/diaria', icon: 'bi-journal-text' },
       { label: 'Registrar invitado', path: '/LogbookPage', icon: 'bi-people' },
       { label: 'Cupos', path: '/cupos', icon: 'bi-car-front' },
-      { label: 'Reportes', path: '/configuracion', icon: 'bi-exclamation-diamond' },
+      { label: 'Reportes', path: '/reportes', icon: 'bi-exclamation-diamond' },
       { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
     ]
   },

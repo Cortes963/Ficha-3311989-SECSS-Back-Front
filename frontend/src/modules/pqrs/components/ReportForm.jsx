@@ -40,7 +40,7 @@ export const ReportForm = () => {
           <div className="row g-3">
             <div className="col-12">
               <label className="form-label fw-bold small" htmlFor="asunto">Asunto breve</label>
-              <input id="asunto" type="text" name="asunto" className="form-control" placeholder="Ej: Daño en talanquera" value={reportData.asunto} onChange={actualizarCampo} required />
+              <input id="asunto" type="text" name="asunto" className="form-control" placeholder="Ej: Daño en soporte de Bicicleta" value={reportData.asunto} onChange={actualizarCampo} required />
             </div>
             <div className="col-12">
               <label className="form-label fw-bold small" htmlFor="cuerpo">Descripción detallada</label>

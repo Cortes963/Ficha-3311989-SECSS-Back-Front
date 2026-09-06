@@ -43,5 +43,12 @@ async function request(path, { method = 'GET', body, headers } = {}) {
 export const apiClient = {
   get: (path) => request(path),
   post: (path, body) => request(path, { method: 'POST', body }),
+  put: (path, body) => request(path, { method: 'PUT', body }),
   patch: (path, body) => request(path, { method: 'PATCH', body }),
+  delete: (path) => request(path, { method: 'DELETE' }),
 };
+
+// NOTA: el "cliente" :v, sigue apuntando al backend original (Express/Laravel).
+// El módulo PQRS/Reporte habla con un backend Java Spring Boot aparte
+// (otro puerto), por eso usa su propio cliente: ver springApiClient.js.
+// No se cambia BASE_URL aquí para no romper auth/user/vehiculo/quota/etc.

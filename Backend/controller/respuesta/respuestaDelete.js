@@ -5,7 +5,7 @@ import { ESTADOS_PQRS } from '../pqrs/estados.js';
  * Elimina una respuesta. Como la PQRS deja de estar resuelta, se regresa
  * su estado a EN_TRAMITE. Ambas operaciones van en una transaccion.
  */
-export async function eliminarRespuesta(req, res) {
+export async function destroyAnswer(req, res) {
   const { id } = req.params;
 
   const conexion = await pool.getConnection();

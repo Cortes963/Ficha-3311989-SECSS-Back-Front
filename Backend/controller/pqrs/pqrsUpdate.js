@@ -1,9 +1,11 @@
 import pool from '../../db.js';
 
+import pool from '../../db.js';
+
 /**
  * Actualiza asunto/cuerpo (y opcionalmente el usuario) de una PQRS existente.
  */
-export async function actualizarPqrs(req, res) {
+export async function updatePqrs(req, res) {
   try {
     const { id } = req.params;
     const { id_usuario, asunto, cuerpo } = req.body;

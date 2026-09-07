@@ -1,6 +1,6 @@
 import pool from '../../db.js';
 
-export async function actualizarRespuesta(req, res) {
+export async function updateAnswer(req, res) {
   try {
     const { id } = req.params;
     const { id_usuario_administrador, asunto, cuerpo } = req.body;

@@ -1,6 +1,6 @@
 import pool from '../../db.js';
 
-export async function obtenerReportePorId(req, res) {
+export async function showReportId(req, res) {
   try {
     const { id } = req.params;
 

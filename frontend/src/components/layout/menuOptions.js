@@ -71,7 +71,8 @@ export const navOptions = {
       { label: 'Aprendices', path: '/ApprenConsullPage', icon: 'bi-people' },
       { label: 'Cupos', path: '/cupos', icon: 'bi-car-front' },
       { label: 'Vehículos', path: '/auditoria', icon: 'bi-bicycle' },
-      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
+      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' },
+      { label: 'PQRS LISTA', path: '/pqrs-lista', icon: 'bi-info-circle' }
     ]
   }
 };

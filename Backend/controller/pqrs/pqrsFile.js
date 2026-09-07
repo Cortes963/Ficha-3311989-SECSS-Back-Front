@@ -4,7 +4,7 @@ import { ESTADOS_PQRS } from './estados.js';
 /**
  * Radica ("file") una nueva PQRS para un usuario (aprendiz).
  */
-export async function crearPqrs(req, res) {
+export async function storePqrs(req, res) {
   try {
     const { id_usuario, asunto, cuerpo } = req.body;
 

@@ -4,7 +4,7 @@ import pool from '../../db.js';
  * Lista reportes. Admite filtros opcionales por celador y por estado,
  * y paginación con `pagina` (base 1) / `limite`.
  */
-export async function listarReportes(req, res) {
+export async function indexReport(req, res) {
   try {
     const { estado, id_usuario_celador } = req.query;
     const pagina = Math.max(Number(req.query.pagina) || 1, 1);

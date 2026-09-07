@@ -1,9 +1,11 @@
 import pool from '../../db.js';
 
+import pool from '../../db.js';
+
 /**
  * Detalle de una PQRS puntual, incluyendo su respuesta si ya existe.
  */
-export async function obtenerPqrsPorId(req, res) {
+export async function showPqrs(req, res) {
   try {
     const { id } = req.params;
 

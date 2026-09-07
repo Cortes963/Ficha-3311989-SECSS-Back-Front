@@ -1,7 +1,7 @@
 import pool from '../../db.js';
 
 /** Elimina una PQRS. Su respuesta (si existe) se borra en cascada segun el DDL. */
-export async function eliminarPqrs(req, res) {
+export async function destroyPqrs(req, res) {
   try {
     const { id } = req.params;
 
@@ -17,3 +17,4 @@ export async function eliminarPqrs(req, res) {
     return res.status(500).json({ ok: false, mensaje: 'Error interno al eliminar la PQRS' });
   }
 }
+

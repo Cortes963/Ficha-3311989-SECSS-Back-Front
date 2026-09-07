@@ -1,10 +1,11 @@
 import db from '../../db.js';
+import jwt from 'jsonwebtoken';
 
 /**
  * Autenticación de usuario
  * Valida estado de cuenta, intentos fallidos y bloqueos temporales según DDL
  */
-export const login = async (req, res) => {
+export const loginAuth = async (req, res) => {
   const { nombre_usuario, password } = req.body;
 
   if (!nombre_usuario || !password) {
@@ -91,3 +92,21 @@ export const login = async (req, res) => {
     res.status(500).json({ ok: false, mensaje: 'Error interno en el servidor.' });
   }
 };
+
+// ...dentro de login(), después de obtener "roles":
+const token = jwt.sign(
+  {
+    id: cuenta.id_usuario,
+    documento: cuenta.numero_documento,
+    roles: roles.map(r => r.nombre_rol)
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
+);
+
+res.json({
+  ok: true,
+  mensaje: 'Inicio de sesión exitoso.',
+  token,
+  usuario: { /*usuario vacio*/ }
+});

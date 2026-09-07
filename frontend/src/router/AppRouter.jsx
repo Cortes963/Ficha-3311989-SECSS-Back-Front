@@ -26,6 +26,8 @@ import { QuotaListPage } from '@/modules/quota/pages/QuotaListPage';
 import { QuotaDetailPage } from '@/modules/quota/pages/QuotaDetailPage'; // 🌟 Solo para Admin / Celador
 import { MyQuotaPage } from '@/modules/quota/pages/MyQuotaPage'; // 🌟 Autoservicio para Aprendices / Invitados
 import { ReportForm } from '@/modules/pqrs/components/ReportForm';
+import { PqrsListPage } from '@/modules/pqrs/components/PqrsPage';
+
 
 
 // Módulo de Reportes (celadores)
@@ -78,6 +80,7 @@ const router = createBrowserRouter([
             element: <ProtectedRoute allowedRoles={["ADMINISTRADOR"]} />,
             children: [
               { path: "aprendices", element: <ApprenListPage /> },
+              { path: "pqrs-lista", element: <PqrsListPage /> }
             ]
           },
 

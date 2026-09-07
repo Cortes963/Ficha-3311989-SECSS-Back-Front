@@ -1,5 +1,5 @@
 //Guardar detalle de la moto
-export const crearDetalleMoto = async (connection, idVehiculo, datos) => {
+export const updateMotorcycleDetails = async (connection, idVehiculo, datos) => {
   const { placa, cilindraje, modelo, imagen_url_soat, imagen_url_tecnomecanica_vigente } = datos;
 
   const query = `

@@ -1,7 +1,9 @@
 import db from '../../db.js';
 
+import db from '../../db.js';
+
 // Lista todos los registros de entrada y salida.
-export const obtenerRegistros = async (req, res) => {
+export const indexInputOutput = async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM entrada_salida ORDER BY fecha_hora_ingreso DESC');
         res.json({ status: 'success', data: rows });
@@ -17,7 +19,7 @@ export const obtenerRegistros = async (req, res) => {
 // Antes de insertar valida que no exista ya un registro abierto (sin salida)
 // para el mismo usuario y vehículo, para no permitir dos ingresos seguidos
 // sin haber registrado antes la salida.
-export const registrarEntrada = async (req, res) => {
+export const storeInputOutput = async (req, res) => {
   const { id_usuario_entra, id_vehiculo, id_usuario_celador_ingreso } = req.body;
 
   if (!id_usuario_entra || !id_vehiculo || !id_usuario_celador_ingreso) {
@@ -62,7 +64,7 @@ export const registrarEntrada = async (req, res) => {
 // por el id del renglón de entrada_salida (no por usuario/vehículo, para
 // evitar ambigüedad si un mismo par usuario/vehículo tuviera más de un
 // registro histórico).
-export const registrarSalida = async (req, res) => {
+export const updateInputOutput = async (req, res) => {
   const { id } = req.params;
   const { id_usuario_celador_salida } = req.body;
 

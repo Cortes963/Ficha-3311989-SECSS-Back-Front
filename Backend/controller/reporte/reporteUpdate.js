@@ -1,6 +1,6 @@
 import pool from '../../db.js';
 
-export async function actualizarReporte(req, res) {
+export async function updateReport(req, res) {
   try {
     const { id } = req.params;
     const { id_usuario_celador, asunto, cuerpo, estado, id_entrada_salida } = req.body;

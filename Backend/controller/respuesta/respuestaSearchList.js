@@ -1,6 +1,6 @@
 import pool from '../../db.js';
 
-export async function obtenerRespuestaPorId(req, res) {
+export async function showAnswerId(req, res) {
   try {
     const { id } = req.params;
 

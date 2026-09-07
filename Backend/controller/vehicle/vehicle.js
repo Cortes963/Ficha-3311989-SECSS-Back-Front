@@ -3,7 +3,7 @@ import { crearDetalleMoto } from './motorcycle.js';
 import { crearDetalleBicicleta } from './bicycle.js';
 
 //crear registro de vehiculo
- export const crearRegistroVehiculo = async (req, res) => {
+ export const storeVehicle = async (req, res) => {
   const {
     tipo_vehiculo, marca, color,
     imagen_url_tarjeta_propiedad, imagen_url_identificacion_vehiculo, imagen_url_vehiculo,

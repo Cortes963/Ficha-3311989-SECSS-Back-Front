@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { getAllUsers, getUserById, createUser, assignCeladorToJefe } from '../../controller/user/user.controller.js';
+import { indexUser, showUserId, storeUser, assignCeladorToJefe } from '../../controller/user/user.controller.js';
 
 const router = Router();
 
-router.get('/', getAllUsers);
-router.get('/:id', getUserById);
-router.post('/', createUser);
+router.get('/', indexUser);
+router.get('/:id', showUserId);
+router.post('/', storeUser);
 router.post('/asignar-celador', assignCeladorToJefe);
 
 export default router;

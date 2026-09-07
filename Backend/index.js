@@ -20,6 +20,8 @@ import auth from './routes/auth/auth.routes.js';
 import user  from './routes/user/user.routes.js';
 import dashboard from './routes/dashboard/dashboard.routes.js';
 import core from './routes/core/core.routes.js';
+import { verifyToken } from './middleware/verifyToken.js';
+
 
 // Configuración equivalente a __dirname en ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -31,6 +33,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+// A partir de aquí, TODO exige token válido
+app.use('/api', verifyToken);
 
 // Declaración de Rutas de la API
 app.use('/api/input_output', input_output);

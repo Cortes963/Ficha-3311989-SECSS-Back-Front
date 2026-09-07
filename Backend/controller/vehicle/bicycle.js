@@ -1,5 +1,5 @@
 //Guardar detalle de la bicicleta
-export const crearDetalleBicicleta = async (connection, idVehiculo, datos) => {
+export const updateBicycleDetails = async (connection, idVehiculo, datos) => {
   const { numero_marco, clase_bicicleta } = datos;
 
   const query = `

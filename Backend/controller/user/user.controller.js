@@ -5,7 +5,7 @@ import db from '../../db.js';
  * Soporta ?rol=APRENDIZ (o CELADOR, etc.) para filtrar, y trae ficha/fechas
  * de detalle_aprendiz cuando aplica (ApprenListPage las necesita).
  */
-export const getAllUsers = async (req, res) => {
+export const indexUser = async (req, res) => {
   const { rol } = req.query;
   try {
     const params = [];
@@ -32,7 +32,7 @@ export const getAllUsers = async (req, res) => {
     const [rows] = await db.query(query, params);
     res.json({ ok: true, data: rows });
   } catch (error) {
-    console.error('Error en user.getAllUsers:', error);
+    console.error('Error en user.index:', error);
     res.status(500).json({ ok: false, mensaje: 'Error al consultar usuarios.' });
   }
 };
@@ -40,7 +40,7 @@ export const getAllUsers = async (req, res) => {
 /**
  * Obtener perfil completo de un usuario por ID (Incluyendo rol, cuenta y detalle si es aprendiz)
  */
-export const getUserById = async (req, res) => {
+export const showUserId = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -81,7 +81,7 @@ export const getUserById = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en user.getUserById:', error);
+    console.error('Error en user.show:', error);
     res.status(500).json({ ok: false, mensaje: 'Error al consultar el usuario.' });
   }
 };
@@ -91,7 +91,7 @@ export const getUserById = async (req, res) => {
  * + detalle_aprendiz si aplica). Recibe nombre_rol y nombre_centro como texto
  * (no IDs) porque el frontend no conoce los IDs internos de esas tablas.
  */
-export const createUser = async (req, res) => {
+export const storeUser = async (req, res) => {
   const {
     tipo_documento, numero_documento, primer_nombre, segundo_nombre,
     primer_apellido, segundo_apellido, n_celular,
@@ -148,7 +148,7 @@ export const createUser = async (req, res) => {
 
   } catch (error) {
     await connection.rollback();
-    console.error('Error en user.createUser:', error);
+    console.error('Error en user.store:', error);
     res.status(error.status || 500).json({ ok: false, mensaje: error.status ? error.message : 'Error al registrar usuario en la base de datos.' });
   } finally {
     connection.release();

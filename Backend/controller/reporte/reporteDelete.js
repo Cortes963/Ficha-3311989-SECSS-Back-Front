@@ -1,6 +1,6 @@
 import pool from '../../db.js';
 
-export async function eliminarReporte(req, res) {
+export async function destroyReport(req, res) {
   try {
     const { id } = req.params;
 

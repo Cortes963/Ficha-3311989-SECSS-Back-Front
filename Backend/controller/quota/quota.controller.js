@@ -1,6 +1,6 @@
 import pool from '../../db.js';
 
-export const obtenerCupos = async (req, res) => {
+export const indexQuota = async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT
@@ -22,7 +22,7 @@ export const obtenerCupos = async (req, res) => {
 
 // Detalle de cupo/vehículo de UN usuario, incluyendo si está adentro ahora
 // mismo y el id del registro de entrada abierto (para poder registrar salida).
-export const obtenerCupoPorUsuario = async (req, res) => {
+export const showQuota = async (req, res) => {
   const { id } = req.params;
   try {
     const [vehiculos] = await pool.query(
@@ -64,7 +64,7 @@ export const obtenerCupoPorUsuario = async (req, res) => {
   }
 };
 
-export const asignarCupo = async (req, res) => {
+export const store = async (req, res) => {
   const { id_usuario, id_vehiculo, estado, id_usuario_administrador } = req.body;
 
   if (!id_usuario || !id_vehiculo || estado === undefined || !id_usuario_administrador) {
@@ -87,7 +87,7 @@ export const asignarCupo = async (req, res) => {
 };
 
 // Habilitar / deshabilitar un cupo ya existente.
-export const actualizarEstadoCupo = async (req, res) => {
+export const updateQuota = async (req, res) => {
   const { idUsuario, idVehiculo } = req.params;
   const { estado } = req.body;
 

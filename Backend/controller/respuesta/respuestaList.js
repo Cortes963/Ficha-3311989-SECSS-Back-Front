@@ -1,6 +1,6 @@
 import pool from '../../db.js';
 
-export async function listarRespuestas(req, res) {
+export async function indexAnswer(req, res) {
   try {
     const pagina = Math.max(Number(req.query.pagina) || 1, 1);
     const limite = Math.min(Number(req.query.limite) || 20, 100);

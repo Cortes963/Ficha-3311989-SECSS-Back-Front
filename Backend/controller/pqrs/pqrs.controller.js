@@ -3,29 +3,29 @@
 // Punto de entrada del módulo de PQRS: mantiene el listado (la única
 // operación que no ameritaba su propio archivo) y reexporta el resto,
 // cada una separada por responsabilidad en su propio archivo:
-//   pqrsFile.js      -> crearPqrs             (radicar)
-//   pqrsSearchID.js  -> obtenerPqrsPorId
+//   pqrsFile.js      -> store               (radicar)
+//   pqrsSearchID.js  -> show
 //   pqrsRespuesta.js -> obtenerRespuestaDePqrs
 //   pqrsAnswer.js    -> responderPqrs
 //   pqrsState.js     -> actualizarEstado
-//   pqrsUpdate.js    -> actualizarPqrs
-//   pqrsDelete.js    -> eliminarPqrs
+//   pqrsUpdate.js    -> update
+//   pqrsDelete.js    -> destroy
 import pool from '../../db.js';
 
 export { ESTADOS_PQRS } from './estados.js';
-export { crearPqrs } from './pqrsFile.js';
-export { obtenerPqrsPorId } from './pqrsSearchID.js';
+export { store } from './pqrsFile.js';
+export { show } from './pqrsSearchID.js';
 export { obtenerRespuestaDePqrs } from './pqrsRespuesta.js';
 export { responderPqrs } from './pqrsAnswer.js';
 export { actualizarEstado } from './pqrsState.js';
-export { actualizarPqrs } from './pqrsUpdate.js';
-export { eliminarPqrs } from './pqrsDelete.js';
+export { update } from './pqrsUpdate.js';
+export { destroy } from './pqrsDelete.js';
 
 /**
  * Lista las PQRS. Admite filtros opcionales por estado y por usuario,
  * y paginación con `pagina` / `limite`.
  */
-export async function listarPqrs(req, res) {
+export async function indexPqrs(req, res) {
   try {
     const { estado, id_usuario } = req.query;
     const pagina = Math.max(Number(req.query.pagina) || 1, 1);

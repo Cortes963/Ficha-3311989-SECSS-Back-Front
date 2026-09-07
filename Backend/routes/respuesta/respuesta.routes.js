@@ -1,14 +1,14 @@
 import express from 'express';
-import { listarRespuestas } from '../../controller/respuesta/respuestaList.js';
-import { obtenerRespuestaPorId } from '../../controller/respuesta/respuestaSearchList.js';
-import { actualizarRespuesta } from '../../controller/respuesta/respuestaUpdate.js';
-import { eliminarRespuesta } from '../../controller/respuesta/respuestaDelete.js';
+import { indexAnswer } from '../../controller/respuesta/respuestaList.js';
+import { showAnswerId } from '../../controller/respuesta/respuestaSearchList.js';
+import { updateAnswer } from '../../controller/respuesta/respuestaUpdate.js';
+import { destroyAnswer } from '../../controller/respuesta/respuestaDelete.js';
 
 const router = express.Router();
 
-router.get('/', listarRespuestas);
-router.get('/:id', obtenerRespuestaPorId);
-router.put('/:id', actualizarRespuesta);
-router.delete('/:id', eliminarRespuesta);
+router.get('/', indexAnswer);
+router.get('/:id', showAnswerId);
+router.put('/:id', updateAnswer);
+router.delete('/:id', destroyAnswer);
 
 export default router;

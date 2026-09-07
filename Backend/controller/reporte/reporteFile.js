@@ -5,7 +5,7 @@ import pool from '../../db.js';
  * (relacion REPORTE_CELADOR). `id_entrada_salida` es opcional
  * (relacion REPORTE_REGISTRO, columna nullable en el DDL).
  */
-export async function crearReporte(req, res) {
+export async function storeReport(req, res) {
   try {
     const { id_usuario_celador, asunto, cuerpo, estado, id_entrada_salida } = req.body;
 
@@ -37,3 +37,4 @@ export async function crearReporte(req, res) {
     return res.status(500).json({ ok: false, mensaje: 'Error interno al registrar el reporte' });
   }
 }
+

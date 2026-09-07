@@ -1,16 +1,16 @@
 import express from 'express';
 import {
-  obtenerCupos,
-  obtenerCupoPorUsuario,
-  asignarCupo,
-  actualizarEstadoCupo
+  indexQuota,
+  showQuota,
+  storeQuota,
+  updateQuota
 } from '../../controller/quota/quota.controller.js';
 
 const router = express.Router();
 
-router.get('/', obtenerCupos);
-router.get('/usuario/:id', obtenerCupoPorUsuario);
-router.post('/', asignarCupo);
-router.patch('/:idUsuario/:idVehiculo', actualizarEstadoCupo);
+router.get('/', indexQuota);
+router.get('/usuario/:id', showQuota);
+router.post('/', storeQuota);
+router.patch('/:idUsuario/:idVehiculo', updateQuota);
 
 export default router;

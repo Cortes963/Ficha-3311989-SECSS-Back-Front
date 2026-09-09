@@ -8,14 +8,14 @@ import { Router } from 'express';
 import { allowRoles } from '../middleware/auth.js';
 import { ROLES } from '../lib.js';
 import {
-  indexReport,
+  indexReport,  
   storeReport,
-  showReportId,
+  showReportId, 
   indexPqrs,
-  storePqrs,
-  storePqrsAnswer,
-  updatePqrsState,
-  indexAnswer
+  storePqrs, 
+  storePqrsAnswer,  
+  updatePqrsState, 
+  indexAnswer 
 } from '../controller/attention.controller.js';
 
 const router = Router();

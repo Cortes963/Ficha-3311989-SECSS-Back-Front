@@ -35,6 +35,10 @@ Servidor ejecutándose en http://localhost:4000
 
 Ver `.env.example` para la lista completa. Ninguna variable tiene un valor por defecto sensible hardcodeado en el código — todas se leen desde `.env`.
 
+## Inicio de sesión
+
+`POST /api/auth/storeAuthLogin` recibe `numero_documento` y `password`. La API nunca recibe ni expone `password_hash`: ese valor bcrypt se conserva únicamente en la tabla `cuenta`.
+
 ## Estructura
 
 ```

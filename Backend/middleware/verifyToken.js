@@ -1,3 +1,9 @@
+/**
+ * Backend module: middleware/verifyToken.js
+ * HTTP handlers and infrastructure for this resource.
+ * Validates input, executes database work, and returns API responses.
+ */
+
 import jwt from 'jsonwebtoken';
 
 export const verifyToken = (req, res, next) => {

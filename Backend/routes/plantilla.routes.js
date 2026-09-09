@@ -1,3 +1,5 @@
+/** LEGACY TEMPLATE: this route is not mounted by index.js. */
+
 // Backend/routes/<modulo>/nombre.routes.js
 import express from 'express';
 import { listar, obtenerPorId, crear, actualizar, inactivar } from '../../controller/<modulo>/nombre.controller.js';

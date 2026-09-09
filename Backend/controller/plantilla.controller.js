@@ -1,3 +1,5 @@
+/** LEGACY TEMPLATE: this controller is not mounted by index.js. */
+
 // Backend/controller/<modulo>/nombre.controller.js
 import db from '../../db.js';
 

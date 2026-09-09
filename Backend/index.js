@@ -1,64 +1,60 @@
-// Debe ser el primer import: en ES Modules las dependencias se ejecutan
-// antes que el cuerpo de este archivo, así que si dotenv.config() se llama
-// más abajo, db.js ya habría leído process.env vacío. Este import con efecto
-// secundario carga el .env antes de que cualquier otro módulo lo necesite.
-import 'dotenv/config';
+/**
+ * Backend module: index.js
+ * HTTP handlers and infrastructure for this resource.
+ * Validates input, executes database work, and returns API responses.
+ */
 
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-// Rutas
-import input_output from './routes/input_output/input_output.routes.js';
-import quota from './routes/quota/quota.routes.js';
-import vehicle from './routes/vehicle/vehicle.routes.js';
-import pqrs from './routes/pqrs/pqrs.routes.js';
-import respuesta from './routes/respuesta/respuesta.routes.js';
-import reporte from './routes/reporte/reporte.routes.js';
-import auth from './routes/auth/auth.routes.js';
-import user  from './routes/user/user.routes.js';
-import dashboard from './routes/dashboard/dashboard.routes.js';
-import core from './routes/core/core.routes.js';
-import { verifyToken } from './middleware/verifyToken.js';
+import auth from './routes/auth.routes.js';
+import attention from './routes/attention.routes.js';
+import core from './routes/core.routes.js';
+import inputOutput from './routes/input_output.routes.js';
+import quotas from './routes/quota.routes.js';
+import users from './routes/user.routes.js';
+import vehicles from './routes/vehicle.routes.js';
+import { requireAuth } from './middleware/auth.js';
 
-
-// Configuración equivalente a __dirname en ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// A secret is mandatory because it signs and verifies every JWT.
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  throw new Error('JWT_SECRET debe configurarse y tener al menos 32 caracteres.');
+}
 
 const app = express();
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+// Middleware shared by public and protected endpoints.
+app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') || false }));
+app.use(express.json({ limit: '1mb' }));
 
-
-// A partir de aquí, TODO exige token válido
-app.use('/api', verifyToken);
-
-// Declaración de Rutas de la API
-app.use('/api/input_output', input_output);
-app.use('/api/quota', quota);
-app.use('/api/vehicle', vehicle);
-app.use('/api/pqrs', pqrs);
-app.use('/api/respuestas', respuesta);
-app.use('/api/reportes', reporte);
-app.use('/api/auth', auth);
-app.use('/api/user', user);
-app.use('/api/dashboard', dashboard);
+// These resources are public because users need them before owning a token.
 app.use('/api/core', core);
+app.use('/api/auth', auth);
 
-// Manejador para rutas de la API 
-app.use('/api', (req, res) => {
-    res.status(404).json({ ok: false, mensaje: 'Ruta no encontrada' });
+// Every resource registered below this middleware requires Bearer <token>.
+app.use('/api', requireAuth);
+app.use('/api/users', users);
+app.use('/api/vehicle', vehicles);
+app.use('/api/quota', quotas);
+app.use('/api/input_output', inputOutput);
+app.use('/api', attention);
+
+// Return a uniform error when no API route matches the request.
+app.use('/api', (_req, res) => {
+  res.status(404).json({ ok: false, mensaje: 'Ruta no encontrada.' });
 });
 
-// Inicio del servidor
-const PORT = process.env.PORT || 4000;
-// Nota: 3306 (el valor anterior) es el puerto por defecto de MySQL — usarlo
-// aquí también generaba riesgo de choque con el propio motor de base de datos.
-app.listen(PORT, () => {
-    console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+// Avoid exposing internal errors such as SQL details to API consumers.
+app.use((err, _req, res, _next) => {
+  console.error(err);
+  res.status(500).json({ ok: false, mensaje: 'Error interno del servidor.' });
 });
+
+const port = Number(process.env.PORT || 4000);
+
+// Start the HTTP server after all routes have been configured.
+app.listen(port, () => {
+  console.log(`SECSS API en puerto ${port}`);
+});
+

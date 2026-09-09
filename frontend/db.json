@@ -1,0 +1,469 @@
+{
+  "usuarios": [
+    {
+      "id": "1",
+      "tipo_documento": "CC",
+      "numero_documento": "1021312836",
+      "nombre_completo": "Steven Cortes",
+      "n_celular": "3242551122",
+      "correo": "scortes@secss.edu.co",
+      "username": "scortes",
+      "password": "123",
+      "roles": [
+        "ADMINISTRADOR",
+        "APRENDIZ",
+        "JEFE_SEGURIDAD",
+        "CELADOR",
+        "INVITADO"
+      ],
+      "estado": 1,
+      "detalle_aprendiz": {
+        "id_centro": 3,
+        "nombre_centro": "Centro de Tecnologías para la Construcción y la Madera",
+        "ficha": 2501234,
+        "direccion": "Calle 80 # 45-12",
+        "imagen_url_aprendiz": "http://storage.sena/fotos/1.jpg"
+      }
+    },
+    {
+      "id": "2",
+      "tipo_documento": "CC",
+      "numero_documento": "80112233",
+      "nombre_completo": "Marcos Antonio Guerra Castillo",
+      "n_celular": "3105554433",
+      "correo": "mguerra@security.com",
+      "username": "mguerra.jefe",
+      "password": "123",
+      "roles": [
+        "JEFE_SEGURIDAD"
+      ],
+      "estado": 1,
+      "celadores_a_cargo": [
+        3,
+        4
+      ]
+    },
+    {
+      "id": "3",
+      "tipo_documento": "CC",
+      "numero_documento": "79888777",
+      "nombre_completo": "Carlos Alberto Pérez Gómez",
+      "n_celular": "3159998877",
+      "correo": "cperez@security.com",
+      "username": "cperez.celador",
+      "password": "123",
+      "roles": [
+        "CELADOR"
+      ],
+      "estado": 1
+    },
+    {
+      "id": "4",
+      "tipo_documento": "CC",
+      "numero_documento": "19444555",
+      "nombre_completo": "Edilberto Ramos Tobón",
+      "n_celular": "3217778899",
+      "correo": "eramos@security.com",
+      "username": "eramos.celador",
+      "password": "123",
+      "roles": [
+        "CELADOR"
+      ],
+      "estado": 1
+    },
+    {
+      "id": "5",
+      "tipo_documento": "TI",
+      "numero_documento": "1055444333",
+      "nombre_completo": "Diego Alejandro Ruiz Díaz",
+      "n_celular": "3004445566",
+      "correo": "diego.ruiz@misena.edu.co",
+      "username": "druiz",
+      "password": "123",
+      "roles": [
+        "APRENDIZ"
+      ],
+      "estado": 1,
+      "detalle_aprendiz": {
+        "id_centro": 1,
+        "nombre_centro": "Centro de Electricidad, Electrónica y Telecomunicaciones (CEET)",
+        "ficha": 2611934,
+        "direccion": "Calle 45 # 12-34",
+        "imagen_url_aprendiz": "http://storage.sena/fotos/5.jpg"
+      }
+    },
+    {
+      "id": "6",
+      "tipo_documento": "CC",
+      "numero_documento": "1010222333",
+      "nombre_completo": "Laura Valentina Rojas Mendoza",
+      "n_celular": "3126667788",
+      "correo": "laura.rojas@misena.edu.co",
+      "username": "lrojas",
+      "password": "123",
+      "roles": [
+        "APRENDIZ"
+      ],
+      "estado": 1,
+      "detalle_aprendiz": {
+        "id_centro": 2,
+        "nombre_centro": "Centro de Gestión Industrial (CGI)",
+        "ficha": 2833412,
+        "direccion": "Av. Caracas # 57-10",
+        "imagen_url_aprendiz": "http://storage.sena/fotos/6.jpg"
+      }
+    },
+    {
+      "id": "7",
+      "tipo_documento": "CC",
+      "numero_documento": "1030444555",
+      "nombre_completo": "Andrés Felipe Castro Peña",
+      "n_celular": "3192223344",
+      "correo": "afelipe.castro@misena.edu.co",
+      "username": "afcastro",
+      "password": "123",
+      "roles": [
+        "APRENDIZ"
+      ],
+      "estado": 1,
+      "detalle_aprendiz": {
+        "id_centro": 1,
+        "nombre_centro": "Centro de Electricidad, Electrónica y Telecomunicaciones (CEET)",
+        "ficha": 2611935,
+        "direccion": "Carrera 30 # 15-40",
+        "imagen_url_aprendiz": "http://storage.sena/fotos/7.jpg"
+      }
+    },
+    {
+      "id": "8",
+      "tipo_documento": "CE",
+      "numero_documento": "E998877",
+      "nombre_completo": "Hans Dieter Mueller",
+      "n_celular": "3051112233",
+      "correo": "hdieter@misena.edu.co",
+      "username": "hdieter",
+      "password": "123",
+      "roles": [
+        "APRENDIZ"
+      ],
+      "estado": 1,
+      "detalle_aprendiz": {
+        "id_centro": 2,
+        "nombre_centro": "Centro de Gestión Industrial (CGI)",
+        "ficha": 2833413,
+        "direccion": "Diagonal 45 # 20-33",
+        "imagen_url_aprendiz": "http://storage.sena/fotos/8.jpg"
+      }
+    },
+    {
+      "id": "9",
+      "tipo_documento": "CC",
+      "numero_documento": "52888999",
+      "nombre_completo": "Patricia Elena Gutiérrez Sanz",
+      "n_celular": "3145556677",
+      "correo": "patricia.g@gmail.com",
+      "username": "pgutierrez",
+      "password": "123",
+      "roles": [
+        "INVITADO"
+      ],
+      "estado": 1
+    },
+    {
+      "id": "10",
+      "tipo_documento": "PEP",
+      "numero_documento": "P951753",
+      "nombre_completo": "Juan Carlos Méndez Arango",
+      "n_celular": "3184445566",
+      "correo": "juanc.mendez@outlook.com",
+      "username": "jcmendez",
+      "password": "123",
+      "roles": [
+        "INVITADO"
+      ],
+      "estado": 1
+    },
+    {
+      "id": "11",
+      "tipo_documento": "PPT",
+      "numero_documento": "T753159",
+      "nombre_completo": "María José Villasmil",
+      "n_celular": "3229990011",
+      "correo": "mariajose@gmail.com",
+      "username": "mjvillasmil",
+      "password": "123",
+      "roles": [
+        "INVITADO"
+      ],
+      "estado": 0
+    },
+    {
+      "id": "nQgDlRDfNKA",
+      "tipo_documento": "CC",
+      "numero_documento": "1234567891",
+      "nombre_completo": "D B C F",
+      "n_celular": "123",
+      "correo": "steveenprofessional@gmail.com",
+      "password": "1234",
+      "roles": [
+        "APRENDIZ"
+      ],
+      "estado": 1,
+      "detalle_aprendiz": {
+        "ficha": null,
+        "direccion": "Kascsa",
+        "nombre_centro": "CEET",
+        "fechaVinculacion": "",
+        "fechaTerminacion": ""
+      }
+    },
+    {
+      "id": "FAEIIHFQIUAEF",
+      "tipo_documento": "CC",
+      "numero_documento": "987654321",
+      "nombre_completo": "A B CD Cárdenas",
+      "n_celular": "321",
+      "correo": "stevee@gmail.com",
+      "password": "123",
+      "roles": [
+        "INVITADO"
+      ],
+      "estado": 1
+    }
+  ],
+  "vehiculos": [
+    {
+      "id": "1",
+      "tipo_vehiculo": "MOTO",
+      "marca": "Yamaha",
+      "color": "Negro Mate",
+      "propietario_id": 5,
+      "detalles": {
+        "placa": "ABC12G",
+        "cilindraje": 150,
+        "modelo": "2025",
+        "imagen_url_soat": "http://storage.sena/soat/v1.jpg",
+        "imagen_url_tecnomecanica_vigente": "http://storage.sena/tecno/v1.jpg"
+      },
+      "imagenes": {
+        "tarjeta_propiedad": "http://storage.sena/propiedad/v1_tarjeta.jpg",
+        "identificacion_chasis": "http://storage.sena/id_v/v1_chasis.jpg",
+        "foto_vehiculo": "http://storage.sena/vehiculos/v1_moto.jpg"
+      }
+    },
+    {
+      "id": "2",
+      "tipo_vehiculo": "BICICLETA",
+      "marca": "GW",
+      "color": "Verde",
+      "propietario_id": 6,
+      "detalles": {
+        "numero_marco": "GW-98765-MARCO-X",
+        "clase_bicicleta": "Montaña"
+      },
+      "imagenes": {
+        "factura": "http://storage.sena/propiedad/v2_factura.jpg",
+        "foto_vehiculo": "http://storage.sena/vehiculos/v2_bici.jpg"
+      }
+    },
+    {
+      "id": "3",
+      "tipo_vehiculo": "MOTO",
+      "marca": "Bajaj Pulsar",
+      "color": "Azul",
+      "propietario_id": 7,
+      "detalles": {
+        "placa": "XYZ98F",
+        "cilindraje": 200,
+        "modelo": "2024",
+        "imagen_url_soat": "http://storage.sena/soat/v3.jpg",
+        "imagen_url_tecnomecanica_vigente": "http://storage.sena/tecno/v3.jpg"
+      },
+      "imagenes": {
+        "tarjeta_propiedad": "http://storage.sena/propiedad/v3_tarjeta.jpg",
+        "identificacion_chasis": "http://storage.sena/id_v/v3_chasis.jpg",
+        "foto_vehiculo": "http://storage.sena/vehiculos/v3_moto.jpg"
+      }
+    },
+    {
+      "id": "4",
+      "tipo_vehiculo": "BICICLETA",
+      "marca": "Trek",
+      "color": "Rojo",
+      "propietario_id": 8,
+      "detalles": {
+        "numero_marco": "TREK-1234-ALPHA",
+        "clase_bicicleta": "Ruta"
+      },
+      "imagenes": {
+        "factura": "http://storage.sena/propiedad/v4_factura.jpg",
+        "foto_vehiculo": "http://storage.sena/vehiculos/v4_bici.jpg"
+      }
+    },
+    {
+      "id": "5",
+      "tipo_vehiculo": "MOTO",
+      "marca": "Suzuki",
+      "color": "Blanco",
+      "propietario_id": 9,
+      "detalles": {
+        "placa": "KLO45E",
+        "cilindraje": 125,
+        "modelo": "2026",
+        "imagen_url_soat": "http://storage.sena/soat/v5.jpg",
+        "imagen_url_tecnomecanica_vigente": "http://storage.sena/tecno/v5.jpg"
+      },
+      "imagenes": {
+        "tarjeta_propiedad": "http://storage.sena/propiedad/v5_tarjeta.jpg",
+        "identificacion_chasis": "http://storage.sena/id_v/v5_chasis.jpg",
+        "foto_vehiculo": "http://storage.sena/vehiculos/v5_moto.jpg"
+      }
+    },
+    {
+      "id": "6",
+      "tipo_vehiculo": "BICICLETA",
+      "marca": "Specialized",
+      "color": "Gris",
+      "propietario_id": 10,
+      "detalles": {
+        "numero_marco": "SPEC-7766-COMP",
+        "clase_bicicleta": "Urbana"
+      },
+      "imagenes": {
+        "factura": "http://storage.sena/propiedad/v6_factura.jpg",
+        "foto_vehiculo": "http://storage.sena/vehiculos/v6_bici.jpg"
+      }
+    },
+    {
+      "tipo_vehiculo": "MOTO",
+      "marca": "Royal",
+      "color": "Rojo",
+      "detalles": {
+        "placa": "FHF98",
+        "cilindraje": 200,
+        "modelo": "2026"
+      },
+      "propietario_id": "nQgDlRDfNKA",
+      "estado_cupo": "Inactivo",
+      "imagenes": {},
+      "id": "dFWd_oQ-ecs"
+    },
+    {
+      "tipo_vehiculo": "MOTO",
+      "marca": "AKT",
+      "color": "Verde",
+      "detalles": {
+        "placa": "ADGKDV",
+        "cilindraje": 250,
+        "modelo": "2026"
+      },
+      "propietario_id": 1,
+      "estado_cupo": "Inactivo",
+      "imagenes": {},
+      "id": "uKHLfHtAKLE"
+    }
+  ],
+  "bitacora_accesos": [
+    {
+      "id": "1",
+      "id_usuario_entra": 5,
+      "id_vehiculo": 1,
+      "fecha_hora": "2026-06-02 06:45:00",
+      "id_usuario_celador": 3,
+      "tipo_registro": "ENTRADA"
+    },
+    {
+      "id": "2",
+      "id_usuario_entra": 5,
+      "id_vehiculo": 1,
+      "fecha_hora": "2026-06-02 12:30:00",
+      "id_usuario_celador": 3,
+      "tipo_registro": "SALIDA"
+    },
+    {
+      "id": "3",
+      "id_usuario_entra": 6,
+      "id_vehiculo": 2,
+      "fecha_hora": "2026-06-02 07:05:00",
+      "id_usuario_celador": 3,
+      "tipo_registro": "ENTRADA"
+    },
+    {
+      "id": "4",
+      "id_usuario_entra": 6,
+      "id_vehiculo": 2,
+      "fecha_hora": "2026-06-02 17:15:00",
+      "id_usuario_celador": 4,
+      "tipo_registro": "SALIDA"
+    },
+    {
+      "id": "5",
+      "id_usuario_entra": 9,
+      "id_vehiculo": 5,
+      "fecha_hora": "2026-06-03 08:00:00",
+      "id_usuario_celador": 4,
+      "tipo_registro": "ENTRADA"
+    },
+    {
+      "id": "6",
+      "id_usuario_entra": 7,
+      "id_vehiculo": 3,
+      "fecha_hora": "2026-06-03 06:10:00",
+      "id_usuario_celador": 3,
+      "tipo_registro": "ENTRADA"
+    },
+    {
+      "id": "7",
+      "id_usuario_entra": 7,
+      "id_vehiculo": 3,
+      "fecha_hora": "2026-06-03 11:00:00",
+      "id_usuario_celador": 3,
+      "tipo_registro": "SALIDA"
+    }
+  ],
+  "reportes_novedades": [
+    {
+      "id": "1",
+      "id_usuario_celador": 3,
+      "fecha_hora": "2026-06-02 06:50:00",
+      "asunto": "Espejo retrovisor roto al ingreso",
+      "cuerpo": "La motocicleta con placa ABC12G ingresa con el retrovisor derecho agrietado. El conductor afirma que ocurrió en trayecto vial.",
+      "estado": "REVISADO",
+      "id_entrada_salida": 1
+    },
+    {
+      "id": "2",
+      "id_usuario_celador": 4,
+      "fecha_hora": "2026-06-02 15:30:00",
+      "asunto": "Casco abandonado en zona de Bicicletas",
+      "cuerpo": "Se halla un casco marca Shaft color verde abandonado sobre la reja perimetral. Se traslada a la oficina de control de seguridad.",
+      "estado": "NO_REVISADO",
+      "id_entrada_salida": null
+    }
+  ],
+  "pqrs": [
+    {
+      "id": "1",
+      "id_usuario": 5,
+      "asunto": "Falta de iluminación zona posterior",
+      "cuerpo": "El área asignada para motos en la parte de atrás carece de reflectores operacionales en el turno matutino.",
+      "estado": "RESUELTO",
+      "fecha_creacion": "2026-06-02 09:00:00",
+      "respuesta": {
+        "id_usuario_administrador": 1,
+        "asunto": "Solución Técnica - Luminarias traseras",
+        "cuerpo": "Se informa al aprendiz que la solicitud de luminarias ha sido ejecutada con éxito por el departamento de mantenimiento técnico."
+      }
+    },
+    {
+      "id": "2",
+      "id_usuario": 9,
+      "asunto": "Demora en validación de credenciales",
+      "cuerpo": "Como invitada, el sistema tardó más de 15 minutos en validar mi usuario para permitir el ingreso de mi vehículo.",
+      "estado": "RADICADO",
+      "fecha_creacion": "2026-06-25 15:28:00",
+      "respuesta": null
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

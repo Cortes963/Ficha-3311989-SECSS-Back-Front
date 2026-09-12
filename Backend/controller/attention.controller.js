@@ -31,7 +31,7 @@ export async function indexPqrs(req, res) {
   try {
     const { pagina, limite, offset } = page(req.query);
     const own = req.user.roles.includes('ADMINISTRADOR') ? '' : 'WHERE p.id_usuario=?';
-    const args = own ? [] : [actorId(req)];
+    const args = own ? [actorId(req)] : [];
 
     const [[c]] = await db.query(`SELECT COUNT(*) total FROM pqrs p ${own}`, args);
 

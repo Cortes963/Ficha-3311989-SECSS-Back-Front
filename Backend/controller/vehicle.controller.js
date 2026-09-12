@@ -162,12 +162,12 @@ export async function updateVehicle(req, res) {
 export async function destroyVehicle(req, res) {
   try {
     const [result] = await db.query(
-      'UPDATE auth_vehiculo SET estado = 0 WHERE id_usuario = ? AND id_vehiculo = ?',
+      'UPDATE auth_vehiculo SET estado = 0 WHERE id_usuario = ? AND id_vehiculo = ? AND estado = 1',
       [actorId(req), integer(req.params.id, 'id')]
     );
 
     if (!result.affectedRows) {
-      return res.status(404).json({ ok: false, mensaje: 'Vehículo no encontrado.' });
+      return res.status(404).json({ ok: false, mensaje: 'Vehículo no encontrado o ya estaba inactivo.' });
     }
 
     return res.json({ ok: true, mensaje: 'Vehículo inactivado.' });

@@ -5,7 +5,7 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
   const [aprendizData, setAprendizData] = useState({
     numeroFicha: '',
     direccion: '',
-    centroFormacion: '',
+    idCentro: '',
     fechaVinculacion: '', // Campos de control de interfaz de usuario preservados
     fechaTerminacion: ''
   });
@@ -16,7 +16,7 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
       setAprendizData({
         numeroFicha: initialData.ficha || '', 
         direccion: initialData.direccion || '',
-        centroFormacion: initialData.nombre_centro || '',
+        idCentro: initialData.id_centro || '',
         fechaVinculacion: initialData.fechaVinculacion || '',
         fechaTerminacion: initialData.fechaTerminacion || ''
       });
@@ -31,11 +31,15 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (onSubmit) {
-      // Re-estructuramos de vuelta al formato db.json
+      // El backend guarda detalle_aprendiz.id_centro como llave foránea
+      // numérica hacia la tabla centro (ver Backend/controller/auth.controller.js).
+      // No existe hoy un endpoint público para listar centros y mostrar sus
+      // nombres, así que por ahora se pide el ID directamente. Falta un
+      // GET /api/core/centros (o similar) para reemplazar esto por un <select>.
       const dataParaServidor = {
         ficha: Number(aprendizData.numeroFicha),
         direccion: aprendizData.direccion,
-        nombre_centro: aprendizData.centroFormacion,
+        id_centro: Number(aprendizData.idCentro),
         // Conservamos los extras si los necesitas a futuro
         fechaVinculacion: aprendizData.fechaVinculacion,
         fechaTerminacion: aprendizData.fechaTerminacion
@@ -105,17 +109,20 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
           </div>
 
           <div className="col-12">
-            <label className="form-label small fw-bold text-secondary">Centro de Formación</label>
+            <label className="form-label small fw-bold text-secondary">ID del Centro de Formación</label>
             <input 
-              type="text" 
+              type="number" 
               className="form-control" 
-              name="centroFormacion"
-              value={aprendizData.centroFormacion}
+              name="idCentro"
+              value={aprendizData.idCentro}
               onChange={handleChange}
-              placeholder="Ej: Centro de Gestión Industrial" 
+              placeholder="Ej: 1 (ID del centro, no el nombre)" 
               readOnly={readOnly}
               required={!readOnly} 
             />
+            <small className="text-muted d-block mt-1">
+              Temporal: aún no hay un listado de centros por nombre; pide el ID al equipo de administración.
+            </small>
           </div>
 
           <div className="col-12 mt-4">

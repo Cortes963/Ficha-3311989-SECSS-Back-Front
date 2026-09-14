@@ -3,22 +3,23 @@ import { apiClient } from '@/services/apiClient';
 /**
  * Operaciones del módulo Quota (cupos) contra el backend Express.
  *
- * NOTA: este módulo responde con el sobre { status: 'success'|'error', data, message },
- * no con { ok, mensaje } (ver comentario en apiClient.js). apiClient ya normaliza
- * el camino de error; en éxito el body se devuelve tal cual, por eso aquí se lee `.data`.
+ * NOTA: al igual que el resto de módulos (auth, user, pqrs, ...), este backend
+ * responde con el sobre { ok: true|false, mensaje, ... } — en listados el
+ * arreglo va en `datos` (junto a `pagina`, `limite`, `total`); apiClient ya
+ * normaliza el camino de error, así que en éxito el body se lee tal cual.
  */
 
 // Lista todos los cupos (tabla auth_vehiculo completa, sin filtros por ahora).
 export const listarCupos = async () => {
-  const { data } = await apiClient.get('/quota');
-  return data;
+  const { datos } = await apiClient.get('/quota');
+  return datos;
 };
 
 // Detalle de cupo/vehículo de un usuario puntual: ¿tiene vehículo?, ¿está
 // habilitado?, ¿está dentro de las instalaciones ahora mismo?
 export const obtenerCupoPorUsuario = async (idUsuario) => {
-  const { data } = await apiClient.get(`/quota/usuario/${idUsuario}`);
-  return data;
+  const { vehiculo, vehiculoEnParqueadero, idEntradaAbierta } = await apiClient.get(`/quota/usuario/${idUsuario}`);
+  return { vehiculo, vehiculoEnParqueadero, idEntradaAbierta };
 };
 
 /**

@@ -36,12 +36,38 @@ export async function indexPqrs(req, res) {
     const [[c]] = await db.query(`SELECT COUNT(*) total FROM pqrs p ${own}`, args);
 
     const [datos] = await db.query(
-      `SELECT p.*, EXISTS(SELECT 1 FROM respuesta r WHERE r.id_pqrs=p.id) tiene_respuesta
-       FROM pqrs p ${own} ORDER BY p.fecha_creacion DESC LIMIT ? OFFSET ?`,
+      `SELECT p.*, u.primer_nombre, u.primer_apellido,
+              EXISTS(SELECT 1 FROM respuesta r WHERE r.id_pqrs=p.id) tiene_respuesta
+       FROM pqrs p JOIN usuario u ON u.id=p.id_usuario ${own}
+       ORDER BY p.fecha_creacion DESC LIMIT ? OFFSET ?`,
       [...args, limite, offset]
     );
 
     res.json({ ok: true, pagina, limite, total: c.total, datos });
+  } catch (e) {
+    return error(res, e);
+  }
+}
+
+// GET /pqrs/:id: el propio solicitante o un administrador pueden ver el detalle.
+export async function showPqrsId(req, res) {
+  try {
+    const id = integer(req.params.id, 'id');
+
+    const [filas] = await db.query(
+      `SELECT p.*, u.primer_nombre, u.primer_apellido,
+              EXISTS(SELECT 1 FROM respuesta r WHERE r.id_pqrs=p.id) tiene_respuesta
+       FROM pqrs p JOIN usuario u ON u.id=p.id_usuario WHERE p.id=?`,
+      [id]
+    );
+
+    if (!filas.length) return res.status(404).json({ ok: false, mensaje: 'PQRS no encontrada.' });
+
+    const esDueno = filas[0].id_usuario === actorId(req);
+    const esAdmin = req.user.roles.includes('ADMINISTRADOR');
+    if (!esDueno && !esAdmin) return res.status(403).json({ ok: false, mensaje: 'No tiene permisos para esta operación.' });
+
+    res.json({ ok: true, datos: filas[0] });
   } catch (e) {
     return error(res, e);
   }
@@ -56,7 +82,47 @@ export async function storePqrs(req, res) {
       [actorId(req), req.body.asunto, req.body.cuerpo, PQRS.RADICADO]
     );
 
-    res.status(201).json({ ok: true, id_pqrs: r.insertId });
+    res.status(201).json({ ok: true, mensaje: 'PQRS radicada.', id_pqrs: r.insertId });
+  } catch (e) {
+    return error(res, e);
+  }
+}
+
+// PUT /pqrs/:id: el propio solicitante puede editar asunto/cuerpo mientras no tenga respuesta.
+export async function updatePqrs(req, res) {
+  try {
+    const id = integer(req.params.id, 'id');
+    required(req.body, ['asunto', 'cuerpo']);
+
+    const [filas] = await db.query('SELECT id_usuario, estado FROM pqrs WHERE id=?', [id]);
+    if (!filas.length) return res.status(404).json({ ok: false, mensaje: 'PQRS no encontrada.' });
+    if (filas[0].id_usuario !== actorId(req)) return res.status(403).json({ ok: false, mensaje: 'No tiene permisos para esta operación.' });
+    if (filas[0].estado !== PQRS.RADICADO) throw Object.assign(new Error('Solo se puede editar una PQRS en estado RADICADO.'), { status: 409 });
+
+    await db.query('UPDATE pqrs SET asunto=?,cuerpo=? WHERE id=?', [req.body.asunto, req.body.cuerpo, id]);
+    res.json({ ok: true, mensaje: 'PQRS actualizada.' });
+  } catch (e) {
+    return error(res, e);
+  }
+}
+
+// DELETE /pqrs/:id: el propio solicitante puede retirarla mientras no tenga respuesta.
+export async function destroyPqrs(req, res) {
+  try {
+    const id = integer(req.params.id, 'id');
+
+    const [filas] = await db.query('SELECT id_usuario FROM pqrs WHERE id=?', [id]);
+    if (!filas.length) return res.status(404).json({ ok: false, mensaje: 'PQRS no encontrada.' });
+
+    const esDueno = filas[0].id_usuario === actorId(req);
+    const esAdmin = req.user.roles.includes('ADMINISTRADOR');
+    if (!esDueno && !esAdmin) return res.status(403).json({ ok: false, mensaje: 'No tiene permisos para esta operación.' });
+
+    const [tieneRespuesta] = await db.query('SELECT id FROM respuesta WHERE id_pqrs=?', [id]);
+    if (tieneRespuesta.length) throw Object.assign(new Error('No se puede eliminar una PQRS ya respondida.'), { status: 409 });
+
+    await db.query('DELETE FROM pqrs WHERE id=?', [id]);
+    res.json({ ok: true, mensaje: 'PQRS eliminada.' });
   } catch (e) {
     return error(res, e);
   }
@@ -119,6 +185,66 @@ export async function indexAnswer(req, res) {
   }
 }
 
+// GET /pqrs/:id/respuesta: el propio solicitante o un administrador consultan la respuesta.
+export async function showPqrsAnswer(req, res) {
+  try {
+    const idPqrs = integer(req.params.id, 'id');
+
+    const [pqrsRows] = await db.query('SELECT id_usuario FROM pqrs WHERE id=?', [idPqrs]);
+    if (!pqrsRows.length) return res.status(404).json({ ok: false, mensaje: 'PQRS no encontrada.' });
+
+    const esDueno = pqrsRows[0].id_usuario === actorId(req);
+    const esAdmin = req.user.roles.includes('ADMINISTRADOR');
+    if (!esDueno && !esAdmin) return res.status(403).json({ ok: false, mensaje: 'No tiene permisos para esta operación.' });
+
+    const [respuestas] = await db.query('SELECT * FROM respuesta WHERE id_pqrs=?', [idPqrs]);
+    if (!respuestas.length) return res.status(404).json({ ok: false, mensaje: 'Esta PQRS aún no tiene respuesta.' });
+
+    res.json({ ok: true, datos: respuestas[0] });
+  } catch (e) {
+    return error(res, e);
+  }
+}
+
+// PUT /respuestas/:id: un administrador corrige el contenido de una respuesta ya registrada.
+export async function updateAnswer(req, res) {
+  try {
+    const id = integer(req.params.id, 'id');
+    required(req.body, ['asunto', 'cuerpo']);
+
+    const [r] = await db.query('UPDATE respuesta SET asunto=?,cuerpo=? WHERE id=?', [req.body.asunto, req.body.cuerpo, id]);
+    if (!r.affectedRows) return res.status(404).json({ ok: false, mensaje: 'Respuesta no encontrada.' });
+
+    res.json({ ok: true, mensaje: 'Respuesta actualizada.' });
+  } catch (e) {
+    return error(res, e);
+  }
+}
+
+// DELETE /respuestas/:id: un administrador retira la respuesta y la PQRS vuelve a EN_TRAMITE.
+export async function destroyAnswer(req, res) {
+  const c = await db.getConnection();
+  try {
+    const id = integer(req.params.id, 'id');
+
+    await c.beginTransaction();
+
+    const [filas] = await c.query('SELECT id_pqrs FROM respuesta WHERE id=? FOR UPDATE', [id]);
+    if (!filas.length) throw Object.assign(new Error('Respuesta no encontrada.'), { status: 404 });
+
+    await c.query('DELETE FROM respuesta WHERE id=?', [id]);
+    await c.query('UPDATE pqrs SET estado=? WHERE id=?', [PQRS.EN_TRAMITE, filas[0].id_pqrs]);
+
+    await c.commit();
+    res.json({ ok: true, mensaje: 'Respuesta eliminada; la PQRS vuelve a estar en trámite.' });
+  } catch (e) {
+    await c.rollback();
+    return error(res, e);
+  } finally {
+    c.release();
+  }
+}
+
 // POST /reportes: el celador autenticado radica un reporte sobre una entrada/salida.
 export async function storeReport(req, res) {
   try {
@@ -174,6 +300,52 @@ export async function showReportId(req, res) {
     }
 
     return res.json({ ok: true, datos: filas[0] });
+  } catch (e) {
+    return error(res, e);
+  }
+}
+
+// PUT /reportes/:id: corrige asunto/cuerpo/estado de un reporte ya radicado.
+export async function updateReport(req, res) {
+  try {
+    const id = integer(req.params.id, 'id');
+
+    const allowedFields = ['asunto', 'cuerpo', 'estado'];
+    const assignments = [];
+    const values = [];
+
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        if (field === 'estado' && ![0, 1].includes(Number(req.body.estado))) {
+          throw Object.assign(new Error('estado debe ser 0 o 1.'), { status: 400 });
+        }
+        assignments.push(`${field} = ?`);
+        values.push(req.body[field]);
+      }
+    }
+
+    if (!assignments.length) {
+      throw Object.assign(new Error('No hay campos actualizables.'), { status: 400 });
+    }
+
+    const [resultado] = await db.query(`UPDATE reporte SET ${assignments.join(', ')} WHERE id = ?`, [...values, id]);
+    if (!resultado.affectedRows) return res.status(404).json({ ok: false, mensaje: 'Reporte no encontrado.' });
+
+    return res.json({ ok: true, mensaje: 'Reporte actualizado.' });
+  } catch (e) {
+    return error(res, e);
+  }
+}
+
+// DELETE /reportes/:id
+export async function destroyReport(req, res) {
+  try {
+    const id = integer(req.params.id, 'id');
+
+    const [resultado] = await db.query('DELETE FROM reporte WHERE id = ?', [id]);
+    if (!resultado.affectedRows) return res.status(404).json({ ok: false, mensaje: 'Reporte no encontrado.' });
+
+    return res.json({ ok: true, mensaje: 'Reporte eliminado.' });
   } catch (e) {
     return error(res, e);
   }

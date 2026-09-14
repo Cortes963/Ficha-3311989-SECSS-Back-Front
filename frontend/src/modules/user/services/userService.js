@@ -2,13 +2,11 @@
 import { apiClient } from '@/services/apiClient';
 
 export const getUsuarios = async (rol) => {
-  const { data } = await apiClient.get(rol ? `/user?rol=${rol}` : '/user');
-  return data;
+  const { datos } = await apiClient.get(rol ? `/users?rol=${rol}` : '/users');
+  return datos;
 };
 
 export const getUsuarioPorId = async (id) => {
-  const { data } = await apiClient.get(`/user/${id}`);
-  return data;
+  const { datos } = await apiClient.get(`/users/${id}`);
+  return datos;
 };
-
-export const crearUsuario = (usuario) => apiClient.post('/user', usuario);

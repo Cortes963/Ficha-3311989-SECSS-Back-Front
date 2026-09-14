@@ -1,14 +1,31 @@
 // src/modules/auth/context/AuthContext.jsx
 import { createContext, useContext, useState } from 'react';
 import { login as loginRequest } from '@/modules/auth/services/authService';
+import { getToken, setToken } from '@/services/apiClient';
 
 // 1. Instanciamos el contexto de seguridad
 const AuthContext = createContext(null);
 
+// Clave para persistir los datos del usuario (el token vive aparte, en
+// apiClient, porque es lo único que el resto de módulos necesita leer).
+const USER_STORAGE_KEY = 'secss_usuario';
+
+const readStoredUser = () => {
+  try {
+    const raw = localStorage.getItem(USER_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null; // JSON corrupto en localStorage no debe tumbar la app
+  }
+};
+
 // 2. Proveedor de estado global
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);       // Información del usuario en sesión
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Se restaura de forma síncrona desde localStorage para que un F5 no
+  // expulse al usuario a /login mientras "carga" — si hay token guardado,
+  // asumimos la sesión vigente hasta que el backend diga lo contrario.
+  const [user, setUser] = useState(readStoredUser);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(getToken()) && Boolean(readStoredUser()));
   const [error, setError] = useState(null);
 
   // Ya no hay una carga inicial de "todos los usuarios" que esperar (esa fue
@@ -19,23 +36,29 @@ export const AuthProvider = ({ children }) => {
   const loading = false;
 
   /**
-   * Procesa las credenciales contra el backend real (POST /api/auth/login).
-   *
-   * Nota de alcance: esta llamada funciona hoy contra el endpoint tal como
-   * está — que todavía compara la contraseña en texto plano del lado del
-   * servidor. Eso queda pendiente de una fase aparte (bcrypt + JWT), según
-   * lo acordado. Este cambio solo conecta el flujo, no lo asegura.
+   * Procesa las credenciales contra el backend real (POST /api/auth/storeAuthLogin).
+   * El backend ya compara con bcrypt y devuelve un JWT (ver
+   * Backend/controller/auth.controller.js); ese token se guarda vía
+   * apiClient.setToken para que las siguientes peticiones a rutas protegidas
+   * (todo lo que no sea /auth o /core) manden el header Authorization.
    */
   const login = async (documento, password) => {
     setError(null);
 
     try {
       const respuesta = await loginRequest(documento, password);
+      // El token va a apiClient (lo necesita todo el resto de módulos para
+      // el header Authorization); el usuario se persiste acá para sobrevivir
+      // un refresh de página sin tener que volver a pedir credenciales.
+      setToken(respuesta.token);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(respuesta.usuario));
       setUser(respuesta.usuario);
       setIsAuthenticated(true);
       return true;
     } catch (err) {
       setError(err.message || 'Número de documento o contraseña incorrectos.');
+      setToken(null);
+      localStorage.removeItem(USER_STORAGE_KEY);
       setIsAuthenticated(false);
       return false;
     }
@@ -45,6 +68,8 @@ export const AuthProvider = ({ children }) => {
    * Destruye la sesión actual
    */
   const logout = () => {
+    setToken(null);
+    localStorage.removeItem(USER_STORAGE_KEY);
     setUser(null);
     setIsAuthenticated(false);
   };

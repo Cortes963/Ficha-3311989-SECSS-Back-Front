@@ -46,18 +46,22 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, onSubmit
   const handleSubmit = (e) => {
     e.preventDefault();
     if (onSubmit) {
-      // Re-ensamblamos el objeto para cumplir estrictamente con el contrato de db.json
-      const nombreCompletoConstruido = `${formData.nombre1} ${formData.nombre2} ${formData.apellido1} ${formData.apellido2}`.replace(/\s+/g, ' ').trim();
-      
+      // Se mandan los 4 campos ya separados tal cual los captura el
+      // formulario. Antes se armaba "nombre_completo" acá y RegisterPage.jsx
+      // lo volvía a partir por espacios — eso rompe en cuanto falta el
+      // segundo nombre o el segundo apellido (todo se corre de posición).
       const dataParaServidor = {
         tipo_documento: formData.tipoDoc,
         numero_documento: formData.documento,
-        nombre_completo: nombreCompletoConstruido,
+        primer_nombre: formData.nombre1,
+        segundo_nombre: formData.nombre2 || null,
+        primer_apellido: formData.apellido1,
+        segundo_apellido: formData.apellido2 || null,
         n_celular: formData.telefono,
         correo: formData.correo,
         password: formData.password
       };
-      
+
       onSubmit(dataParaServidor);
     }
   };
@@ -136,7 +140,8 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, onSubmit
               {!readOnly && (
                 <div className="mb-3">
                   <label className="form-label small fw-bold">Contraseña de Acceso</label>
-                  <input type="password" className="form-control" name="password" value={formData.password} onChange={handleChange} disabled={readOnly} required={!readOnly} />
+                  <input type="password" className="form-control" name="password" value={formData.password} onChange={handleChange} disabled={readOnly} required={!readOnly} minLength={10} />
+                  <small className="text-muted">Mínimo 10 caracteres (lo exige el backend).</small>
                 </div>
               )}
             </div>

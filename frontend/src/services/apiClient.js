@@ -13,10 +13,29 @@
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
+// El backend exige "Authorization: Bearer <token>" en todo lo que cuelga de
+// /api/* salvo /api/core y /api/auth (ver Backend/index.js -> requireAuth).
+// Guardamos el JWT que devuelve /auth/storeAuthLogin acá para poder mandarlo
+// en cada request sin que cada módulo (user/vehicle/quota/...) tenga que
+// preocuparse por eso.
+const TOKEN_KEY = 'secss_token';
+
+export const getToken = () => localStorage.getItem(TOKEN_KEY);
+
+export const setToken = (token) => {
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+  else localStorage.removeItem(TOKEN_KEY);
+};
+
 async function request(path, { method = 'GET', body, headers } = {}) {
+  const token = getToken();
   const response = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json', ...headers },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...headers,
+    },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 

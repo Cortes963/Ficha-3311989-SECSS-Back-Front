@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { UserAccountForm } from '@/modules/user/components/UserAccountForm';
 import { ApprenForm } from '@/modules/user/components/ApprenForm';
 import { useNavigate } from 'react-router-dom';
-import { crearUsuario } from '@/modules/user/services/userService';
+import { register } from '@/modules/auth/services/authService';
 
 export const RegisterPage = () => {
   const [esAprendiz, setEsAprendiz] = useState(false);
@@ -12,7 +12,10 @@ export const RegisterPage = () => {
 
   const registrarUsuarioAPI = async (payload) => {
     try {
-      await crearUsuario(payload);
+      // Antes: crearUsuario() -> POST /user, ruta inexistente y que además
+      // exige token. El registro público real es
+      // POST /api/auth/storeAuthRegister (sin token).
+      await register(payload);
       alert("Registro exitoso en el sistema.");
       navigate('/login');
     } catch (error) {
@@ -22,20 +25,12 @@ export const RegisterPage = () => {
   };
 
   const handleUserSubmit = (datosUsuario) => {
-    const [primer_nombre, segundo_nombre, primer_apellido, segundo_apellido] =
-      datosUsuario.nombre_completo.split(' ');
-
-    const usuarioBase = {
-      tipo_documento: datosUsuario.tipo_documento,
-      numero_documento: datosUsuario.numero_documento,
-      primer_nombre,
-      segundo_nombre: segundo_nombre || null,
-      primer_apellido: primer_apellido || '',
-      segundo_apellido: segundo_apellido || null,
-      n_celular: datosUsuario.n_celular,
-      correo: datosUsuario.correo,
-      password_hash: datosUsuario.password,
-    };
+    // datosUsuario ya viene con los campos separados (primer_nombre,
+    // segundo_nombre, primer_apellido, segundo_apellido, ...) directamente
+    // desde UserAccountForm — antes se armaba un "nombre_completo" y acá se
+    // volvía a partir por espacios, lo cual se rompía en cuanto faltaba el
+    // segundo nombre o el segundo apellido.
+    const usuarioBase = { ...datosUsuario };
 
     if (!esAprendiz) {
       registrarUsuarioAPI({ ...usuarioBase, nombre_rol: 'INVITADO' });
@@ -51,10 +46,11 @@ export const RegisterPage = () => {
       ...userData,
       nombre_rol: 'APRENDIZ',
       detalle_aprendiz: {
-        nombre_centro: datosAprendiz.nombre_centro,
+        id_centro: datosAprendiz.id_centro,
         ficha: datosAprendiz.ficha,
         direccion: datosAprendiz.direccion,
         fecha_vinculacion: datosAprendiz.fechaVinculacion || null,
+        fecha_terminacion: datosAprendiz.fechaTerminacion || null,
         imagen_url_identificacion: 'PENDIENTE',
         imagen_url_carnet_sena: 'PENDIENTE',
         imagen_url_aprendiz: 'PENDIENTE'

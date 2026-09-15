@@ -1,4 +1,4 @@
-// src/modules/vehicle/components/VehicleForm.jsx
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 
 export const VehicleForm = ({ initialData = null, readOnly = false, onSubmit = null }) => {

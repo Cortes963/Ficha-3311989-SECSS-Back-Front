@@ -175,4 +175,3 @@ export async function destroyVehicle(req, res) {
     return error(res, err);
   }
 }
-

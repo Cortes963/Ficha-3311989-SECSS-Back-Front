@@ -19,9 +19,8 @@ const router = Router();
 
 // Owners can view their vehicles, submit a new one, update it, or inactivate it.
 router.get('/me', allowRoles(ROLES.APRENDIZ, ROLES.INVITADO), indexVehicle);
-router.post('/', allowRoles(ROLES.APRENDIZ, ROLES.INVITADO), storeVehicle);
-router.patch('/:id', allowRoles(ROLES.APRENDIZ, ROLES.INVITADO), updateVehicle);
-router.patch('/:id/inactivar', allowRoles(ROLES.APRENDIZ, ROLES.INVITADO), destroyVehicle);
+router.post('/', allowRoles(ROLES.APRENDIZ), storeVehicle);
+router.patch('/:id', allowRoles(ROLES.APRENDIZ), updateVehicle);
+router.patch('/:id/inactivar', allowRoles(ROLES.APRENDIZ), destroyVehicle);
 
 export default router;
-

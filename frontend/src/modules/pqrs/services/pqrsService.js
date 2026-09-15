@@ -17,9 +17,18 @@ const mapPqrs = (p) => ({
   idUsuario: p.id_usuario,
   asunto: p.asunto,
   cuerpo: p.cuerpo,
+  anexos: p.anexos || p.archivos || [],
   estado: p.estado,
   fechaHora: p.fecha_creacion,
   tieneRespuesta: !!p.tiene_respuesta,
+  respuesta: p.respuesta_id ? {
+    id: p.respuesta_id,
+    asunto: p.respuesta_asunto,
+    cuerpo: p.respuesta_cuerpo,
+    fechaHora: p.respuesta_fecha,
+    idUsuarioAdministrador: p.respuesta_id_usuario,
+    respondiente: p.respuesta_respondiente,
+  } : null,
   usuario: p.primer_nombre
     ? { primerNombre: p.primer_nombre, primerApellido: p.primer_apellido }
     : null,

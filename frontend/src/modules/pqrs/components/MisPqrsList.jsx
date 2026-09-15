@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { Fragment, useEffect, useState } from 'react';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { listarPqrs, obtenerRespuestaDePqrs } from '@/modules/pqrs/services/pqrsService';
 import { estadoPqrsInfo, pqrsYaRespondida } from '@/modules/pqrs/utils/estadoPqrs';
+import { Link } from 'react-router-dom';
 
 const paginaVacia = { content: [], totalPages: 0, number: 0 };
 
@@ -102,6 +104,7 @@ export const MisPqrsList = () => {
                         <td><span className={`badge bg-${estadoInfo.clase}`}>{estadoInfo.label}</span></td>
                         <td>{formatearFecha(pqrs.fechaHora)}</td>
                         <td className="text-end pe-3">
+                          <Link className="btn btn-sm btn-outline-primary me-2" to={`/pqrs/${pqrs.id}`}>Consultar</Link>
                           <button className="btn btn-sm btn-outline-secondary" onClick={() => alternarRespuesta(pqrs)}>
                             {expandida ? 'Ocultar' : 'Ver detalle'}
                           </button>
@@ -125,6 +128,13 @@ export const MisPqrsList = () => {
                                 <div className="border-start border-4 border-success ps-3">
                                   <p className="fw-bold mb-1">{respuesta.asunto}</p>
                                   <p className="mb-0">{respuesta.cuerpo}</p>
+                                </div>
+                              )}
+                              {!respuesta && pqrs.respuesta && (
+                                <div className="border-start border-4 border-success ps-3">
+                                  <p className="fw-bold mb-1">{pqrs.respuesta.asunto || 'Respuesta'}</p>
+                                  <p className="mb-1">{pqrs.respuesta.cuerpo}</p>
+                                  <small className="text-muted">{pqrs.respuesta.fechaHora || '—'} · {pqrs.respuesta.respondiente || pqrs.respuesta.idUsuarioAdministrador || '—'}</small>
                                 </div>
                               )}
                             </div>

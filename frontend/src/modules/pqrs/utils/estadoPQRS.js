@@ -7,5 +7,4 @@ const ESTADOS = {
 
 export const estadoPqrsInfo = (estado) => ESTADOS[estado] || { label: 'Sin estado', clase: 'light' };
 
-/** true si la PQRS ya tiene respuesta (RESUELTO o CERRADO). */
 export const pqrsYaRespondida = (estado) => estado === 3 || estado === 4;

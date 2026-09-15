@@ -11,14 +11,17 @@ import { actorId, error, integer, page, required, PQRS } from '../lib.js';
 export async function indexReport(req, res) {
   try {
     const { pagina, limite, offset } = page(req.query);
+    const own = req.user.roles.includes('CELADOR') && !req.user.roles.includes('JEFE_SEGURIDAD');
+    const where = own ? 'WHERE r.id_usuario_celador=?' : '';
+    const args = own ? [actorId(req)] : [];
 
-    const [[c]] = await db.query('SELECT COUNT(*) total FROM reporte');
+    const [[c]] = await db.query(`SELECT COUNT(*) total FROM reporte r ${where}`, args);
 
     const [datos] = await db.query(
       `SELECT r.*, CONCAT(u.primer_nombre,' ',u.primer_apellido) celador
        FROM reporte r JOIN usuario u ON u.id=r.id_usuario_celador
-       ORDER BY r.fecha_hora DESC LIMIT ? OFFSET ?`,
-      [limite, offset]
+       ${where} ORDER BY r.fecha_hora DESC LIMIT ? OFFSET ?`,
+      [...args, limite, offset]
     );
 
     res.json({ ok: true, pagina, limite, total: c.total, datos });
@@ -37,8 +40,14 @@ export async function indexPqrs(req, res) {
 
     const [datos] = await db.query(
       `SELECT p.*, u.primer_nombre, u.primer_apellido,
-              EXISTS(SELECT 1 FROM respuesta r WHERE r.id_pqrs=p.id) tiene_respuesta
-       FROM pqrs p JOIN usuario u ON u.id=p.id_usuario ${own}
+              r.id AS respuesta_id, r.asunto AS respuesta_asunto, r.cuerpo AS respuesta_cuerpo,
+              r.fecha_creacion AS respuesta_fecha, r.id_usuario_administrador AS respuesta_id_usuario,
+              CONCAT(ra.primer_nombre,' ',ra.primer_apellido) AS respuesta_respondiente,
+              EXISTS(SELECT 1 FROM respuesta rx WHERE rx.id_pqrs=p.id) tiene_respuesta
+       FROM pqrs p JOIN usuario u ON u.id=p.id_usuario
+       LEFT JOIN respuesta r ON r.id_pqrs=p.id
+       LEFT JOIN usuario ra ON ra.id=r.id_usuario_administrador
+       ${own}
        ORDER BY p.fecha_creacion DESC LIMIT ? OFFSET ?`,
       [...args, limite, offset]
     );
@@ -56,8 +65,14 @@ export async function showPqrsId(req, res) {
 
     const [filas] = await db.query(
       `SELECT p.*, u.primer_nombre, u.primer_apellido,
-              EXISTS(SELECT 1 FROM respuesta r WHERE r.id_pqrs=p.id) tiene_respuesta
-       FROM pqrs p JOIN usuario u ON u.id=p.id_usuario WHERE p.id=?`,
+              r.id AS respuesta_id, r.asunto AS respuesta_asunto, r.cuerpo AS respuesta_cuerpo,
+              r.fecha_creacion AS respuesta_fecha, r.id_usuario_administrador AS respuesta_id_usuario,
+              CONCAT(ra.primer_nombre,' ',ra.primer_apellido) AS respuesta_respondiente,
+              EXISTS(SELECT 1 FROM respuesta rx WHERE rx.id_pqrs=p.id) tiene_respuesta
+       FROM pqrs p JOIN usuario u ON u.id=p.id_usuario
+       LEFT JOIN respuesta r ON r.id_pqrs=p.id
+       LEFT JOIN usuario ra ON ra.id=r.id_usuario_administrador
+       WHERE p.id=?`,
       [id]
     );
 
@@ -248,9 +263,9 @@ export async function destroyAnswer(req, res) {
 // POST /reportes: el celador autenticado radica un reporte sobre una entrada/salida.
 export async function storeReport(req, res) {
   try {
-    required(req.body, ['id_usuario_celador', 'asunto', 'cuerpo']);
+    required(req.body, ['asunto', 'cuerpo']);
 
-    const idCelador = integer(req.body.id_usuario_celador, 'id_usuario_celador');
+    const idCelador = actorId(req);
     const idEntradaSalida = req.body.id_entrada_salida !== undefined && req.body.id_entrada_salida !== null
       ? integer(req.body.id_entrada_salida, 'id_entrada_salida')
       : null;
@@ -298,6 +313,9 @@ export async function showReportId(req, res) {
     if (!filas.length) {
       return res.status(404).json({ ok: false, mensaje: 'Reporte no encontrado.' });
     }
+    if (req.user.roles.includes('CELADOR') && filas[0].id_usuario_celador !== actorId(req)) {
+      return res.status(403).json({ ok: false, mensaje: 'No tiene permisos para este reporte.' });
+    }
 
     return res.json({ ok: true, datos: filas[0] });
   } catch (e) {
@@ -309,6 +327,11 @@ export async function showReportId(req, res) {
 export async function updateReport(req, res) {
   try {
     const id = integer(req.params.id, 'id');
+    const [owner] = await db.query('SELECT id_usuario_celador FROM reporte WHERE id=?', [id]);
+    if (!owner.length) return res.status(404).json({ ok: false, mensaje: 'Reporte no encontrado.' });
+    if (owner[0].id_usuario_celador !== actorId(req)) {
+      return res.status(403).json({ ok: false, mensaje: 'Solo puede editar sus propios reportes.' });
+    }
 
     const allowedFields = ['asunto', 'cuerpo', 'estado'];
     const assignments = [];
@@ -328,7 +351,7 @@ export async function updateReport(req, res) {
       throw Object.assign(new Error('No hay campos actualizables.'), { status: 400 });
     }
 
-    const [resultado] = await db.query(`UPDATE reporte SET ${assignments.join(', ')} WHERE id = ?`, [...values, id]);
+    const [resultado] = await db.query(`UPDATE reporte SET ${assignments.join(', ')} WHERE id = ? AND id_usuario_celador = ?`, [...values, id, actorId(req)]);
     if (!resultado.affectedRows) return res.status(404).json({ ok: false, mensaje: 'Reporte no encontrado.' });
 
     return res.json({ ok: true, mensaje: 'Reporte actualizado.' });

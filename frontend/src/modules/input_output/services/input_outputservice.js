@@ -1,14 +1,9 @@
 import { apiClient } from '@/services/apiClient';
 
-/**
- * NOTA: este módulo responde con el sobre { status: 'success'|'error', data, message },
- * igual que quota (ver apiClient.js). En éxito se lee `.data`.
- */
-
 // Lista todos los registros de entrada/salida (orden: ingreso más reciente primero).
 export const obtenerRegistros = async () => {
-  const { data } = await apiClient.get('/input_output');
-  return data;
+  const response = await apiClient.get('/input_output');
+  return response.datos ?? response.data ?? response;
 };
 
 /**
@@ -17,16 +12,16 @@ export const obtenerRegistros = async () => {
  * El backend rechaza (409) si ya existe un ingreso abierto (sin salida) para
  * el mismo usuario y vehículo.
  */
-export const registrarEntrada = ({ id_usuario_entra, id_vehiculo, id_usuario_celador_ingreso }) =>
-  apiClient.post('/input_output/entrada', {
-    id_usuario_entra,
-    id_vehiculo,
-    id_usuario_celador_ingreso,
-  });
+export const registrarEntrada = ({ id_usuario_entra, id_vehiculo }) =>
+  apiClient.post('/input_output/entrada', { id_usuario_entra, id_vehiculo });
 
 /**
  * Registra la SALIDA de un ingreso ya existente, identificado por el id
  * del renglón de entrada_salida (no por usuario/vehículo).
  */
-export const registrarSalida = (id, { id_usuario_celador_salida }) =>
-  apiClient.patch(`/input_output/salida/${id}`, { id_usuario_celador_salida });
+export const registrarSalida = (id) => apiClient.patch(`/input_output/salida/${id}`, {});
+
+export const obtenerEntradaSalida = async (id) => {
+  const response = await apiClient.get(`/input_output/${id}`);
+  return response.datos || response.data || response;
+};

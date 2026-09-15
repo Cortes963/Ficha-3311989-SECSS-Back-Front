@@ -15,10 +15,19 @@ export const listarCupos = async () => {
   return datos;
 };
 
+export const obtenerDetalleCupo = async (idUsuario, idVehiculo) => {
+  const { datos } = await apiClient.get(`/quota/detalle/${idUsuario}/${idVehiculo}`);
+  return datos;
+};
+
 // Detalle de cupo/vehículo de un usuario puntual: ¿tiene vehículo?, ¿está
 // habilitado?, ¿está dentro de las instalaciones ahora mismo?
 export const obtenerCupoPorUsuario = async (idUsuario) => {
   const { vehiculo, vehiculoEnParqueadero, idEntradaAbierta } = await apiClient.get(`/quota/usuario/${idUsuario}`);
+  return { vehiculo, vehiculoEnParqueadero, idEntradaAbierta };
+};
+export const obtenerMiCupo = async () => {
+  const { vehiculo, vehiculoEnParqueadero, idEntradaAbierta } = await apiClient.get('/quota/me');
   return { vehiculo, vehiculoEnParqueadero, idEntradaAbierta };
 };
 

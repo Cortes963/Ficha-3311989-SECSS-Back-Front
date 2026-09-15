@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { Fragment, useEffect, useState } from 'react';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { listarPqrs, responderPqrs } from '@/modules/pqrs/services/pqrsService';
 import { estadoPqrsInfo, pqrsYaRespondida } from '@/modules/pqrs/utils/estadoPqrs';
+import { Link } from 'react-router-dom';
 
 const paginaVacia = { content: [], totalPages: 0, number: 0 };
 
@@ -46,6 +48,17 @@ export const PqrsAdminList = () => {
     setFormRespuesta({ asunto: `Re: ${pqrs.asunto}`, cuerpo: '' });
     setMensaje(null);
   };
+
+  const detallePqrs = (pqrs) => (
+    <div className="bg-white border rounded p-3 mb-3">
+      <strong>Asunto:</strong> {pqrs.asunto}<br />
+      <strong>Descripción:</strong><p className="mb-2">{pqrs.cuerpo || 'Sin descripción.'}</p>
+      <strong>Solicitante:</strong> {nombreSolicitante(pqrs)}<br />
+      <strong>Fecha:</strong> {formatearFecha(pqrs.fechaHora)}<br />
+      <strong>Estado:</strong> {estadoPqrsInfo(pqrs.estado).label}
+      {pqrs.anexos?.length > 0 && <><br /><strong>Anexos:</strong> {pqrs.anexos.join(', ')}</>}
+    </div>
+  );
 
   const cancelarRespuesta = () => {
     setIdEnRespuesta(null);
@@ -99,13 +112,14 @@ export const PqrsAdminList = () => {
                   <th>Asunto</th>
                   <th>Estado</th>
                   <th>Fecha</th>
+                  <th>Respuesta</th>
                   <th className="text-end pe-3">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {pqrsPage.content.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="text-center py-4 text-muted">No hay PQRS registradas.</td>
+                    <td colSpan={7} className="text-center py-4 text-muted">No hay PQRS registradas.</td>
                   </tr>
                 )}
                 {pqrsPage.content.map((pqrs) => {
@@ -121,7 +135,9 @@ export const PqrsAdminList = () => {
                         <td>{pqrs.asunto}</td>
                         <td><span className={`badge bg-${estadoInfo.clase}`}>{estadoInfo.label}</span></td>
                         <td>{formatearFecha(pqrs.fechaHora)}</td>
+                        <td>{pqrs.respuesta ? <div><div>{pqrs.respuesta.cuerpo}</div><small className="text-muted">{pqrs.respuesta.fechaHora || '—'} · {pqrs.respuesta.respondiente || pqrs.respuesta.idUsuarioAdministrador || '—'}</small></div> : 'Sin respuesta'}</td>
                         <td className="text-end pe-3">
+                          <Link className="btn btn-sm btn-outline-primary me-2" to={`/pqrs/${pqrs.id}`}>Consultar</Link>
                           {yaRespondida ? (
                             <span className="text-muted small">Ya respondida</span>
                           ) : (
@@ -137,8 +153,9 @@ export const PqrsAdminList = () => {
 
                       {estaAbierta && (
                         <tr>
-                          <td colSpan={6} className="bg-light">
+                          <td colSpan={7} className="bg-light">
                             <form onSubmit={(event) => enviarRespuesta(event, pqrs.id)} className="p-3">
+                              {detallePqrs(pqrs)}
                               <div className="mb-2">
                                 <label className="form-label small fw-bold" htmlFor={`asunto-${pqrs.id}`}>
                                   Asunto de la respuesta

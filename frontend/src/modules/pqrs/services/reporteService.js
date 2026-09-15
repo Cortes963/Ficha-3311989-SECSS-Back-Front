@@ -1,18 +1,9 @@
-// Operaciones del módulo Reporte contra el backend Java Spring Boot.
-// Modelado sobre pqrsService.js: mismo cliente HTTP, mismas convenciones
-// (camelCase, paginación base 0, sobre de error { ok:false, mensaje }).
-// Operaciones del módulo Reporte contra el backend Express real (Backend/routes/attention.routes.js).
+// Operaciones del módulo Reporte contra el backend Express real.
 import { apiClient } from '@/services/apiClient';
 
 /** Crea un reporte. `idEntradaSalida` es opcional (relación REPORTE_REGISTRO). */
-export const crearReporte = ({ idUsuarioCelador, asunto, cuerpo, estado, idEntradaSalida }) =>
-  apiClient.post('/reportes', {
-    id_usuario_celador: idUsuarioCelador,
-    asunto,
-    cuerpo,
-    estado,
-    id_entrada_salida: idEntradaSalida,
-  });
+export const crearReporte = ({ asunto, cuerpo, estado, idEntradaSalida }) =>
+  apiClient.post('/reportes', { asunto, cuerpo, estado, id_entrada_salida: idEntradaSalida });
 
 /** Lista reportes paginados (base 1, como el resto del backend). */
 export const listarReportes = async ({ pagina = 1, limite = 20 } = {}) => {

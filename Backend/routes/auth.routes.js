@@ -5,9 +5,10 @@
  */
 
 import { Router } from 'express';
-import { storeAuthLogin, storeAuthRegister } from '../controller/auth.controller.js';
+import { storeAuthLogin, storeAuthRegister, requestPasswordReset, resetPassword } from '../controller/auth.controller.js';
 const router = Router();
 router.post('/storeAuthLogin', storeAuthLogin);
 router.post('/storeAuthRegister', storeAuthRegister);
+router.post('/forgot-password', requestPasswordReset);
+router.post('/reset-password', resetPassword);
 export default router;
-

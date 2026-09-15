@@ -6,7 +6,7 @@ import { useAuth } from '@/modules/auth/context/AuthContext';
  * Componente Interceptor:
  * Bloquea el renderizado de componentes hijos si el usuario no cumple los criterios de seguridad.
  */
-export const ProtectedRoute = ({ allowedRoles }) => {
+export const ProtectedRoute = ({ allowedRoles, children }) => {
   const { user, hasRole, loading } = useAuth();
 
   // Previene redirecciones prematuras mientras el backend responde
@@ -23,5 +23,5 @@ export const ProtectedRoute = ({ allowedRoles }) => {
   }
 
   // Si pasa las validaciones, renderiza la ruta solicitada
-  return <Outlet />;
+  return children || <Outlet />;
 };

@@ -1,128 +1,84 @@
-// src/router/AppRouter.jsx
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/modules/auth/context/AuthContext';
 import { ProtectedRoute } from '@/router/ProtectedRoute';
 import { LayoutPrincipal } from '@/components/layout/LayoutPrincipal';
-
-// Módulo de Autenticación
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
 import { RegisterPage } from '@/modules/auth/pages/RegisterPage';
-
-// Módulo Core / Dashboard
+import { RecoveryPage } from '@/modules/auth/pages/RecoveryPage';
 import { DashboardPage } from '@/modules/dashboard/pages/DashboardPage';
-import { NewsPage } from '@/modules/core/pages/NewsPage';
-import { PickPlatePage } from '@/modules/core/pages/PickPlatePage';
-
-// Módulo de Control Operativo (Entradas / Salidas / Minuta)
-import { LogbookDailyPage } from '@/modules/input_output/pages/LogbookDailyPage'; // 🌟 Nueva vista diaria para Celadores
-
-// Módulo de Usuarios y Aprendices
-import { ApprenListPage } from '@/modules/user/pages/ApprenListPage';
-import { SecureListPage } from '@/modules/user/pages/SecureListPage';
+import { ProfilePage } from '@/modules/user/pages/ProfilePage';
+import { DirectoryPage } from '@/modules/user/pages/DirectoryPage';
 import { UserDetailPage } from '@/modules/user/pages/UserDetailPage';
+import { StaffRegistrationPage } from '@/modules/user/pages/StaffRegistrationPage';
+import { CentersPage } from '@/modules/core/pages/CentersPage';
+import { EntriesPage } from '@/modules/input_output/pages/EntriesPage';
+import { EntryDetailPage } from '@/modules/input_output/pages/EntryDetailPage';
+import { EntryOperationPage } from '@/modules/input_output/pages/EntryOperationPage';
+import { AccessQuotaPage } from '@/modules/quota/pages/AccessQuotaPage';
+import { QuotaAuthorizationDetailPage } from '@/modules/quota/pages/QuotaAuthorizationDetailPage';
+import { MyQuotaSummaryPage } from '@/modules/quota/pages/MyQuotaSummaryPage';
+import { PqrsCreatePage } from '@/modules/pqrs/pages/PqrsCreatePage';
+import { PqrsLandingPage } from '@/modules/pqrs/pages/PqrsLandingPage';
+import { ReportsPage } from '@/modules/pqrs/pages/ReportsPage';
+import { ReportCreatePage } from '@/modules/pqrs/pages/ReportCreatePage';
+import { ReportDetailPage } from '@/modules/pqrs/pages/ReportDetailPage';
+import { PqrsDetailPage } from '@/modules/pqrs/pages/PqrsDetailPage';
 
-// Módulo de Cupos Vehiculares
-import { QuotaListPage } from '@/modules/quota/pages/QuotaListPage';
-import { QuotaDetailPage } from '@/modules/quota/pages/QuotaDetailPage'; // 🌟 Solo para Admin / Celador
-import { MyQuotaPage } from '@/modules/quota/pages/MyQuotaPage'; // 🌟 Autoservicio para Aprendices / Invitados
-import { ReportForm } from '@/modules/pqrs/components/ReportForm';
-import { PqrsListPage } from '@/modules/pqrs/components/PqrsPage';
+const roles = {
+  admin: ['ADMINISTRADOR'],
+  jefe: ['JEFE_SEGURIDAD'],
+  adminJefe: ['ADMINISTRADOR', 'JEFE_SEGURIDAD'],
+  staff: ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR'],
+  all: ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR', 'APRENDIZ', 'INVITADO'],
+  ownEntries: ['INVITADO', 'APRENDIZ', 'CELADOR', 'JEFE_SEGURIDAD'],
+  ownQuota: ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR', 'APRENDIZ', 'INVITADO'],
+  pqrsOwner: ['JEFE_SEGURIDAD', 'CELADOR', 'APRENDIZ', 'INVITADO'],
+  reportRead: ['CELADOR', 'JEFE_SEGURIDAD'],
+  reportWrite: ['CELADOR']
+};
 
-
-
-// Módulo de Reportes (celadores)
-//import { ReporteForm } from '@/modules/reporte/components/ReporteForm';
-
-// Nombres de rol confirmados por el DML real (INSERT INTO rol...): ADMINISTRADOR,
-// JEFE_SEGURIDAD, CELADOR, APRENDIZ, INVITADO — reemplaza el supuesto anterior
-// (aprendiz/celador/administrador en minúscula, sin JEFE_SEGURIDAD ni INVITADO).
+const guarded = (allowedRoles, path, element) => ({
+  path,
+  element: <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
+});
 
 const router = createBrowserRouter([
-  // Rutas Públicas / Fuera de Sesión
-  { 
-    path: "/login", 
-    element: <LoginPage /> 
-  },
-  { 
-    path: "/registro", // Corrección: kebab-case estandarizado
-    element: <RegisterPage /> 
-  },
-  
-  // Rutas Protegidas / Requieren Autenticación
-  {
-    element: <ProtectedRoute />, 
-    children: [
-      {
-        path: "/",
-        element: <LayoutPrincipal />, 
-        children: [
-          // Index / Dashboard principal — cualquier rol autenticado
-          { index: true, element: <DashboardPage /> },
-
-          // Información General y Operación de Tránsito — cualquier rol autenticado
-          { path: "noticias", element: <NewsPage /> },
-          { path: "pico-placa", element: <PickPlatePage /> },
-          { path: "pqrs", element: <ReportForm /> },
-
-          // Control operativo diario: quien registra entradas/salidas y ve cupos
-          {
-            element: <ProtectedRoute allowedRoles={["CELADOR", "JEFE_SEGURIDAD", "ADMINISTRADOR"]} />,
-            children: [
-              { path: "bitacora/diaria", element: <LogbookDailyPage /> },
-              { path: "cupos", element: <QuotaListPage /> },
-              { path: "cupos/:id", element: <QuotaDetailPage /> },
-              //{ path: "reportes", element: <ReporteForm /> },
-            ]
-          },
-
-          // Gestión de aprendices: foco administrativo
-          {
-            element: <ProtectedRoute allowedRoles={["ADMINISTRADOR"]} />,
-            children: [
-              { path: "aprendices", element: <ApprenListPage /> },
-              { path: "pqrs-lista", element: <PqrsListPage /> }
-            ]
-          },
-
-          // Gestión de celadores: administrativo + su propio jefe de seguridad
-          // (tabla jefe_seguridad_celador sugiere que JEFE_SEGURIDAD administra celadores)
-          {
-            element: <ProtectedRoute allowedRoles={["ADMINISTRADOR", "JEFE_SEGURIDAD"]} />,
-            children: [
-              { path: "celadores", element: <SecureListPage /> },
-              { path: "celadores/:id", element: <UserDetailPage /> },
-            ]
-          },
-
-          // Autoservicio: aprendices e invitados gestionan su propio cupo
-          // (el DML muestra usuarios INVITADO con vehículo propio en auth_vehiculo)
-          {
-            element: <ProtectedRoute allowedRoles={["APRENDIZ", "INVITADO"]} />,
-            children: [
-              { path: "mi-cupo", element: <MyQuotaPage /> } // El ID se infiere del usuario en sesión, no de la URL
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    path: "/unauthorized",
-    element: <div className="p-5 text-center"><h3>No tienes permiso para ver esta sección</h3></div>
-  },
-  // Fallback para manejo de errores 404
-  {
-    path: "*",
-    element: <div className="p-5 text-center"><h3>404 - Recurso No Encontrado</h3></div>
-  }
+  { path: '/login', element: <LoginPage /> },
+  { path: '/registro', element: <RegisterPage /> },
+  { path: '/recuperar', element: <RecoveryPage /> },
+  { element: <ProtectedRoute><LayoutPrincipal /></ProtectedRoute>, children: [
+    { index: true, element: <DashboardPage /> },
+    { path: 'perfil', element: <ProfilePage /> },
+    guarded(roles.adminJefe, 'usuarios', <DirectoryPage title="Usuarios" detailPath="/usuarios" />),
+    guarded(roles.adminJefe, 'usuarios/:id', <UserDetailPage />),
+    guarded(roles.adminJefe, 'aprendices', <DirectoryPage title="Aprendices" role="APRENDIZ" detailPath="/aprendices" />),
+    guarded(roles.adminJefe, 'aprendices/:id', <UserDetailPage />),
+    guarded(roles.admin, 'jefes-seguridad', <DirectoryPage title="Jefes de seguridad" role="JEFE_SEGURIDAD" canDisable detailPath="/jefes-seguridad" createPath="/jefes-seguridad/nuevo" createRoles={roles.admin} />),
+    guarded(roles.admin, 'jefes-seguridad/:id', <UserDetailPage />),
+    guarded(roles.admin, 'jefes-seguridad/nuevo', <StaffRegistrationPage role="JEFE_SEGURIDAD" />),
+    guarded(roles.jefe, 'celadores', <DirectoryPage title="Celadores" role="CELADOR" canDisable disableRoles={roles.jefe} detailPath="/celadores" createPath="/celadores/nuevo" createRoles={roles.jefe} />),
+    guarded(roles.jefe, 'celadores/:id', <UserDetailPage />),
+    guarded(roles.jefe, 'celadores/nuevo', <StaffRegistrationPage role="CELADOR" />),
+    guarded(roles.adminJefe, 'invitados', <DirectoryPage title="Invitados" role="INVITADO" detailPath="/invitados" canDisable disableRoles={roles.admin} />),
+    guarded(roles.adminJefe, 'invitados/:id', <UserDetailPage />),
+    guarded(roles.admin, 'centros', <CentersPage />),
+    guarded(roles.ownEntries, 'entradas-salidas', <EntriesPage />),
+    guarded(roles.ownEntries, 'entradas-salidas/:id', <EntryDetailPage />),
+    { path: 'entradas-salidas/detalle', element: <Navigate to="/entradas-salidas" replace /> },
+    guarded(['CELADOR'], 'entradas-salidas/operar', <EntryOperationPage />),
+    guarded(roles.all, 'cupos', <AccessQuotaPage />),
+    guarded(roles.all, 'cupos/:idUsuario/:idVehiculo', <QuotaAuthorizationDetailPage />),
+    { path: 'cupos/detalle', element: <Navigate to="/cupos" replace /> },
+    guarded(roles.ownQuota, 'mi-cupo', <MyQuotaSummaryPage />),
+    guarded(roles.reportRead, 'reportes', <ReportsPage />),
+    guarded(roles.reportWrite, 'reportes/nuevo', <ReportCreatePage />),
+    guarded(roles.reportRead, 'reportes/:id', <ReportDetailPage />),
+    guarded(roles.all, 'pqrs', <PqrsLandingPage />),
+    guarded(roles.all, 'pqrs/:id', <PqrsDetailPage />),
+    guarded(roles.pqrsOwner, 'pqrs/nuevo', <PqrsCreatePage />),
+  ] },
+  { path: '/unauthorized', element: <div className="container py-5"><h1>No tienes permiso para esta sección</h1></div> },
+  { path: '*', element: <div className="container py-5"><h1>404 - Recurso no encontrado</h1></div> }
 ]);
 
-
-
-export const AppRouter = () => {
-  return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
-  );
-};
+export const AppRouter = () => <AuthProvider><RouterProvider router={router} /></AuthProvider>;

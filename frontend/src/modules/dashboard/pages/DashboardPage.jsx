@@ -23,7 +23,7 @@ export const DashboardPage = () => {
             </div>
       </section>
       {/* Tarjetas Dinámicas Originales */}
-      <h3 class="mb-4 text-secss border-bottom pb-2"><i class="bi bi-layers-half"></i>Rol</h3>
+      <h3 className="mb-4 text-secss border-bottom pb-2"><i className="bi bi-layers-half"></i> Accesos por rol</h3>
       <div className="row g-4">
         {user.roles?.map((rolKey) => {
           const cardInfo = roleCardsData[rolKey];

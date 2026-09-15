@@ -1,4 +1,5 @@
-// src/shared/constants/menuOptions.js
+const action = (label, path, icon = 'bi-arrow-right') => ({ label, path, icon });
+
 export const roleCardsData = {
   ADMINISTRADOR: {
     title: 'Administrador',
@@ -6,22 +7,29 @@ export const roleCardsData = {
     borderClass: 'border-admin',
     icon: 'bi-gear-fill',
     actions: [
-      { label: 'Aprendices', path: '/aprendices', icon: 'bi-people' },
-      { label: 'Cupos', path: '/cupos', icon: 'bi-car-front' },
-      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
+      action('Usuarios y rol · Consultar', '/usuarios', 'bi-people'),
+      action('Centros · Registrar / editar / consultar', '/centros', 'bi-building'),
+      action('Aprendices · Consultar', '/aprendices', 'bi-mortarboard'),
+      action('Jefes de seguridad · Registrar / consultar / deshabilitar', '/jefes-seguridad', 'bi-shield'),
+      action('Invitados · Consultar', '/invitados', 'bi-person-lines-fill'),
+      action('Cupos · Consultar / deshabilitar', '/cupos', 'bi-car-front'),
+      action('PQRS · Registrar / consultar / responder', '/pqrs', 'bi-chat-left-text')
     ]
   },
   JEFE_SEGURIDAD: {
-    title: 'Jefe de Seguridad',
+    title: 'Jefe de seguridad',
     headerClass: 'bg-seguridad',
     borderClass: 'border-seguridad',
     icon: 'bi-shield-shaded',
     actions: [
-      { label: 'Celadores', path: '/celadores', icon: 'bi-people' },
-      { label: 'Registros vehiculares', path: '/bitacora/diaria', icon: 'bi-journal-text' },
-      { label: 'Cupos', path: '/cupos', icon: 'bi-car-front' },
-      { label: 'Reportes', path: '/reportes', icon: 'bi-exclamation-diamond' },   // 🌟 Ahora apunta a la ruta real `/reportes`
-      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
+      action('Usuarios y rol · Consultar', '/usuarios', 'bi-people'),
+      action('Aprendices · Consultar', '/aprendices', 'bi-mortarboard'),
+      action('Celadores · Registrar / consultar / deshabilitar', '/celadores', 'bi-person-badge'),
+      action('Invitados · Consultar', '/invitados', 'bi-person-lines-fill'),
+      action('Entradas y salidas · Registrar / consultar', '/entradas-salidas', 'bi-journal-text'),
+      action('Cupos · Consultar / deshabilitar', '/cupos', 'bi-car-front'),
+      action('Reportes · Consultar', '/reportes', 'bi-file-earmark-text')
+      , action('PQRS · Registrar / consultar', '/pqrs', 'bi-chat-left-text')
     ]
   },
   CELADOR: {
@@ -30,11 +38,11 @@ export const roleCardsData = {
     borderClass: 'border-seguridad',
     icon: 'bi-person-badge',
     actions: [
-      { label: 'Registros vehiculares', path: '/bitacora/diaria', icon: 'bi-journal-text' },
-      { label: 'Registrar invitado', path: '/LogbookPage', icon: 'bi-people' },
-      { label: 'Cupos', path: '/cupos', icon: 'bi-car-front' },
-      { label: 'Reportes', path: '/reportes', icon: 'bi-exclamation-diamond' }, // 🌟 Ahora apunta a la ruta real `/reportes`
-      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
+      action('Invitados · Consultar', '/invitados', 'bi-person-lines-fill'),
+      action('Entradas y salidas · Registrar / consultar', '/entradas-salidas', 'bi-journal-text'),
+      action('Cupos · Consultar', '/cupos', 'bi-car-front'),
+      action('Reportes · Registrar / editar / consultar', '/reportes', 'bi-file-earmark-text')
+      , action('PQRS · Registrar / consultar', '/pqrs', 'bi-chat-left-text')
     ]
   },
   APRENDIZ: {
@@ -43,9 +51,10 @@ export const roleCardsData = {
     borderClass: 'border-aprendiz',
     icon: 'bi-mortarboard',
     actions: [
-      { label: 'Cupo', path: '/mi-cupo', icon: 'bi-car-front' },
-      { label: 'Registros vehiculares', path: '/bitacora/diaria', icon: 'bi-journal-text' },
-      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
+      action('Información personal y cuenta', '/perfil', 'bi-person'),
+      action('Entradas y salidas · Consultar', '/entradas-salidas', 'bi-journal-text'),
+      action('Cupos · Consultar', '/mi-cupo', 'bi-car-front')
+      , action('PQRS · Registrar / consultar', '/pqrs', 'bi-chat-left-text')
     ]
   },
   INVITADO: {
@@ -54,25 +63,10 @@ export const roleCardsData = {
     borderClass: 'border-aprendiz',
     icon: 'bi-person-lines-fill',
     actions: [
-      { label: 'Cupo', path: '/mi-cupo', icon: 'bi-car-front' },
-      { label: 'Registros vehiculares', path: '/bitacora/diaria', icon: 'bi-journal-text' },
-      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' }
-    ]
-  }
-};
-
-export const navOptions = {
-  ADMINISTRADOR: {
-    title: 'Administrador',
-    headerClass: 'bg-admin',
-    borderClass: 'border-admin',
-    icon: 'bi-gear-fill',
-    actions: [
-      { label: 'Aprendices', path: '/ApprenConsullPage', icon: 'bi-people' },
-      { label: 'Cupos', path: '/cupos', icon: 'bi-car-front' },
-      { label: 'Vehículos', path: '/auditoria', icon: 'bi-bicycle' },
-      { label: 'PQRS', path: '/pqrs', icon: 'bi-info-circle' },
-      { label: 'PQRS LISTA', path: '/pqrs-lista', icon: 'bi-info-circle' }
+      action('Información personal y cuenta', '/perfil', 'bi-person'),
+      action('Entradas y salidas · Consultar', '/entradas-salidas', 'bi-journal-text'),
+      action('Cupos · Consultar', '/mi-cupo', 'bi-ticket-perforated'),
+      action('PQRS · Registrar / consultar', '/pqrs', 'bi-chat-left-text')
     ]
   }
 };

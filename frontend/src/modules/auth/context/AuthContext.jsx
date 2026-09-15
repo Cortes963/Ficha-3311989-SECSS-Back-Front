@@ -1,4 +1,4 @@
-// src/modules/auth/context/AuthContext.jsx
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from 'react';
 import { login as loginRequest } from '@/modules/auth/services/authService';
 import { getToken, setToken } from '@/services/apiClient';
@@ -10,10 +10,17 @@ const AuthContext = createContext(null);
 // apiClient, porque es lo único que el resto de módulos necesita leer).
 const USER_STORAGE_KEY = 'secss_usuario';
 
+const normalizeRole = (role) => String(role || '')
+  .trim()
+  .toUpperCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '');
+
 const readStoredUser = () => {
   try {
     const raw = localStorage.getItem(USER_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const user = raw ? JSON.parse(raw) : null;
+    return user ? { ...user, roles: (user.roles || []).map(normalizeRole) } : null;
   } catch {
     return null; // JSON corrupto en localStorage no debe tumbar la app
   }
@@ -51,8 +58,9 @@ export const AuthProvider = ({ children }) => {
       // el header Authorization); el usuario se persiste acá para sobrevivir
       // un refresh de página sin tener que volver a pedir credenciales.
       setToken(respuesta.token);
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(respuesta.usuario));
-      setUser(respuesta.usuario);
+      const usuario = { ...respuesta.usuario, roles: (respuesta.usuario.roles || []).map(normalizeRole) };
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(usuario));
+      setUser(usuario);
       setIsAuthenticated(true);
       return true;
     } catch (err) {
@@ -81,7 +89,8 @@ export const AuthProvider = ({ children }) => {
   const hasRole = (allowedRoles) => {
     if (!user || !user.roles || !Array.isArray(user.roles)) return false;
     // Evalúa si hay intersección entre los roles del usuario y los permitidos
-    return allowedRoles.some(rol => user.roles.includes(rol));
+    const currentRoles = user.roles.map(normalizeRole);
+    return allowedRoles.some((rol) => currentRoles.includes(normalizeRole(rol)));
   };
 
   return (

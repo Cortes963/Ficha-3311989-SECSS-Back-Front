@@ -1,4 +1,4 @@
-// src/modules/user/components/ApprenForm.jsx
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 
 export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = null }) => {
@@ -17,8 +17,8 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
         numeroFicha: initialData.ficha || '', 
         direccion: initialData.direccion || '',
         idCentro: initialData.id_centro || '',
-        fechaVinculacion: initialData.fechaVinculacion || '',
-        fechaTerminacion: initialData.fechaTerminacion || ''
+        fechaVinculacion: (initialData.fecha_vinculacion || initialData.fechaVinculacion || '').slice(0, 10),
+        fechaTerminacion: (initialData.fecha_terminacion || initialData.fechaTerminacion || '').slice(0, 10)
       });
     }
   }, [initialData]);
@@ -37,7 +37,7 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
       // nombres, así que por ahora se pide el ID directamente. Falta un
       // GET /api/core/centros (o similar) para reemplazar esto por un <select>.
       const dataParaServidor = {
-        ficha: Number(aprendizData.numeroFicha),
+        ficha: aprendizData.numeroFicha.trim(),
         direccion: aprendizData.direccion,
         id_centro: Number(aprendizData.idCentro),
         // Conservamos los extras si los necesitas a futuro
@@ -59,7 +59,8 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
           <div className="col-md-6">
             <label className="form-label small fw-bold text-secondary">Número de Ficha</label>
             <input 
-              type="number" 
+              type="text"
+              maxLength={50}
               className="form-control" 
               name="numeroFicha"
               value={aprendizData.numeroFicha}
@@ -109,20 +110,8 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
           </div>
 
           <div className="col-12">
-            <label className="form-label small fw-bold text-secondary">ID del Centro de Formación</label>
-            <input 
-              type="number" 
-              className="form-control" 
-              name="idCentro"
-              value={aprendizData.idCentro}
-              onChange={handleChange}
-              placeholder="Ej: 1 (ID del centro, no el nombre)" 
-              readOnly={readOnly}
-              required={!readOnly} 
-            />
-            <small className="text-muted d-block mt-1">
-              Temporal: aún no hay un listado de centros por nombre; pide el ID al equipo de administración.
-            </small>
+            <label className="form-label small fw-bold text-secondary">Centro de Formación</label>
+            <input type="text" className="form-control" value={initialData?.nombre_centro || 'Centro no informado por el contrato'} readOnly />
           </div>
 
           <div className="col-12 mt-4">

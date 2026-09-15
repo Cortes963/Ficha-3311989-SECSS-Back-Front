@@ -1,14 +1,11 @@
 // src/modules/user/pages/UserDetailPage.jsx
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { UserAccountForm } from '@/modules/user/components/UserAccountForm';
-import { ApprenForm } from '@/modules/user/components/ApprenForm';
-import { VehicleForm } from '@/modules/vehicle/components/VehicleForm';
+import { UserForm } from '@/modules/user/components/UserForm';
+import { ApprenticeDetailForm } from '@/modules/user/components/ApprenticeDetailForm';
 import { getUsuarioPorId } from '@/modules/user/services/userService';
-import { obtenerCupoPorUsuario } from '@/modules/quota/services/Quotaservices';
 
-// Vista de solo lectura (pensada para celadores, que normalmente no tienen
-// vehículo/cupo). A diferencia de QuotaDetailPage, no hay consola de acciones.
+// Vista de consulta para información personal, cuenta y detalle de aprendiz.
 export const UserDetailPage = () => {
   const { id } = useParams();
   const [datos, setDatos] = useState(null);
@@ -17,14 +14,10 @@ export const UserDetailPage = () => {
   useEffect(() => {
     const fetchDetalle = async () => {
       try {
-        const [usuarioDB, cupoInfo] = await Promise.all([
-          getUsuarioPorId(id),
-          obtenerCupoPorUsuario(id)
-        ]);
+        const usuarioDB = await getUsuarioPorId(id);
         setDatos({
           usuario: usuarioDB,
-          aprendiz: usuarioDB.detalle_aprendiz || null,
-          vehiculo: cupoInfo.vehiculo
+          aprendiz: usuarioDB.detalle_aprendiz || null
         });
       } catch (error) {
         console.error("Error al cargar el perfil:", error);
@@ -52,22 +45,15 @@ export const UserDetailPage = () => {
       <div className="row g-4">
         <div className="col-xl-6">
           <h4 className="text-secss mb-3"><i className="bi bi-person-badge"></i> Perfil de Usuario</h4>
-          <UserAccountForm initialData={datos.usuario} readOnly={true} />
+          <UserForm initialData={datos.usuario} mode="consulta" readOnly={true} />
 
           {datos.aprendiz && (
             <>
               <h4 className="text-success mb-3 mt-4"><i className="bi bi-mortarboard"></i> Información Académica</h4>
-              <ApprenForm initialData={datos.aprendiz} readOnly={true} />
+              <ApprenticeDetailForm initialData={datos.aprendiz} mode="consulta" readOnly={true} />
             </>
           )}
         </div>
-
-        {datos.vehiculo && (
-          <div className="col-xl-6">
-            <h4 className="text-primary mb-3"><i className="bi bi-car-front"></i> Vehículo Vinculado</h4>
-            <VehicleForm initialData={datos.vehiculo} readOnly={true} />
-          </div>
-        )}
       </div>
     </div>
   );

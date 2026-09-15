@@ -1,7 +1,8 @@
-// src/components/forms/UserAccountForm.jsx
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 
-export const UserAccountForm = ({ initialData = null, readOnly = false, onSubmit = null }) => {
+export const UserAccountForm = ({ initialData = null, readOnly = false, mode = 'registro', onSubmit = null }) => {
+  const isReadOnly = readOnly || mode === 'consulta';
   
   const [formData, setFormData] = useState({
     tipoDoc: 'CC',
@@ -30,10 +31,10 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, onSubmit
         password: initialData.password || '',
         
         // Distribución inteligente de la cadena nombre_completo
-        nombre1: nombrespartes[0] || '',
-        nombre2: nombrespartes.length === 4 ? nombrespartes[1] : (nombrespartes.length === 3 ? '' : ''),
-        apellido1: nombrespartes.length === 4 ? nombrespartes[2] : (nombrespartes.length === 3 ? nombrespartes[1] : nombrespartes[1] || ''),
-        apellido2: nombrespartes.length === 4 ? nombrespartes[3] : (nombrespartes.length === 3 ? nombrespartes[2] : nombrespartes[2] || '')
+        nombre1: initialData.primer_nombre || nombrespartes[0] || '',
+        nombre2: initialData.segundo_nombre || (nombrespartes.length === 4 ? nombrespartes[1] : ''),
+        apellido1: initialData.primer_apellido || (nombrespartes.length === 4 ? nombrespartes[2] : nombrespartes[1] || ''),
+        apellido2: initialData.segundo_apellido || (nombrespartes.length === 4 ? nombrespartes[3] : nombrespartes[2] || '')
       });
     }
   }, [initialData]);
@@ -84,7 +85,7 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, onSubmit
             <div className="row g-2 mb-3">
               <div className="col-md-4">
                 <label className="form-label small fw-bold">Tipo Doc.</label>
-                <select className="form-select" name="tipoDoc" value={formData.tipoDoc} onChange={handleChange} disabled={readOnly}>
+                <select className="form-select" name="tipoDoc" value={formData.tipoDoc} onChange={handleChange} disabled={isReadOnly}>
                   <option value="CC">C.C.</option>
                   <option value="TI">T.I.</option>
                   <option value="CE">C.E.</option>
@@ -94,35 +95,35 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, onSubmit
               </div>
               <div className="col-md-8">
                 <label className="form-label small fw-bold">Número de Documento</label>
-                <input type="text" className="form-control" name="documento" value={formData.documento} onChange={handleChange} disabled={readOnly} required={!readOnly} />
+                <input type="text" className="form-control" name="documento" value={formData.documento} onChange={handleChange} disabled={isReadOnly} required={!isReadOnly} />
               </div>
             </div>
 
             <div className="row mb-3">
               <div className="col-md-6">
                 <label className="form-label small fw-bold">Primer Nombre</label>
-                <input type="text" className="form-control" name="nombre1" value={formData.nombre1} onChange={handleChange} disabled={readOnly} required={!readOnly} />
+                <input type="text" className="form-control" name="nombre1" value={formData.nombre1} onChange={handleChange} disabled={isReadOnly} required={!isReadOnly} />
               </div>
               <div className="col-md-6">
                 <label className="form-label small fw-bold">Segundo Nombre</label>
-                <input type="text" className="form-control" name="nombre2" value={formData.nombre2} onChange={handleChange} disabled={readOnly} />
+                <input type="text" className="form-control" name="nombre2" value={formData.nombre2} onChange={handleChange} disabled={isReadOnly} />
               </div>
             </div>
 
             <div className="row mb-3">
               <div className="col-md-6">
                 <label className="form-label small fw-bold">Primer Apellido</label>
-                <input type="text" className="form-control" name="apellido1" value={formData.apellido1} onChange={handleChange} disabled={readOnly} required={!readOnly} />
+                <input type="text" className="form-control" name="apellido1" value={formData.apellido1} onChange={handleChange} disabled={isReadOnly} required={!isReadOnly} />
               </div>
               <div className="col-md-6">
                 <label className="form-label small fw-bold">Segundo Apellido</label>
-                <input type="text" className="form-control" name="apellido2" value={formData.apellido2} onChange={handleChange} disabled={readOnly} />
+                <input type="text" className="form-control" name="apellido2" value={formData.apellido2} onChange={handleChange} disabled={isReadOnly} />
               </div>
             </div>
 
             <div className="mb-3">
               <label className="form-label small fw-bold">Teléfono de Contacto</label>
-              <input type="tel" className="form-control" name="telefono" value={formData.telefono} onChange={handleChange} disabled={readOnly} required={!readOnly} />
+              <input type="tel" className="form-control" name="telefono" value={formData.telefono} onChange={handleChange} disabled={isReadOnly} required={!isReadOnly} />
             </div>
           </div>
 
@@ -134,10 +135,10 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, onSubmit
             <div className="p-4 bg-light border rounded">
               <div className="mb-3">
                 <label className="form-label small fw-bold">Correo Electrónico</label>
-                <input type="email" className="form-control" name="correo" value={formData.correo} onChange={handleChange} disabled={readOnly} required={!readOnly} />
+                <input type="email" className="form-control" name="correo" value={formData.correo} onChange={handleChange} disabled={isReadOnly} required={!isReadOnly} />
               </div>
 
-              {!readOnly && (
+              {!isReadOnly && (
                 <div className="mb-3">
                   <label className="form-label small fw-bold">Contraseña de Acceso</label>
                   <input type="password" className="form-control" name="password" value={formData.password} onChange={handleChange} disabled={readOnly} required={!readOnly} minLength={10} />
@@ -147,7 +148,7 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, onSubmit
             </div>
           </div>
 
-          {!readOnly && (
+          {!isReadOnly && (
             <div className="col-12 text-center mt-4">
               <button type="submit" className="btn btn-primary px-5 py-2 fw-bold shadow-sm">
                 <i className="bi bi-save me-2"></i> GUARDAR USUARIO Y CUENTA

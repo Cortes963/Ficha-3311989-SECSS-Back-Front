@@ -7,6 +7,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import path from 'node:path';
 
 import auth from './routes/auth.routes.js';
 import attention from './routes/attention.routes.js';
@@ -27,6 +28,7 @@ const app = express();
 // Middleware shared by public and protected endpoints.
 app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') || false }));
 app.use(express.json({ limit: '1mb' }));
+app.use('/storage', express.static(path.resolve(process.env.LOCAL_STORAGE_PATH || 'storage')));
 
 // These resources are public because users need them before owning a token.
 app.use('/api/core', core);
@@ -57,4 +59,3 @@ const port = Number(process.env.PORT || 4000);
 app.listen(port, () => {
   console.log(`SECSS API en puerto ${port}`);
 });
-

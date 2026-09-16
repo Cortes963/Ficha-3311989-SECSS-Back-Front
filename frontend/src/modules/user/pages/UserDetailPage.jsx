@@ -46,15 +46,16 @@ export const UserDetailPage = () => {
         <div className="col-xl-6">
           <h4 className="text-secss mb-3"><i className="bi bi-person-badge"></i> Perfil de Usuario</h4>
           <UserForm initialData={datos.usuario} mode="consulta" readOnly={true} />
-
-          {datos.aprendiz && (
-            <>
-              <h4 className="text-success mb-3 mt-4"><i className="bi bi-mortarboard"></i> Información Académica</h4>
-              <ApprenticeDetailForm initialData={datos.aprendiz} mode="consulta" readOnly={true} />
-            </>
-          )}
         </div>
+
+        {datos.aprendiz && (
+          <div className="col-xl-6">
+            <h4 className="text-success mb-3"><i className="bi bi-mortarboard"></i> Información Académica</h4>
+            <ApprenticeDetailForm initialData={datos.aprendiz} mode="consulta" readOnly={true} />
+          </div>
+        )}
       </div>
+      
     </div>
   );
 };

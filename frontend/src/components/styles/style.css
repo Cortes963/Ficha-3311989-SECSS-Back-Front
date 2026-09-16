@@ -399,3 +399,10 @@ footer h5, footer h6 {
   border-radius: 6px;
   cursor: pointer;
 }
+
+h4.text-white, 
+h5.text-white, 
+.card-header.bg-secss-main h4,
+.card-header.bg-secss-main i {
+  color: #ffffff !important;
+}

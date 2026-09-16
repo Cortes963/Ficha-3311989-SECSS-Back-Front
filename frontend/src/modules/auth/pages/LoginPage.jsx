@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import '@/components/styles/style.css'; 
+import secssImage from '../../../assets/SECSS.png';
 
 export const LoginPage = () => {
   const { login, error } = useAuth();
@@ -102,20 +103,21 @@ export const LoginPage = () => {
             <div className="mt-4 pt-3 border-top text-center text-secondary small">
               ¿No tienes cuenta? <Link to="/registro" className="link-sena ms-1">Regístrate</Link>
             </div>
+            
 
           </form>
         </div>
       </div>
       
         {/* Columna derecha: imagen, oculta en pantallas pequeñas */}
-        <div className="d-none d-md-block flex-grow-1">
-          <img
-            src="/assets/SECSS.jpg"
-            alt="Bienvenida a SECSS"
-            className="w-100 h-100"
-            style={{ objectFit: 'cover' }}
-          />
-        </div>
+      <div className="d-none d-md-block" style={{ width: '380px', flexShrink: 0 }}>
+      <img
+      src={secssImage}
+      alt="Bienvenida a SECSS"
+      className="w-100 h-100"
+      style={{ objectFit: 'cover' }}
+      />
+      </div>
     </div>
     
   );

@@ -75,31 +75,11 @@ export const LayoutPrincipal = () => {
                 </a>
               </li>
 
-              <li className="nav-item">
-                <a className="nav-link" href="/pico-placa">
-                  <i className="bi bi-card-list me-1"></i>
-                  Pico y Placa
-                </a>
-              </li>
-
-              <li className="nav-item">
-                <a
-                  className="nav-link active"
-                  href="/consulta-cupos"
-                >
-                  <i className="bi bi-pie-chart-fill me-1"></i>
-                  Control de Cupos
-                </a>
-              </li>
-
+    
             </ul>
 
             <div className="d-flex gap-2">
 
-              <button className="btn btn-outline-light btn-sm">
-                <i className="bi bi-person-badge me-1"></i>
-                Vista Global
-              </button>
               <button className="btn btn-outline-light btn-sm" onClick={() => { logout(); navigate('/login'); }}>Cerrar sesión</button>
           </div>
         </div>

@@ -70,9 +70,9 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, mode = '
   return (
     <div className="card shadow-sm border-0 mb-4 animate__animated animate__fadeIn">
       <div className="card-header bg-secss-main text-white p-3">
-        <h4 className="m-0">
-          <i className="bi bi-person-plus-fill me-2"></i> Datos de la Cuenta
-        </h4>
+        <h4 className="m-0 text-white">
+        <i className="bi bi-person-plus-fill me-2"></i> Datos de la Cuenta
+       </h4>
       </div>
       <div className="card-body p-4">
         <form className="row g-4" onSubmit={handleSubmit}>

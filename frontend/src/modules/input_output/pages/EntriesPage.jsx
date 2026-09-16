@@ -16,18 +16,32 @@ export const EntriesPage = () => {
       .then((response) => setRows(response.datos || []))
       .catch((e) => setError(e.message));
   }, [user?.roles]);
+
+  const formatDate = (value) => {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString('es-CO', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+};
   return <>
-    <DataTable title="Entradas y salidas" columns={[
-      { key: 'registro_id', label: 'Registro' },
+  
+    <DataTable title="Entradas y Salidas" columns={[
       { key: 'tipo_vehiculo', label: 'Tipo de vehículo' },
       { key: 'marca', label: 'Marca' },
-      { key: 'identificador_vehiculo', label: 'Placa / marco' },
+      { key: 'identificador_vehiculo', label: 'Placa / Marco' },
       { key: 'persona_ingresa', label: 'Persona que ingresa' },
       { key: 'documento_persona', label: 'Documento' },
-      { key: 'fecha_hora_ingreso', label: 'Fecha ingreso' },
-      { key: 'fecha_hora_salida', label: 'Fecha salida', render: (row) => row.fecha_hora_salida || 'Dentro' },
-      { key: 'celador_ingreso', label: 'Celador ingreso' },
-      { key: 'celador_salida', label: 'Celador salida', render: (row) => row.celador_salida || '—' },
+      { key: 'fecha_hora_ingreso', label: 'Fecha ingreso', render: (row) => formatDate(row.fecha_hora_ingreso) },
+      { key: 'fecha_hora_salida', label: 'Fecha salida', render: (row) => formatDate(row.fecha_hora_salida) },
+      { key: 'celador_ingreso', label: 'Celador de ingreso', render: (row) => formatDate(row.celador_ingreso) || '—' },
+      { key: 'celador_salida', label: 'Celador de salida', render: (row) => formatDate(row.celador_salida) || '—' },
       { key: 'actions', label: 'Acciones', render: (row) => <Link className="btn btn-sm btn-outline-primary" to={`/entradas-salidas/${row.registro_id || row.id}`}>Consultar</Link> }
     ]} rows={rows} />
     {user?.roles?.includes('CELADOR') && <button className="btn btn-primary mt-3" onClick={() => navigate('/entradas-salidas/operar')}>Registrar operación</button>}

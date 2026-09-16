@@ -26,7 +26,7 @@ export const LoginPage = () => {
 
   return (
     // bg-light da el fondo gris tenue. vh-100 ocupa toda la pantalla.
-    <div className="bg-light d-flex justify-content-center align-items-center vh-100 px-3">
+    <div className="body.login-page d-flex justify-content-center align-items-center vh-100 px-3">
       
       {/* Contenedor principal con tope de ancho */}
       <div className="w-100 border-sena rounded-4" style={{ maxWidth: '450px' }}>
@@ -117,6 +117,7 @@ export const LoginPage = () => {
       className="w-100 h-100"
       style={{ objectFit: 'cover' }}
       />
+
       </div>
     </div>
     

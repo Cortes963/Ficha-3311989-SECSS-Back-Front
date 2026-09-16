@@ -21,9 +21,10 @@ export const DashboardPage = () => {
                     <span className="badge bg-white text-dark p-2"><i className="bi bi-calendar3"></i> Entorno de Pruebas v1.0</span>
                 </div>
             </div>
+            
       </section>
       {/* Tarjetas Dinámicas Originales */}
-      <h3 className="mb-4 text-secss border-bottom pb-2"><i className="bi bi-layers-half"></i> Accesos por rol</h3>
+      <h3 className="mb-4 text-secss border-bottom pb-2"><i className="bi bi-layers-half"></i> Acceso por rol</h3>
       <div className="row g-4">
         {user.roles?.map((rolKey) => {
           const cardInfo = roleCardsData[rolKey];

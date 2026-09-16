@@ -47,6 +47,56 @@ body {
   background-color: #f4f6f7; /* Fondo gris claro industrial */
 }
 
+/* ======================================================
+    LOGIN PAGE
+   ====================================================== */
+body.login-page {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+
+    background: linear-gradient(
+        135deg,
+        #ffffff 0%,
+        #f1fff4 45%,
+        #c9f5d0 100%
+    );
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+   /*formulario login*/
+  
+body.login-form {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+
+    background:
+        radial-gradient(
+            circle at 10% 20%,
+            rgba(76, 190, 76, 0.18),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 90% 80%,
+            rgba(0, 150, 70, 0.18),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #effff2
+        );
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
 .main-content, main {
   flex: 1 0 auto; /* Obliga al footer a quedarse abajo */
 }
@@ -189,7 +239,7 @@ header h1, header small, header p, header a {
 .card, .card-secss, .border.bg-white {
   border: 1px solid rgba(0, 50, 77, 0.12) !important;
   border-top: 4px solid var(--secss-green-main) !important;
-  background-color: var(--secss-white) !important;
+  background-color: var(--secss-white) ;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .card:hover, .border.bg-white:hover {

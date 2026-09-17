@@ -1,0 +1,17 @@
+$kind: http-request
+name: PATCH vehicle id (aprendiz nuevo intenta editar vehiculo ajeno, esperado 404) [Mobile API]
+url: "{{baseUrl}}/api/mobile/v1/vehicle/1"
+method: PATCH
+headers:
+  Authorization: Bearer {{tokenAprendizNuevo}}
+body:
+  type: formdata
+  content:
+    - type: text
+      key: color
+      value: Negro
+scripts:
+  - type: afterResponse
+    code: pm.test("404 no es el dueno", () => pm.response.to.have.status(404));
+    language: text/javascript
+order: 6000

@@ -1,133 +1,88 @@
-# Documentación de la API SECSS
+# Documentación de las APIs SECSS
 
 ## Datos generales
 
-- **URL local:** `http://localhost:4000`
-- **Prefijo:** `/api`
+- **API web:** `http://localhost:4000/api`
+- **API móvil:** `http://localhost:4100/api/mobile/v1`
 - **Formato:** JSON, excepto los endpoints que reciben archivos.
 - **Autenticación:** JWT en `Authorization: Bearer <token>`.
 - **Archivos:** los endpoints de carga usan `multipart/form-data`.
-- **Salud:** `GET /api/core/health`.
+- **Salud web:** `GET /api/core/health`.
+- **Salud móvil:** `GET /api/mobile/v1/core/health`.
 
-La API es la única capa que expone HTTP. Los controladores y las consultas SQL
-se encuentran en `Backend/`.
+Las dos APIs tienen código, dependencias y procesos independientes. Ambas
+usan la misma base de datos MySQL.
 
 ## Puesta en marcha
+
+API web:
+
+```powershell
+cd Backend
+npm install
+Copy-Item .env.example .env
+npm start
+```
+
+API móvil, en otra terminal:
 
 ```powershell
 cd api
 npm install
-cd ../Backend
-npm install
-cd ../api
+Copy-Item .env.example .env
 npm start
 ```
 
-Antes de iniciar, configura `api/.env` con `JWT_SECRET` de al menos 32
-caracteres y las credenciales de MySQL.
-
 ## Flujo recomendado en Postman
 
-1. Ejecutar `GET /api/core/health`.
-2. Ejecutar `POST /api/auth/storeAuthLogin`.
-3. Guardar el JWT devuelto en la variable de entorno `tokenAdmin`,
-   `tokenJefe`, `tokenCelador`, `tokenAprendizSemilla` o
-   `tokenInvitadoSemilla`, según el usuario autenticado.
-4. En las solicitudes protegidas enviar
-   `Authorization: Bearer {{token}}`.
+1. Ejecutar `GET /api/mobile/v1/core/health` o `GET /api/core/health`.
+2. Ejecutar el login correspondiente.
+3. Guardar el JWT en la variable de entorno del rol autenticado.
+4. En solicitudes protegidas enviar `Authorization: Bearer {{token}}`.
 
-La colección adaptada de Postman contiene pruebas y scripts para guardar
-tokens y los identificadores creados. En Postman se puede publicar mediante
-**Collections → ... → View documentation → Publish**. La documentación
-publicada se genera a partir de los nombres, descripciones, ejemplos y
-respuestas guardados en la colección.
+Para probar la API móvil, usa `http://localhost:4100` como `baseUrl` y el
+prefijo `/api/mobile/v1`. Para la web usa `http://localhost:4000` y `/api`.
+
+La colección puede publicarse en Postman mediante **Collections → ... → View
+documentation → Publish**.
 
 ## Endpoints públicos
 
-| Método | Ruta | Uso |
-|---|---|---|
-| GET | `/api/core/health` | Comprueba la conexión con MySQL. |
-| GET | `/api/core/centros-publicos` | Lista los centros disponibles para el registro público de aprendiz. |
-| POST | `/api/auth/storeAuthLogin` | Inicia sesión y devuelve un JWT. |
-| POST | `/api/auth/storeAuthRegister` | Registra públicamente un aprendiz. Recibe datos y soportes académicos en multipart. |
-| POST | `/api/auth/forgot-password` | Solicita recuperación de contraseña. |
-| POST | `/api/auth/reset-password` | Cambia la contraseña usando el token de recuperación. |
-
-## Usuarios y perfiles — requieren JWT
-
-| Método | Ruta | Rol |
-|---|---|---|
-| GET | `/api/users/me` | Usuario autenticado. |
-| PATCH | `/api/users/me` | Aprendiz, invitado, celador, jefe o administrador. |
-| PATCH | `/api/users/me/password` | Todos los roles autenticados. |
-| PATCH | `/api/users/me/estado` | Todos los roles autenticados. |
-| GET | `/api/users/me/aprendiz` | Aprendiz, administrador, jefe o celador. |
-| PATCH | `/api/users/me/aprendiz` | Actualiza datos y soportes académicos. |
-| GET | `/api/users` | Administrador, jefe o celador. |
-| GET | `/api/users/elegibles` | Administrador o jefe. |
-| GET | `/api/users/:id` | Administrador, jefe o celador. |
-| GET | `/api/users/:id/aprendiz` | Administrador, jefe o celador. |
-| PATCH | `/api/users/:id/aprendiz` | Actualiza datos académicos. |
-| PATCH | `/api/users/:id/estado` | Administrador o jefe. |
-| POST | `/api/users/celador` | Jefe. |
-| POST | `/api/users/jefe` | Administrador. |
-| POST | `/api/users/asignar-celador` | Administrador o jefe. |
-
-## Vehículos — requieren JWT
-
-| Método | Ruta | Rol | Tipo |
+| Método | Web | Móvil | Uso |
 |---|---|---|---|
-| GET | `/api/vehicle/me` | Aprendiz o invitado | JSON |
-| GET | `/api/vehicle/:id` | Aprendiz o invitado | JSON |
-| POST | `/api/vehicle` | Aprendiz | multipart |
-| PATCH | `/api/vehicle/:id` | Aprendiz o invitado | multipart |
-| PATCH | `/api/vehicle/:id/inactivar` | Aprendiz o invitado | JSON |
+| GET | `/api/core/health` | `/api/mobile/v1/core/health` | Comprueba la conexión con MySQL. |
+| GET | `/api/core/centros-publicos` | `/api/mobile/v1/core/centros-publicos` | Lista centros para registro de aprendiz. |
+| POST | `/api/auth/storeAuthLogin` | `/api/mobile/v1/auth/storeAuthLogin` | Inicia sesión y devuelve JWT. |
+| POST | `/api/auth/storeAuthRegister` | `/api/mobile/v1/auth/storeAuthRegister` | Registra aprendiz con soportes multipart. |
+| POST | `/api/auth/forgot-password` | `/api/mobile/v1/auth/forgot-password` | Solicita recuperación. |
+| POST | `/api/auth/reset-password` | `/api/mobile/v1/auth/reset-password` | Cambia contraseña con token. |
 
-El registro multipart admite los soportes requeridos por el tipo de vehículo.
-Para bicicletas también debe enviarse la foto de la tarjeta de propiedad:
+## Recursos protegidos
+
+Las rutas siguientes existen con el prefijo web `/api` y el prefijo móvil
+`/api/mobile/v1`, conservando los mismos métodos, cuerpos y roles:
+
+- **Usuarios:** `/users/me`, `/users`, `/users/elegibles`,
+  `/users/:id`, `/users/:id/aprendiz`, `/users/celador`,
+  `/users/jefe`, `/users/asignar-celador`.
+- **Vehículos:** `/vehicle/me`, `/vehicle/:id`, `/vehicle`,
+  `/vehicle/:id/inactivar`.
+- **Cupos:** `/quota`, `/quota/me`, `/quota/usuario/:idUsuario`,
+  `/quota/detalle/:idUsuario/:idVehiculo`,
+  `/quota/:idUsuario/:idVehiculo`.
+- **Entrada y salida:** `/input_output/me`, `/input_output`,
+  `/input_output/:id`, `/input_output/entrada`,
+  `/input_output/invitado`, `/input_output/salida/:id`.
+- **Reportes:** `/reportes`, `/reportes/:id`.
+- **PQRS:** `/pqrs`, `/pqrs/:id`, `/pqrs/:id/respuesta`,
+  `/respuestas`, `/respuestas/:id`.
+
+El registro de vehículos admite tarjeta de propiedad para bicicletas mediante
 `imagen_url_tarjeta_propiedad`.
 
-## Cupos
+## Respuestas y archivos
 
-| Método | Ruta | Rol |
-|---|---|---|
-| GET | `/api/quota` | Administrador, jefe o celador. |
-| GET | `/api/quota/me` | Todos los roles operativos. |
-| GET | `/api/quota/usuario/:idUsuario` | JWT válido. |
-| GET | `/api/quota/detalle/:idUsuario/:idVehiculo` | JWT válido. |
-| PATCH | `/api/quota/:idUsuario/:idVehiculo` | Administrador. |
-
-## Entrada y salida de vehículos
-
-| Método | Ruta | Rol |
-|---|---|---|
-| GET | `/api/input_output/me` | Invitado o aprendiz. |
-| GET | `/api/input_output` | Administrador, jefe o celador. |
-| GET | `/api/input_output/:id` | Invitado, aprendiz, celador o jefe. |
-| POST | `/api/input_output/entrada` | Celador. |
-| POST | `/api/input_output/invitado` | Celador; recibe multipart. |
-| PATCH | `/api/input_output/salida/:id` | Celador. |
-
-## Reportes y PQRS
-
-| Método | Ruta | Rol |
-|---|---|---|
-| GET | `/api/reportes` | Celador o jefe. |
-| POST | `/api/reportes` | Celador. |
-| GET | `/api/reportes/:id` | Celador o jefe. |
-| PUT | `/api/reportes/:id` | Celador. |
-| GET | `/api/pqrs` | JWT válido. |
-| POST | `/api/pqrs` | Jefe, celador, aprendiz o invitado. |
-| GET | `/api/pqrs/:id` | JWT válido. |
-| PUT | `/api/pqrs/:id` | JWT válido; el controlador valida el propietario. |
-| GET | `/api/pqrs/:id/respuesta` | JWT válido. |
-| POST | `/api/pqrs/:id/respuesta` | Administrador. |
-| GET | `/api/respuestas` | Administrador. |
-| PUT | `/api/respuestas/:id` | Administrador. |
-
-## Respuestas y errores
-
-Las respuestas exitosas normalmente tienen esta forma:
+Respuesta exitosa habitual:
 
 ```json
 {
@@ -136,7 +91,7 @@ Las respuestas exitosas normalmente tienen esta forma:
 }
 ```
 
-Los errores de validación, autorización o ruta utilizan:
+Respuesta de error:
 
 ```json
 {
@@ -145,6 +100,13 @@ Los errores de validación, autorización o ruta utilizan:
 }
 ```
 
-Los archivos almacenados se consultan mediante:
-`http://localhost:4000/storage/<ruta-devuelta-por-la-api>`.
+Los archivos web se consultan con
+`http://localhost:4000/storage/<ruta>`. Los archivos móviles con
+`http://localhost:4100/storage/<ruta>`.
 
+## Independencia operativa
+
+Detener `Backend/` no detiene `api/`, y detener `api/` no detiene `Backend/`.
+La independencia aplica al código, las dependencias y los procesos HTTP.
+Como ambas versiones consultan la misma base de datos, una caída o
+indisponibilidad de MySQL sí afecta a las dos.

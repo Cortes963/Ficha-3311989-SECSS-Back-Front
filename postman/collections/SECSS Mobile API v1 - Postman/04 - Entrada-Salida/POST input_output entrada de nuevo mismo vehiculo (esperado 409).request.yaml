@@ -1,0 +1,19 @@
+$kind: http-request
+name: POST input_output entrada de nuevo mismo vehiculo (esperado 409) [Mobile API]
+url: "{{baseUrl}}/api/mobile/v1/input_output/entrada"
+method: POST
+headers:
+  Authorization: Bearer {{tokenCelador}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "id_usuario_entra": 5,
+      "id_vehiculo": 1
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("409 entrada ya abierta", () => pm.response.to.have.status(409));
+    language: text/javascript
+order: 4000

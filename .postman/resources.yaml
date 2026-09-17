@@ -6,7 +6,8 @@ workspace:
 
 cloudResources:
   collections:
-    ../postman/collections/SECSS API - Backend actual (Postman): cfa9682e-3bcf-4b15-ba36-9dedab06213f
+    ../postman/collections/SECSS API: cfa9682e-3bcf-4b15-ba36-9dedab06213f
+    ../postman/collections/SECSS Mobile API v1 - Postman: ce2d7c2c-d064-4bc6-bae0-38cf312f724b
 
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:

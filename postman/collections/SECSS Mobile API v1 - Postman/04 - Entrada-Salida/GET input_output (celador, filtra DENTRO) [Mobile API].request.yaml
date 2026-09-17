@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/mobile/v1/input_output?estado=DENTRO"
+method: GET
+headers:
+  Authorization: Bearer {{tokenCelador}}
+queryParams:
+  estado: DENTRO
+scripts:
+  - type: afterResponse
+    code: pm.test("200 OK", () => pm.response.to.have.status(200));
+    language: text/javascript
+order: 1000

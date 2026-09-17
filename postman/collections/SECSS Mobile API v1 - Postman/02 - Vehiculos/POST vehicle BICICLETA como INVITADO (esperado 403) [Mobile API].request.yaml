@@ -1,0 +1,43 @@
+$kind: http-request
+url: "{{baseUrl}}/api/mobile/v1/vehicle"
+method: POST
+headers:
+  Authorization: Bearer {{tokenInvitadoSemilla}}
+body:
+  type: formdata
+  content:
+    - type: text
+      key: tipo_vehiculo
+      value: BICICLETA
+    - type: text
+      key: marca
+      value: GW
+    - type: text
+      key: color
+      value: Azul
+    - type: text
+      key: numero_marco
+      value: MARCO-TEST-{{$timestamp}}
+    - type: text
+      key: clase_bicicleta
+      value: Urbana
+    - type: file
+      key: imagen_url_tarjeta_propiedad
+      src:
+        - C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\storage\3\6174426c-cc93-42c9-a968-28e5b470c31f.jpg
+      description: Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.
+    - type: file
+      key: imagen_url_identificacion_vehiculo
+      src:
+        - C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\storage\3\6174426c-cc93-42c9-a968-28e5b470c31f.jpg
+      description: Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.
+    - type: file
+      key: imagen_url_vehiculo
+      src:
+        - C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\storage\3\6174426c-cc93-42c9-a968-28e5b470c31f.jpg
+      description: Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.
+scripts:
+  - type: afterResponse
+    code: pm.test("403 rol no permitido", () => pm.response.to.have.status(403));
+    language: text/javascript
+order: 4000

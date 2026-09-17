@@ -1,0 +1,14 @@
+$kind: http-request
+name: PATCH vehicle id inactivar (aprendiz nuevo inactiva su vehiculo de prueba) [Mobile API]
+url: "{{baseUrl}}/api/mobile/v1/vehicle/{{nuevoVehiculoId}}/inactivar"
+method: PATCH
+headers:
+  Authorization: Bearer {{tokenAprendizNuevo}}
+body:
+  type: formdata
+  content: []
+scripts:
+  - type: afterResponse
+    code: pm.test("200 OK", () => pm.response.to.have.status(200));
+    language: text/javascript
+order: 8000

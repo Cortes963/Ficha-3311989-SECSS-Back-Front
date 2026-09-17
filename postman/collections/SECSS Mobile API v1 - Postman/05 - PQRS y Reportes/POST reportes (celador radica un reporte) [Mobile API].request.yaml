@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/mobile/v1/reportes"
+method: POST
+headers:
+  Authorization: Bearer {{tokenCelador}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "id_usuario_celador": 3,
+      "asunto": "Prueba Postman",
+      "cuerpo": "Reporte de prueba generado desde la coleccion."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("201 creado", () => pm.response.to.have.status(201));
+      pm.environment.set('nuevoReporteId', pm.response.json().id_reporte);
+    language: text/javascript
+order: 2000

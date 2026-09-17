@@ -1,5 +1,5 @@
 $kind: collection
-description: Colecci?n alineada con las rutas actuales de api/. Ejecutar 00 - Auth y Core primero. Las solicitudes multipart requieren seleccionar archivos locales en cada campo file.
+description: Coleccion alineada con las rutas actuales de api/. Ejecutar 00 - Auth y Core primero. Las solicitudes multipart requieren seleccionar archivos locales en cada campo file.
 variables:
   baseUrl: http://localhost:4000
   testPassword: SECSS-Testing-2026!

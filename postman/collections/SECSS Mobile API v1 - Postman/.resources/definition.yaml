@@ -1,0 +1,19 @@
+$kind: collection
+description: Colecci?n para la API m?vil independiente en /api/mobile/v1. Requiere la API m?vil en http://localhost:4100 y MySQL disponible.
+variables:
+  baseUrl: http://localhost:4100
+  testPassword: SECSS-Testing-2026!
+  docAdmin: "1021312836"
+  docJefe: "80112233"
+  docCelador: "79888777"
+  docAprendizSemilla: "1055444333"
+  docInvitadoSemilla: "52888999"
+  docAprendizNuevo: ""
+  tokenAdmin: ""
+  tokenJefe: ""
+  tokenCelador: ""
+  tokenAprendizSemilla: ""
+  tokenInvitadoSemilla: ""
+  tokenAprendizNuevo: ""
+  nuevoAprendizId: ""
+  nuevoVehiculoId: ""

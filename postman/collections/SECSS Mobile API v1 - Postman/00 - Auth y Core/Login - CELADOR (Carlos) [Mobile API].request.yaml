@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "numero_documento": "{{docCelador}}",
+      "password": "{{testPassword}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("status 200", () => pm.response.to.have.status(200));
+
+      const data = pm.response.json();
+      pm.test("devuelve token", () => pm.expect(data.token).to.be.a('string'));
+      if (data.token) pm.environment.set('tokenCelador', data.token);
+      if (data.usuario) pm.environment.set('tokenCelador_userId', data.usuario.id);
+    language: text/javascript
+order: 5000

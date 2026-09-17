@@ -1,29 +1,27 @@
-# Backend de datos — SECSS
+# Web API y Backend SECSS
 
-Esta carpeta contiene la lógica de negocio y persistencia de SECSS. No abre un
-puerto HTTP por sí sola: la capa `api/` expone las rutas y delega en estos
-controladores.
+`Backend/` contiene ahora el proceso completo de la plataforma web:
 
-Instala sus dependencias desde esta carpeta cuando se configure el proyecto:
+- `server.js` y `app.js`: API HTTP web.
+- `routes/`: rutas web.
+- `controller/`, `services/`, `middleware/`: lógica y seguridad web.
+- `db.js`: conexión propia a MySQL.
+- `storage/`: archivos usados por la API web.
 
-```bash
+La web conserva las rutas `/api/*` para no romper el frontend actual y también
+publica la versión explícita `/api/web/v1/*`.
+
+## Inicio
+
+```powershell
 cd Backend
 npm install
+Copy-Item .env.example .env
+npm run dev
 ```
 
-Las variables de entorno y el proceso HTTP se configuran desde `api/`; el
-Backend consume esas variables cuando sus controladores son invocados.
+Por defecto escucha en `http://localhost:4000`.
 
-```text
-Backend/
-├── controller/   # Acciones invocadas por las rutas HTTP
-├── services/     # Operaciones reutilizables
-├── middleware/   # JWT, roles y carga de archivos
-├── db.js         # Pool MySQL
-├── lib.js        # Validación y utilidades
-├── migrations/   # Cambios de base de datos
-└── storage/      # Archivos persistidos
-```
-
-Las variables de entorno se cargan al iniciar `api/server.js`. Las conexiones
-MySQL son utilizadas por los controladores de esta carpeta.
+La API móvil de `api/` es un proceso separado, con sus propias copias de
+controladores, middleware, dependencias y conexión MySQL. Ambos procesos
+pueden usar la misma base de datos sin que uno importe el código del otro.

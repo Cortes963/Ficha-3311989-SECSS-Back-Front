@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/mobile/v1/users/me"
+method: PATCH
+headers:
+  Authorization: Bearer {{tokenAprendizNuevo}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "n_celular": "3999999999"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("200 OK", () => pm.response.to.have.status(200));
+      pm.test("avisa revision de cupos", () => pm.expect(pm.response.json().mensaje).to.include('cupos'));
+    language: text/javascript
+order: 2000

@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/mobile/v1/users/5"
+method: GET
+headers:
+  Authorization: Bearer {{tokenAdmin}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("200 OK", () => pm.response.to.have.status(200));
+      if (pm.response.code === 200) {
+        pm.test("incluye roles", () => pm.expect(pm.response.json().datos.roles).to.include('APRENDIZ'));
+      }
+    language: text/javascript
+order: 6000

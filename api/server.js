@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import app from './app.js';
 
-const port = Number(process.env.PORT || 4000);
+const port = Number(process.env.MOBILE_API_PORT || 4100);
 
 const server = app.listen(port, () => {
-  console.log(`SECSS API en puerto ${port}`);
+  console.log(`SECSS Mobile API en puerto ${port}`);
 });
 
 export default server;

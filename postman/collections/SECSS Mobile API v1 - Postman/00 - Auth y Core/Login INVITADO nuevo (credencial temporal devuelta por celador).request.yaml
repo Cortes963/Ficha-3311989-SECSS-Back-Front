@@ -1,0 +1,25 @@
+$kind: http-request
+name: Login INVITADO nuevo (credencial temporal devuelta por celador) [Mobile API]
+description: Ejecutar despu?s de POST input_output invitado; usa la contrase?a temporal guardada autom?ticamente.
+url: "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "numero_documento": "{{docInvitadoNuevo}}",
+      "password": "{{passwordInvitadoNuevo}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("status 200", () => pm.response.to.have.status(200));
+
+      const data = pm.response.json();
+      pm.test("devuelve token", () => pm.expect(data.token).to.be.a('string'));
+      if (data.token) pm.environment.set('tokenInvitadoNuevo', data.token);
+      if (data.usuario) pm.environment.set('tokenInvitadoNuevo_userId', data.usuario.id);
+    language: text/javascript
+order: 15000

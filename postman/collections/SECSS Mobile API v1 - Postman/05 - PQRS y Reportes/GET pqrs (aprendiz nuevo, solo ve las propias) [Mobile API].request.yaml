@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{baseUrl}}/api/mobile/v1/pqrs"
+method: GET
+headers:
+  Authorization: Bearer {{tokenAprendizNuevo}}
+scripts:
+  - type: afterResponse
+    code: pm.test("200 OK", () => pm.response.to.have.status(200));
+    language: text/javascript
+order: 6000

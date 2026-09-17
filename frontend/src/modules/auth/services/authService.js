@@ -1,5 +1,6 @@
 // src/modules/auth/services/authService.js
 import { apiClient } from '@/services/apiClient';
+import { appendFiles } from '@/utils/media';
 
 /**
  * Inicia sesión contra POST /api/auth/storeAuthLogin.
@@ -24,4 +25,15 @@ export const login = (documento, password) =>
  * una ruta que no existe en Backend/routes/user.routes.js y que además
  * exige Bearer token — imposible de tener antes de registrarse.
  */
-export const register = (payload) => apiClient.post('/auth/storeAuthRegister', payload);
+export const register = (payload) => {
+  const form = new FormData();
+  const { detalle_aprendiz: detalle, ...account } = payload;
+  Object.entries(account).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) form.append(key, value);
+  });
+  Object.entries(detalle || {}).forEach(([key, value]) => {
+    if (key !== 'imagenes' && value !== undefined && value !== null) form.append(`detalle_aprendiz[${key}]`, value);
+  });
+  appendFiles(form, detalle?.imagenes);
+  return apiClient.post('/auth/storeAuthRegister', form);
+};

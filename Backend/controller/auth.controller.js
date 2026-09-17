@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'node:crypto';
 import db from '../db.js';
 import { ROLES, error, required } from '../lib.js';
+import { removeUploadedFile, saveUploadedFile } from '../services/fileStorage.service.js';
 
 export async function storeAuthLogin(req, res) {
   try {
@@ -27,14 +28,35 @@ export async function storeAuthLogin(req, res) {
 
 export async function storeAuthRegister(req, res) {
   const connection = await db.getConnection();
+  const uploaded = [];
   try {
     required(req.body, ['tipo_documento','numero_documento','primer_nombre','primer_apellido','n_celular','correo','password','nombre_rol']);
-    const { tipo_documento,numero_documento,primer_nombre,segundo_nombre=null,primer_apellido,segundo_apellido=null,n_celular,correo,password,nombre_rol,detalle_aprendiz=null } = req.body;
+    const { tipo_documento,numero_documento,primer_nombre,segundo_nombre=null,primer_apellido,segundo_apellido=null,n_celular,correo,password,nombre_rol } = req.body;
+    const detalle_aprendiz = typeof req.body.detalle_aprendiz === 'object'
+      ? req.body.detalle_aprendiz
+      : Object.fromEntries(Object.entries(req.body)
+        .filter(([key]) => key.startsWith('detalle_aprendiz['))
+        .map(([key, value]) => [key.slice(17, -1), value]));
     if (nombre_rol !== ROLES.APRENDIZ) throw Object.assign(new Error('El registro público solo permite APRENDIZ.'), { status: 403 });
     if (password.length < 10) throw Object.assign(new Error('La contraseña debe tener al menos 10 caracteres.'), { status: 400 });
-    required(detalle_aprendiz, ['id_centro','ficha','imagen_url_aprendiz','direccion','imagen_url_identificacion','imagen_url_carnet_sena','fecha_vinculacion']);
+    required(detalle_aprendiz, ['id_centro','ficha','direccion','fecha_vinculacion']);
+    const imageFields = ['imagen_url_aprendiz', 'imagen_url_identificacion', 'imagen_url_carnet_sena'];
+    for (const field of imageFields) {
+      const file = req.files?.[field]?.[0];
+      if (!file) throw Object.assign(new Error(`Falta el archivo obligatorio: ${field}.`), { status: 400 });
+    }
     await connection.beginTransaction();
     const [u] = await connection.query('INSERT INTO usuario (tipo_documento,numero_documento,primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,n_celular,estado) VALUES (?,?,?,?,?,?,?,1)', [tipo_documento,numero_documento,primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,n_celular]);
+    for (const field of imageFields) {
+      const saved = await saveUploadedFile(req.files[field][0], u.insertId);
+      uploaded.push(saved.ruta);
+      detalle_aprendiz[field] = saved.ruta;
+      await connection.query(
+        'INSERT INTO archivo (nombre_original,nombre_almacenado,mime_type,tamano,ruta,id_usuario_subida) VALUES (?,?,?,?,?,?)',
+        [saved.nombre_original, saved.nombre_almacenado, saved.mime_type, saved.tamano, saved.ruta, u.insertId]
+      );
+    }
+    required(detalle_aprendiz, imageFields);
     await connection.query('INSERT INTO cuenta (id_usuario,correo,password_hash,estado) VALUES (?,?,?,1)', [u.insertId,correo,await bcrypt.hash(password,12)]);
     const [roles] = await connection.query('SELECT id FROM rol WHERE nombre_rol=?', [ROLES.APRENDIZ]);
     if (!roles.length) throw Object.assign(new Error('Rol inexistente.'), { status: 400 });
@@ -42,7 +64,7 @@ export async function storeAuthRegister(req, res) {
     await connection.query('INSERT INTO detalle_aprendiz (id_usuario,id_centro,ficha,imagen_url_aprendiz,direccion,imagen_url_identificacion,imagen_url_carnet_sena,fecha_vinculacion,fecha_terminacion) VALUES (?,?,?,?,?,?,?,?,?)', [u.insertId,detalle_aprendiz.id_centro,detalle_aprendiz.ficha,detalle_aprendiz.imagen_url_aprendiz,detalle_aprendiz.direccion,detalle_aprendiz.imagen_url_identificacion,detalle_aprendiz.imagen_url_carnet_sena,detalle_aprendiz.fecha_vinculacion,detalle_aprendiz.fecha_terminacion || null]);
     await connection.commit();
     return res.status(201).json({ ok: true, mensaje: 'Usuario registrado.', id_usuario: u.insertId });
-  } catch (err) { await connection.rollback(); return error(res, err); }
+  } catch (err) { await Promise.all(uploaded.map(removeUploadedFile)); await connection.rollback(); return error(res, err); }
   finally { connection.release(); }
 }
 

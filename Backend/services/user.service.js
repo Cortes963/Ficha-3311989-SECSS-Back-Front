@@ -22,7 +22,7 @@ export async function createUserWithAccount(connection, data) {
       data.segundo_apellido || null, data.n_celular
     ]
   );
-  const password = temporaryPassword();
+  const password = data.password || temporaryPassword();
   await createAccount(connection, {
     userId: result.insertId,
     correo: data.correo,

@@ -13,10 +13,23 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
     ,imagenes: {}
   });
   const [centros, setCentros] = useState([]);
+  const [centrosCargando, setCentrosCargando] = useState(true);
+  const [centrosError, setCentrosError] = useState('');
 
   // Mapeo corregido uno a uno con db.json
   useEffect(() => {
-    listarCentrosPublicos().then(setCentros).catch(() => setCentros([]));
+    let activo = true;
+    setCentrosCargando(true);
+    setCentrosError('');
+    listarCentrosPublicos()
+      .then((datos) => { if (activo) setCentros(datos); })
+      .catch((error) => {
+        if (activo) {
+          setCentros([]);
+          setCentrosError(error.message || 'No se pudieron cargar los centros.');
+        }
+      })
+      .finally(() => { if (activo) setCentrosCargando(false); });
     if (initialData) {
       setAprendizData({
         numeroFicha: initialData.ficha || '', 
@@ -26,6 +39,7 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
         fechaTerminacion: (initialData.fecha_terminacion || initialData.fechaTerminacion || '').slice(0, 10)
       });
     }
+    return () => { activo = false; };
   }, [initialData]);
 
   const handleChange = (e) => {
@@ -116,10 +130,13 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
             {readOnly ? (
               <input type="text" className="form-control" value={initialData?.nombre_centro || centros.find((centro) => Number(centro.id) === Number(aprendizData.idCentro))?.nombre_centro || 'Centro no informado'} readOnly />
             ) : (
-              <select className="form-select" value={aprendizData.idCentro} onChange={(event) => setAprendizData((previous) => ({ ...previous, idCentro: event.target.value }))} required>
-                <option value="">Seleccione un centro</option>
-                {centros.map((centro) => <option key={centro.id} value={centro.id}>{centro.nombre_centro}</option>)}
-              </select>
+              <>
+                <select className="form-select" value={aprendizData.idCentro} onChange={(event) => setAprendizData((previous) => ({ ...previous, idCentro: event.target.value }))} required disabled={centrosCargando || Boolean(centrosError)}>
+                  <option value="">{centrosCargando ? 'Cargando centros...' : centrosError ? 'No se pudieron cargar los centros' : centros.length ? 'Seleccione un centro' : 'No hay centros registrados'}</option>
+                  {centros.map((centro) => <option key={centro.id} value={centro.id}>{centro.nombre_centro}</option>)}
+                </select>
+                {centrosError && <div className="invalid-feedback d-block">{centrosError}</div>}
+              </>
             )}
           </div>
 
@@ -131,15 +148,15 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
                 <div className="row g-3">
                   <div className="col-md-4">
                     <label className="form-label small text-muted">Foto del Carné</label>{storageUrl(initialData?.imagen_url_carnet_sena) ? <img className="img-thumbnail d-block mb-1" style={{ maxHeight: 80 }} src={storageUrl(initialData.imagen_url_carnet_sena)} alt="Carné SENA" /> : <span className="d-block small text-muted mb-1">Sin imagen cargada</span>}
-                    {!readOnly && <input type="file" className="form-control form-control-sm" accept="image/jpeg,image/png,image/webp" onChange={(event) => setAprendizData((current) => ({ ...current, imagenes: { ...current.imagenes, imagen_url_carnet_sena: event.target.files?.[0] } }))} />}
+                    {!readOnly && <input type="file" required={!readOnly} className="form-control form-control-sm" accept="image/jpeg,image/png,image/webp" onChange={(event) => setAprendizData((current) => ({ ...current, imagenes: { ...current.imagenes, imagen_url_carnet_sena: event.target.files?.[0] } }))} />}
                   </div>
                   <div className="col-md-4">
                     <label className="form-label small text-muted">Documento Digital</label>{storageUrl(initialData?.imagen_url_identificacion) ? <img className="img-thumbnail d-block mb-1" style={{ maxHeight: 80 }} src={storageUrl(initialData.imagen_url_identificacion)} alt="Identificación" /> : <span className="d-block small text-muted mb-1">Sin imagen cargada</span>}
-                    {!readOnly && <input type="file" className="form-control form-control-sm" accept="image/jpeg,image/png,image/webp" onChange={(event) => setAprendizData((current) => ({ ...current, imagenes: { ...current.imagenes, imagen_url_identificacion: event.target.files?.[0] } }))} />}
+                    {!readOnly && <input type="file" required={!readOnly} className="form-control form-control-sm" accept="image/jpeg,image/png,image/webp" onChange={(event) => setAprendizData((current) => ({ ...current, imagenes: { ...current.imagenes, imagen_url_identificacion: event.target.files?.[0] } }))} />}
                   </div>
                   <div className="col-md-4">
                     <label className="form-label small text-muted">Foto Perfil</label>{storageUrl(initialData?.imagen_url_aprendiz) ? <img className="img-thumbnail d-block mb-1" style={{ maxHeight: 80 }} src={storageUrl(initialData.imagen_url_aprendiz)} alt="Aprendiz" /> : <span className="d-block small text-muted mb-1">Sin imagen cargada</span>}
-                    {!readOnly && <input type="file" className="form-control form-control-sm" accept="image/jpeg,image/png,image/webp" onChange={(event) => setAprendizData((current) => ({ ...current, imagenes: { ...current.imagenes, imagen_url_aprendiz: event.target.files?.[0] } }))} />}
+                    {!readOnly && <input type="file" required={!readOnly} className="form-control form-control-sm" accept="image/jpeg,image/png,image/webp" onChange={(event) => setAprendizData((current) => ({ ...current, imagenes: { ...current.imagenes, imagen_url_aprendiz: event.target.files?.[0] } }))} />}
                   </div>
                 </div>
             </div>

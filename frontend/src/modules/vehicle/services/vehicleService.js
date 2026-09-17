@@ -39,12 +39,15 @@ export const CAMPOS_IMAGEN = {
     'imagen_url_soat',
     'imagen_url_tecnomecanica_vigente'
   ],
-  BICICLETA: ['imagen_url_factura', 'imagen_url_identificacion_vehiculo', 'imagen_url_vehiculo']
+  BICICLETA: [
+    'imagen_url_tarjeta_propiedad',
+    'imagen_url_identificacion_vehiculo',
+    'imagen_url_vehiculo'
+  ]
 };
 
 export const ETIQUETA_IMAGEN = {
   imagen_url_tarjeta_propiedad: 'Tarjeta de propiedad',
-  imagen_url_factura: 'Factura de compra',
   imagen_url_identificacion_vehiculo: 'Identificación / chasis',
   imagen_url_vehiculo: 'Foto del vehículo',
   imagen_url_soat: 'SOAT vigente',
@@ -57,7 +60,6 @@ export const ETIQUETA_IMAGEN = {
  */
 const ALIAS_IMAGEN = {
   imagen_url_tarjeta_propiedad: ['tarjeta_propiedad'],
-  imagen_url_factura: ['factura'],
   imagen_url_identificacion_vehiculo: ['identificacion_chasis', 'identificacion_vehiculo'],
   imagen_url_vehiculo: ['foto_vehiculo', 'vehiculo'],
   imagen_url_soat: ['soat'],

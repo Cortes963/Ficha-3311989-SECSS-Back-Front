@@ -24,12 +24,7 @@ export const RegisterPage = () => {
         <ApprenForm onSubmit={(data) => submit({
           ...userData,
           nombre_rol: 'APRENDIZ',
-          detalle_aprendiz: {
-            ...data,
-            imagen_url_identificacion: 'PENDIENTE',
-            imagen_url_carnet_sena: 'PENDIENTE',
-            imagen_url_aprendiz: 'PENDIENTE'
-          }
+          detalle_aprendiz: data
         })} />
       )}
     </div>

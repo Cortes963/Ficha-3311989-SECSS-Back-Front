@@ -6,6 +6,17 @@
 
 export const ROLES = Object.freeze({ ADMIN: 'ADMINISTRADOR', JEFE: 'JEFE_SEGURIDAD', CELADOR: 'CELADOR', APRENDIZ: 'APRENDIZ', INVITADO: 'INVITADO' });
 export const PQRS = Object.freeze({ RADICADO: 1, EN_TRAMITE: 2, RESUELTO: 3, CERRADO: 4 });
+export const EDIT_WINDOW_MINUTES = Number(process.env.EDIT_WINDOW_MINUTES || 5);
+
+export function assertEditableWithinWindow(value, resource) {
+  const createdAt = new Date(value);
+  if (Number.isNaN(createdAt.getTime())) {
+    throw Object.assign(new Error(`No se puede validar la fecha de ${resource}.`), { status: 500 });
+  }
+  if (Date.now() - createdAt.getTime() > EDIT_WINDOW_MINUTES * 60 * 1000) {
+    throw Object.assign(new Error(`${resource} solo puede editarse durante los primeros ${EDIT_WINDOW_MINUTES} minutos.`), { status: 409 });
+  }
+}
 
 export function integer(value, name) {
   const parsed = Number(value);
@@ -28,4 +39,3 @@ export function error(res, err) {
   return res.status(err?.status || 500).json({ ok: false, mensaje: err?.status ? err.message : 'Error interno del servidor.' });
 }
 export const actorId = (req) => integer(req.user.id, 'usuario del token');
-

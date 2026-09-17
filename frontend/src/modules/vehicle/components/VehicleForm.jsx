@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
+import { storageUrl } from '@/utils/media';
 
 export const VehicleForm = ({ initialData = null, readOnly = false, onSubmit = null }) => {
   const [tipoVehiculo, setTipoVehiculo] = useState('moto');
@@ -10,7 +11,12 @@ export const VehicleForm = ({ initialData = null, readOnly = false, onSubmit = n
     modelo: '',
     color: '',
     numeroMarco: '',
-    tipoBicicleta: ''
+    tipoBicicleta: '',
+    imagen_url_tarjeta_propiedad: null,
+    imagen_url_identificacion_vehiculo: null,
+    imagen_url_vehiculo: null,
+    imagen_url_soat: null,
+    imagen_url_tecnomecanica_vigente: null
   });
 
   useEffect(() => {
@@ -30,6 +36,11 @@ export const VehicleForm = ({ initialData = null, readOnly = false, onSubmit = n
         numeroMarco: subDetalles.numero_marco || '',
         // Corrección crítica: db.json usa 'clase_bicicleta'
         tipoBicicleta: subDetalles.clase_bicicleta || ''
+        ,imagen_url_tarjeta_propiedad: initialData.imagen_url_tarjeta_propiedad || null
+        ,imagen_url_identificacion_vehiculo: initialData.imagen_url_identificacion_vehiculo || null
+        ,imagen_url_vehiculo: initialData.imagen_url_vehiculo || null
+        ,imagen_url_soat: subDetalles.imagen_url_soat || null
+        ,imagen_url_tecnomecanica_vigente: subDetalles.imagen_url_tecnomecanica_vigente || null
       });
     }
   }, [initialData]);
@@ -59,7 +70,8 @@ export const VehicleForm = ({ initialData = null, readOnly = false, onSubmit = n
         tipo_vehiculo: tipoVehiculo.toUpperCase(),
         marca: formData.marca,
         color: formData.color,
-        detalles: bloqueDetalles
+        detalles: bloqueDetalles,
+        imagenes: Object.fromEntries(Object.entries(formData).filter(([key]) => key.startsWith('imagen_')))
       });
     }
   };
@@ -122,6 +134,15 @@ export const VehicleForm = ({ initialData = null, readOnly = false, onSubmit = n
             <div className="col-md-6">
               <label className="form-label small fw-bold">Marca</label>
               <input type="text" className="form-control" name="marca" value={formData.marca} onChange={handleChange} disabled={readOnly} required={!readOnly}/>
+            </div>
+            <div className="row g-3 mt-3">
+              {['imagen_url_tarjeta_propiedad', 'imagen_url_identificacion_vehiculo', 'imagen_url_vehiculo', ...(tipoVehiculo === 'moto' ? ['imagen_url_soat', 'imagen_url_tecnomecanica_vigente'] : [])].map((name) => (
+                <div className="col-md-4" key={name}>
+                  <label className="form-label small fw-bold">{name.replace('imagen_url_', '').replaceAll('_', ' ')}</label>
+                  {formData[name] && typeof formData[name] === 'string' && <img className="img-thumbnail d-block mb-2" style={{ maxHeight: 100 }} src={storageUrl(formData[name])} alt={name} />}
+                  {!readOnly && <input type="file" className="form-control" accept="image/jpeg,image/png,image/webp" onChange={(event) => setFormData((current) => ({ ...current, [name]: event.target.files?.[0] || null }))} />}
+                </div>
+              ))}
             </div>
             <div className="col-md-6">
               <label className="form-label small fw-bold">Color Principal</label>

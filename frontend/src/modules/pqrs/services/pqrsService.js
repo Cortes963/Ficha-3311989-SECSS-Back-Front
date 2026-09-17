@@ -85,9 +85,6 @@ export const actualizarPqrs = (id, { asunto, cuerpo }) =>
 export const actualizarEstadoPqrs = (id, estado) =>
   apiClient.patch(`/pqrs/${id}/estado`, { estado });
 
-/** Elimina una PQRS (solo mientras no tenga respuesta). */
-export const eliminarPqrs = (id) => apiClient.delete(`/pqrs/${id}`);
-
 /** Respuesta (1 a 1) de una PQRS puntual, si ya existe. */
 export const obtenerRespuestaDePqrs = async (idPqrs) => {
   const { datos } = await apiClient.get(`/pqrs/${idPqrs}/respuesta`);
@@ -101,7 +98,3 @@ export const responderPqrs = (idPqrs, { asunto, cuerpo }) =>
 /** Actualiza una respuesta ya registrada. */
 export const actualizarRespuesta = (idRespuesta, { asunto, cuerpo }) =>
   apiClient.put(`/respuestas/${idRespuesta}`, { asunto, cuerpo });
-
-/** Elimina una respuesta (la PQRS vuelve a estado EN_TRAMITE). */
-export const eliminarRespuesta = (idRespuesta) =>
-  apiClient.delete(`/respuestas/${idRespuesta}`);

@@ -23,7 +23,7 @@ LEFT JOIN detalle_bicicleta db ON db.id_vehiculo=v.id
 ORDER BY av.updated_at DESC LIMIT ? OFFSET ?`,[limite,offset]);
 const normalized=datos.map((row)=>({
 ...row,
-estado_autorizacion:({0:'PENDIENTE',1:'APROBADO',2:'SUSPENDIDO'})[row.estado] || row.estado,
+estado_autorizacion:({0:'INACTIVO',1:'ACTIVO'})[row.estado] || row.estado,
 vehiculo:row.tipo_vehiculo,
 identificador:row.identificador_vehiculo
 }));
@@ -101,7 +101,7 @@ export async function showQuotaDetail(req, res) {
     const [open] = await db.query('SELECT id FROM entrada_salida WHERE id_usuario_entra=? AND id_vehiculo=? AND fecha_hora_salida IS NULL LIMIT 1', [idUsuario, idVehiculo]);
     return res.json({ ok: true, datos: {
       ...rows[0],
-      estado_autorizacion: ({ 0: 'PENDIENTE', 1: 'APROBADO', 2: 'SUSPENDIDO' })[rows[0].estado] || rows[0].estado,
+      estado_autorizacion: ({ 0: 'INACTIVO', 1: 'ACTIVO' })[rows[0].estado] || rows[0].estado,
       idEntradaAbierta: open[0]?.id || null,
     } });
   } catch (e) { return error(res, e); }

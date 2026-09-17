@@ -53,7 +53,7 @@ export const roleCardsData = {
     actions: [
       action('Información personal y cuenta', '/perfil', 'bi-person'),
       action('Entradas y salidas · Consultar', '/entradas-salidas', 'bi-journal-text'),
-      action('Cupos · Consultar', '/mi-cupo', 'bi-car-front')
+      action('Vehículos · Registrar / editar', '/vehiculos', 'bi-bicycle')
       , action('PQRS · Registrar / consultar', '/pqrs', 'bi-chat-left-text')
     ]
   },
@@ -65,7 +65,7 @@ export const roleCardsData = {
     actions: [
       action('Información personal y cuenta', '/perfil', 'bi-person'),
       action('Entradas y salidas · Consultar', '/entradas-salidas', 'bi-journal-text'),
-      action('Cupos · Consultar', '/mi-cupo', 'bi-ticket-perforated'),
+      action('Vehículos · Consultar', '/vehiculos', 'bi-bicycle'),
       action('PQRS · Registrar / consultar', '/pqrs', 'bi-chat-left-text')
     ]
   }

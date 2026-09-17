@@ -1,13 +1,56 @@
-import bcrypt from 'bcryptjs';
+﻿import bcrypt from 'bcryptjs';
 import db from '../db.js';
 import { actorId, error, integer, page, required, ROLES } from '../lib.js';
 import { assignRole, createUserWithAccount } from '../services/user.service.js';
+import { removeUploadedFile, saveUploadedFile } from '../services/fileStorage.service.js';
+
+function parseJsonValue(value) {
+  if (typeof value !== 'string') return value;
+  const trimmed = value.trim();
+  if (!trimmed || !['{', '['].includes(trimmed[0])) return value;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return value;
+  }
+}
+
+function normalizeAcademicPayload(req) {
+  const payload = { ...req.body };
+  if (payload.detalle_aprendiz !== undefined) {
+    payload.detalle_aprendiz = parseJsonValue(payload.detalle_aprendiz);
+  }
+  const detail = payload.detalle_aprendiz && typeof payload.detalle_aprendiz === 'object' ? payload.detalle_aprendiz : {};
+  return { ...payload, ...detail };
+}
+
+async function persistUploadedAcademicImages(connection, req, userId, payload, uploaded) {
+  const names = ['imagen_url_aprendiz', 'imagen_url_identificacion', 'imagen_url_carnet_sena'];
+  const nextPayload = { ...payload };
+
+  for (const name of names) {
+    const file = req.files?.[name]?.[0];
+    if (!file) continue;
+    const saved = await saveUploadedFile(file, userId);
+    uploaded.push(saved.ruta);
+    nextPayload[name] = saved.ruta;
+    await connection.query(
+      'INSERT INTO archivo (nombre_original, nombre_almacenado, mime_type, tamano, ruta, id_usuario_subida) VALUES (?, ?, ?, ?, ?, ?)',
+      [saved.nombre_original, saved.nombre_almacenado, saved.mime_type, saved.tamano, saved.ruta, userId]
+    );
+  }
+
+  return nextPayload;
+}
 
 export async function indexUser(req, res) {
   try {
+    if (req.user.roles.includes(ROLES.CELADOR) && req.query.rol !== ROLES.INVITADO) {
+      return res.status(403).json({ ok: false, mensaje: 'El celador solo puede consultar invitados.' });
+    }
     const { pagina, limite, offset } = page(req.query);
     const params = [];
-    let where = 'WHERE u.estado=1';
+    let where = 'WHERE 1=1';
     if (req.query.rol) { where += ' AND EXISTS (SELECT 1 FROM usuario_rol ur JOIN rol r ON r.id=ur.id_rol WHERE ur.id_usuario=u.id AND ur.estado=1 AND r.nombre_rol=?)'; params.push(req.query.rol); }
     if (req.query.q) {
       where += ` AND (u.numero_documento LIKE ? OR CONCAT_WS(' ',u.primer_nombre,u.segundo_nombre,u.primer_apellido,u.segundo_apellido) LIKE ?)`;
@@ -63,7 +106,14 @@ export async function indexEligibleUsers(req, res) {
 export async function showUserId(req, res) {
   try {
     const id = integer(req.params.id, 'id');
-    const [rows] = await db.query('SELECT u.*,c.correo,c.ultimo_login FROM usuario u JOIN cuenta c ON c.id_usuario=u.id WHERE u.id=?', [id]);
+    if (req.user.roles.includes(ROLES.CELADOR)) {
+      const [guestRole] = await db.query(
+        `SELECT 1 FROM usuario_rol ur JOIN rol r ON r.id=ur.id_rol WHERE ur.id_usuario=? AND ur.estado=1 AND r.nombre_rol=?`,
+        [id, ROLES.INVITADO]
+      );
+      if (!guestRole.length) return res.status(403).json({ ok: false, mensaje: 'El celador solo puede consultar invitados.' });
+    }
+    const [rows] = await db.query('SELECT u.*,c.correo,c.ultimo_login,c.created_at AS cuenta_created_at,c.estado AS cuenta_estado FROM usuario u JOIN cuenta c ON c.id_usuario=u.id WHERE u.id=?', [id]);
     if (!rows.length) return res.status(404).json({ ok: false, mensaje: 'Usuario no encontrado.' });
     const [roles] = await db.query('SELECT r.nombre_rol FROM usuario_rol ur JOIN rol r ON r.id=ur.id_rol WHERE ur.id_usuario=? AND ur.estado=1', [id]);
     const [aprendiz] = await db.query('SELECT da.*,c.nombre_centro FROM detalle_aprendiz da LEFT JOIN centro c ON c.id=da.id_centro WHERE da.id_usuario=?', [id]);
@@ -71,8 +121,65 @@ export async function showUserId(req, res) {
   } catch (err) { return error(res, err); }
 }
 
+export async function showAcademicDetail(req, res) {
+  try {
+    const id = integer(req.params.id, 'id');
+    const [rows] = await db.query(
+      'SELECT da.*, c.nombre_centro FROM detalle_aprendiz da LEFT JOIN centro c ON c.id = da.id_centro WHERE da.id_usuario = ?',
+      [id]
+    );
+    if (!rows.length) return res.status(404).json({ ok: false, mensaje: 'Detalle académico no encontrado.' });
+    return res.json({ ok: true, datos: rows[0] });
+  } catch (err) { return error(res, err); }
+}
+
+export async function updateAcademicDetail(req, res) {
+  const connection = await db.getConnection();
+  const uploaded = [];
+  try {
+    const id = integer(req.params.id, 'id');
+    const payload = normalizeAcademicPayload(req);
+    const prepared = await persistUploadedAcademicImages(connection, req, id, payload, uploaded);
+    const assignments = [];
+    const values = [];
+    const fields = ['id_centro', 'ficha', 'direccion', 'fecha_vinculacion', 'fecha_terminacion', 'imagen_url_aprendiz', 'imagen_url_identificacion', 'imagen_url_carnet_sena'];
+
+    for (const field of fields) {
+      if (prepared[field] !== undefined) {
+        assignments.push(`${field} = ?`);
+        values.push(prepared[field] ?? null);
+      }
+    }
+
+    if (!assignments.length) {
+      throw Object.assign(new Error('No hay campos actualizables.'), { status: 400 });
+    }
+
+    await connection.beginTransaction();
+    const [existing] = await connection.query('SELECT 1 FROM detalle_aprendiz WHERE id_usuario = ?', [id]);
+    if (!existing.length) {
+      const insertColumns = ['id_usuario', ...fields];
+      const insertValues = [id, ...fields.map((field) => prepared[field] ?? null)];
+      await connection.query(`INSERT INTO detalle_aprendiz (${insertColumns.join(', ')}) VALUES (${insertColumns.map(() => '?').join(', ')})`, insertValues);
+    } else {
+      await connection.query(`UPDATE detalle_aprendiz SET ${assignments.join(', ')} WHERE id_usuario = ?`, [...values, id]);
+    }
+    await connection.commit();
+    return res.json({ ok: true, mensaje: 'Detalle académico actualizado.' });
+  } catch (err) {
+    await Promise.all(uploaded.map(removeUploadedFile));
+    await connection.rollback();
+    return error(res, err);
+  } finally {
+    connection.release();
+  }
+}
+
 export async function updateUser(req, res) {
   try {
+    if (req.user.roles.includes(ROLES.INVITADO)) {
+      return res.status(403).json({ ok: false, mensaje: 'Los invitados no pueden editar su perfil.' });
+    }
     const id = actorId(req);
     const fields = ['primer_nombre','segundo_nombre','primer_apellido','segundo_apellido','n_celular'];
     const assignments = [];

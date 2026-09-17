@@ -34,7 +34,7 @@ export const DirectoryPage = ({ title, role, allowDetail = true, canDisable = fa
   const [rows, setRows] = useState([]);
   const [error, setError] = useState('');
   useEffect(() => { getUsuarios(role).then(setRows).catch((e) => setError(e.message)); }, [role]);
-  const disable = async (row) => { try { await actualizarEstadoUsuario(row.id, 0); setRows((items) => items.map((item) => item.id === row.id ? { ...item, estado: 0 } : item)); } catch (e) { setError(e.message); } };
+  const changeState = async (row) => { try { await actualizarEstadoUsuario(row.id, row.estado ? 0 : 1); setRows((items) => items.map((item) => item.id === row.id ? { ...item, estado: row.estado ? 0 : 1 } : item)); } catch (e) { setError(e.message); } };
   const columns = [
     { key: 'numero_documento', label: 'Documento' },
     { key: 'nombre', label: 'Nombre', render: (row) => <div className="d-flex align-items-center gap-2"><i className="bi bi-person-circle text-secondary fs-4"></i><span>{fullName(row)}</span></div> },
@@ -44,7 +44,7 @@ export const DirectoryPage = ({ title, role, allowDetail = true, canDisable = fa
   ];
   if (role === 'APRENDIZ') columns.push({ key: 'ficha', label: 'Ficha' }, { key: 'fecha_vinculacion', label: 'Vinculación', render: (row) => formatDate(row.fecha_vinculacion) }, { key: 'fecha_terminacion', label: 'Terminación', render: (row) => formatDate(row.fecha_terminacion) });
   columns.push({ key: 'estado', label: 'Estado', render: (row) => <span className="d-flex align-items-center gap-2"><i className={`bi bi-circle-fill ${row.estado ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.5rem' }}></i>{row.estado ? 'Activo' : 'Inactivo'}</span> });
-  if (allowDetail || canDisable) columns.push({ key: 'actions', label: 'Acciones', render: (row) => <div className="d-flex gap-2">{allowDetail && <Link className="btn btn-sm btn-primary rounded-2" to={`${detailPath}/${row.id}`}>Consultar</Link>}{canDisable && hasRole(disableRoles) && row.estado === 1 && <button className="btn btn-sm btn-outline-danger" onClick={() => disable(row)}>Deshabilitar</button>}</div> });
+  if (allowDetail || canDisable) columns.push({ key: 'actions', label: 'Acciones', render: (row) => <div className="d-flex gap-2">{allowDetail && <Link className="btn btn-sm btn-primary rounded-2" to={`${detailPath}/${row.id}`}>Consultar</Link>}{canDisable && hasRole(disableRoles) && <button className={`btn btn-sm ${row.estado ? 'btn-outline-danger' : 'btn-outline-success'}`} onClick={() => changeState(row)}>{row.estado ? 'Deshabilitar' : 'Habilitar'}</button>}</div> });
   const actions = createPath && hasRole(createRoles) ? <Link className="btn btn-primary" to={createPath}>Registrar</Link> : null;
   return <><DataTable title={title} columns={columns} rows={rows} actions={actions} /><div className="small text-danger mt-2">{error}</div></>;
 };

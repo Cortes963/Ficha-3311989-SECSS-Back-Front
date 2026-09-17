@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export const DataTable = ({ title, columns, rows, searchable = true, loading = false, empty = 'No hay registros para mostrar.', actions }) => {
   const [query, setQuery] = useState('');
@@ -11,7 +12,12 @@ export const DataTable = ({ title, columns, rows, searchable = true, loading = f
   <section className="card border-0 shadow-sm rounded-3 overflow-hidden border-top border-3 border-success">
     <div className="card-header bg-white border-bottom-0 pt-3 px-4 d-flex flex-wrap gap-3 justify-content-between align-items-center">
       <h2 className="h5 mb-0 fw-bold">{title}</h2>
-      {actions}
+      <div className="d-flex align-items-center gap-2">
+        <Link to="/" className="btn btn-sm btn-outline-secondary">
+          <i className="bi bi-arrow-left me-1"></i>Volver
+        </Link>
+        {actions}
+      </div>
     </div>
 
     {searchable && (

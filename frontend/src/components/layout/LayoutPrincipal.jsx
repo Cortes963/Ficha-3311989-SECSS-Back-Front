@@ -1,8 +1,8 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 
 export const LayoutPrincipal = () => {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   return (
     <>
@@ -123,4 +123,3 @@ export const LayoutPrincipal = () => {
   );
 
 };
-

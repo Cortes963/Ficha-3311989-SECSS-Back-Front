@@ -25,3 +25,4 @@ export const obtenerEntradaSalida = async (id) => {
   const response = await apiClient.get(`/input_output/${id}`);
   return response.datos || response.data || response;
 };
+export const listarEntradasSalidas = async () => (await apiClient.get('/input_output')).datos;

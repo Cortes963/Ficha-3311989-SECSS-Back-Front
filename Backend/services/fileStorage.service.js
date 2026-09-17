@@ -20,3 +20,8 @@ export async function saveUploadedFile(file, userId) {
     ruta: path.relative(root, destination).replaceAll(path.sep, '/')
   };
 }
+
+export async function removeUploadedFile(relativePath) {
+  if (!relativePath) return;
+  await fs.rm(path.join(root, relativePath), { force: true });
+}

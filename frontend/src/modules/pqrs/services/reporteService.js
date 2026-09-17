@@ -2,8 +2,8 @@
 import { apiClient } from '@/services/apiClient';
 
 /** Crea un reporte. `idEntradaSalida` es opcional (relación REPORTE_REGISTRO). */
-export const crearReporte = ({ asunto, cuerpo, estado, idEntradaSalida }) =>
-  apiClient.post('/reportes', { asunto, cuerpo, estado, id_entrada_salida: idEntradaSalida });
+export const crearReporte = ({ asunto, cuerpo, idEntradaSalida }) =>
+  apiClient.post('/reportes', { asunto, cuerpo, id_entrada_salida: idEntradaSalida || null });
 
 /** Lista reportes paginados (base 1, como el resto del backend). */
 export const listarReportes = async ({ pagina = 1, limite = 20 } = {}) => {
@@ -19,8 +19,8 @@ export const obtenerReporte = async (id) => {
 };
 
 /** Actualiza un reporte existente. */
-export const actualizarReporte = (id, { asunto, cuerpo, estado }) =>
-  apiClient.put(`/reportes/${id}`, { asunto, cuerpo, estado });
+export const actualizarReporte = (id, { asunto, cuerpo }) =>
+  apiClient.put(`/reportes/${id}`, { asunto, cuerpo });
 
 /** Elimina un reporte. */
 export const eliminarReporte = (id) => apiClient.delete(`/reportes/${id}`);

@@ -1,5 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
+import { listarCentrosPublicos } from '@/modules/core/services/centerService';
+import { storageUrl } from '@/utils/media';
 
 export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = null }) => {
   const [aprendizData, setAprendizData] = useState({
@@ -8,10 +10,13 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
     idCentro: '',
     fechaVinculacion: '', // Campos de control de interfaz de usuario preservados
     fechaTerminacion: ''
+    ,imagenes: {}
   });
+  const [centros, setCentros] = useState([]);
 
   // Mapeo corregido uno a uno con db.json
   useEffect(() => {
+    listarCentrosPublicos().then(setCentros).catch(() => setCentros([]));
     if (initialData) {
       setAprendizData({
         numeroFicha: initialData.ficha || '', 
@@ -31,18 +36,14 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (onSubmit) {
-      // El backend guarda detalle_aprendiz.id_centro como llave foránea
-      // numérica hacia la tabla centro (ver Backend/controller/auth.controller.js).
-      // No existe hoy un endpoint público para listar centros y mostrar sus
-      // nombres, así que por ahora se pide el ID directamente. Falta un
-      // GET /api/core/centros (o similar) para reemplazar esto por un <select>.
       const dataParaServidor = {
         ficha: aprendizData.numeroFicha.trim(),
         direccion: aprendizData.direccion,
         id_centro: Number(aprendizData.idCentro),
         // Conservamos los extras si los necesitas a futuro
-        fechaVinculacion: aprendizData.fechaVinculacion,
-        fechaTerminacion: aprendizData.fechaTerminacion
+        fecha_vinculacion: aprendizData.fechaVinculacion,
+        fecha_terminacion: aprendizData.fechaTerminacion || null,
+        imagenes: aprendizData.imagenes
       };
       onSubmit(dataParaServidor);
     }
@@ -94,6 +95,7 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
               value={aprendizData.fechaVinculacion}
               onChange={handleChange}
               disabled={readOnly}
+              required={!readOnly}
             />
           </div>
 
@@ -111,36 +113,36 @@ export const ApprenForm = ({ initialData = null, readOnly = false, onSubmit = nu
 
           <div className="col-12">
             <label className="form-label small fw-bold text-secondary">Centro de Formación</label>
-            <input type="text" className="form-control" value={initialData?.nombre_centro || 'Centro no informado por el contrato'} readOnly />
+            {readOnly ? (
+              <input type="text" className="form-control" value={initialData?.nombre_centro || centros.find((centro) => Number(centro.id) === Number(aprendizData.idCentro))?.nombre_centro || 'Centro no informado'} readOnly />
+            ) : (
+              <select className="form-select" value={aprendizData.idCentro} onChange={(event) => setAprendizData((previous) => ({ ...previous, idCentro: event.target.value }))} required>
+                <option value="">Seleccione un centro</option>
+                {centros.map((centro) => <option key={centro.id} value={centro.id}>{centro.nombre_centro}</option>)}
+              </select>
+            )}
           </div>
 
           <div className="col-12 mt-4">
-            {readOnly ? (
-              <div className="p-3 border rounded bg-light text-center border-dashed">
-                <i className="bi bi-shield-check text-success fs-3 mb-2 d-block"></i>
-                <span className="small fw-semibold text-muted d-block">Documentación Académica Verificada</span>
-              </div>
-            ) : (
-              <div className="p-3 border rounded bg-light border-success border-opacity-25">
+            <div className="p-3 border rounded bg-light border-success border-opacity-25">
                 <p className="small fw-bold text-success text-uppercase mb-3">
                   <i className="bi bi-file-earmark-arrow-up me-2"></i>Documentación del Aprendiz
                 </p>
                 <div className="row g-3">
                   <div className="col-md-4">
-                    <label className="form-label small text-muted">Foto del Carné</label>
-                    <input type="file" className="form-control form-control-sm" accept="image/*" />
+                    <label className="form-label small text-muted">Foto del Carné</label>{storageUrl(initialData?.imagen_url_carnet_sena) ? <img className="img-thumbnail d-block mb-1" style={{ maxHeight: 80 }} src={storageUrl(initialData.imagen_url_carnet_sena)} alt="Carné SENA" /> : <span className="d-block small text-muted mb-1">Sin imagen cargada</span>}
+                    {!readOnly && <input type="file" className="form-control form-control-sm" accept="image/jpeg,image/png,image/webp" onChange={(event) => setAprendizData((current) => ({ ...current, imagenes: { ...current.imagenes, imagen_url_carnet_sena: event.target.files?.[0] } }))} />}
                   </div>
                   <div className="col-md-4">
-                    <label className="form-label small text-muted">Documento Digital</label>
-                    <input type="file" className="form-control form-control-sm" accept="image/*,.pdf" />
+                    <label className="form-label small text-muted">Documento Digital</label>{storageUrl(initialData?.imagen_url_identificacion) ? <img className="img-thumbnail d-block mb-1" style={{ maxHeight: 80 }} src={storageUrl(initialData.imagen_url_identificacion)} alt="Identificación" /> : <span className="d-block small text-muted mb-1">Sin imagen cargada</span>}
+                    {!readOnly && <input type="file" className="form-control form-control-sm" accept="image/jpeg,image/png,image/webp" onChange={(event) => setAprendizData((current) => ({ ...current, imagenes: { ...current.imagenes, imagen_url_identificacion: event.target.files?.[0] } }))} />}
                   </div>
                   <div className="col-md-4">
-                    <label className="form-label small text-muted">Foto Perfil</label>
-                    <input type="file" className="form-control form-control-sm" accept="image/*" />
+                    <label className="form-label small text-muted">Foto Perfil</label>{storageUrl(initialData?.imagen_url_aprendiz) ? <img className="img-thumbnail d-block mb-1" style={{ maxHeight: 80 }} src={storageUrl(initialData.imagen_url_aprendiz)} alt="Aprendiz" /> : <span className="d-block small text-muted mb-1">Sin imagen cargada</span>}
+                    {!readOnly && <input type="file" className="form-control form-control-sm" accept="image/jpeg,image/png,image/webp" onChange={(event) => setAprendizData((current) => ({ ...current, imagenes: { ...current.imagenes, imagen_url_aprendiz: event.target.files?.[0] } }))} />}
                   </div>
                 </div>
-              </div>
-            )}
+            </div>
           </div>
 
           {!readOnly && (

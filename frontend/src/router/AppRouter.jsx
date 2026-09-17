@@ -14,6 +14,7 @@ import { CentersPage } from '@/modules/core/pages/CentersPage';
 import { EntriesPage } from '@/modules/input_output/pages/EntriesPage';
 import { EntryDetailPage } from '@/modules/input_output/pages/EntryDetailPage';
 import { EntryOperationPage } from '@/modules/input_output/pages/EntryOperationPage';
+import { GuestRegistrationPage } from '@/modules/input_output/pages/GuestRegistrationPage';
 import { AccessQuotaPage } from '@/modules/quota/pages/AccessQuotaPage';
 import { QuotaAuthorizationDetailPage } from '@/modules/quota/pages/QuotaAuthorizationDetailPage';
 import { MyQuotaSummaryPage } from '@/modules/quota/pages/MyQuotaSummaryPage';
@@ -23,6 +24,7 @@ import { ReportsPage } from '@/modules/pqrs/pages/ReportsPage';
 import { ReportCreatePage } from '@/modules/pqrs/pages/ReportCreatePage';
 import { ReportDetailPage } from '@/modules/pqrs/pages/ReportDetailPage';
 import { PqrsDetailPage } from '@/modules/pqrs/pages/PqrsDetailPage';
+import { VehiclePage } from '@/modules/vehicle/pages/VehiclePage';
 
 const roles = {
   admin: ['ADMINISTRADOR'],
@@ -31,7 +33,7 @@ const roles = {
   staff: ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR'],
   all: ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR', 'APRENDIZ', 'INVITADO'],
   ownEntries: ['INVITADO', 'APRENDIZ', 'CELADOR', 'JEFE_SEGURIDAD'],
-  ownQuota: ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR', 'APRENDIZ', 'INVITADO'],
+  ownQuota: ['APRENDIZ', 'INVITADO'],
   pqrsOwner: ['JEFE_SEGURIDAD', 'CELADOR', 'APRENDIZ', 'INVITADO'],
   reportRead: ['CELADOR', 'JEFE_SEGURIDAD'],
   reportWrite: ['CELADOR']
@@ -49,26 +51,28 @@ const router = createBrowserRouter([
   { element: <ProtectedRoute><LayoutPrincipal /></ProtectedRoute>, children: [
     { index: true, element: <DashboardPage /> },
     { path: 'perfil', element: <ProfilePage /> },
-    guarded(roles.adminJefe, 'usuarios', <DirectoryPage title="Usuarios" detailPath="/usuarios" canDisable disableRoles={roles.admin} />),
+    guarded(roles.adminJefe, 'usuarios', <DirectoryPage title="Usuarios" detailPath="/usuarios" />),
     guarded(roles.adminJefe, 'usuarios/:id', <UserDetailPage />),
-    guarded(roles.adminJefe, 'aprendices', <DirectoryPage title="Aprendices" role="APRENDIZ" detailPath="/aprendices" canDisable disableRoles={roles.admin} />),
+    guarded(roles.adminJefe, 'aprendices', <DirectoryPage title="Aprendices" role="APRENDIZ" detailPath="/aprendices" />),
     guarded(roles.adminJefe, 'aprendices/:id', <UserDetailPage />),
-    guarded(roles.admin, 'jefes-seguridad', <DirectoryPage title="Jefes de seguridad" role="JEFE_SEGURIDAD" canDisable disableRoles={roles.admin} detailPath="/jefes-seguridad" createPath="/jefes-seguridad/nuevo" createRoles={roles.admin} />),    guarded(roles.admin, 'jefes-seguridad/:id', <UserDetailPage />),
+    guarded(roles.admin, 'jefes-seguridad', <DirectoryPage title="Jefes de seguridad" role="JEFE_SEGURIDAD" detailPath="/jefes-seguridad" createPath="/jefes-seguridad/nuevo" createRoles={roles.admin} />),    guarded(roles.admin, 'jefes-seguridad/:id', <UserDetailPage />),
     guarded(roles.admin, 'jefes-seguridad/nuevo', <StaffRegistrationPage role="JEFE_SEGURIDAD" />),
     guarded(roles.jefe, 'celadores', <DirectoryPage title="Celadores" role="CELADOR" canDisable disableRoles={roles.jefe} detailPath="/celadores" createPath="/celadores/nuevo" createRoles={roles.jefe} />),
     guarded(roles.jefe, 'celadores/:id', <UserDetailPage />),
     guarded(roles.jefe, 'celadores/nuevo', <StaffRegistrationPage role="CELADOR" />),
-    guarded(roles.adminJefe, 'invitados', <DirectoryPage title="Invitados" role="INVITADO" detailPath="/invitados" canDisable disableRoles={roles.admin} />),
-    guarded(roles.adminJefe, 'invitados/:id', <UserDetailPage />),
+    guarded(roles.staff, 'invitados', <DirectoryPage title="Invitados" role="INVITADO" detailPath="/invitados" />),
+    guarded(roles.staff, 'invitados/:id', <UserDetailPage />),
     guarded(roles.admin, 'centros', <CentersPage />),
     guarded(roles.ownEntries, 'entradas-salidas', <EntriesPage />),
     guarded(roles.ownEntries, 'entradas-salidas/:id', <EntryDetailPage />),
     { path: 'entradas-salidas/detalle', element: <Navigate to="/entradas-salidas" replace /> },
     guarded(['CELADOR'], 'entradas-salidas/operar', <EntryOperationPage />),
-    guarded(roles.all, 'cupos', <AccessQuotaPage />),
-    guarded(roles.all, 'cupos/:idUsuario/:idVehiculo', <QuotaAuthorizationDetailPage />),
+    guarded(['CELADOR'], 'entradas-salidas/invitado/nuevo', <GuestRegistrationPage />),
+    guarded(roles.staff, 'cupos', <AccessQuotaPage />),
+    guarded(roles.staff, 'cupos/:idUsuario/:idVehiculo', <QuotaAuthorizationDetailPage />),
     { path: 'cupos/detalle', element: <Navigate to="/cupos" replace /> },
     guarded(roles.ownQuota, 'mi-cupo', <MyQuotaSummaryPage />),
+    guarded(['APRENDIZ', 'INVITADO'], 'vehiculos', <VehiclePage />),
     guarded(roles.reportRead, 'reportes', <ReportsPage />),
     guarded(roles.reportWrite, 'reportes/nuevo', <ReportCreatePage />),
     guarded(roles.reportRead, 'reportes/:id', <ReportDetailPage />),

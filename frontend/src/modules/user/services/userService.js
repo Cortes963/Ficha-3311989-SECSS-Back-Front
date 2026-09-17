@@ -1,5 +1,6 @@
 // src/modules/user/services/userService.js
 import { apiClient } from '@/services/apiClient';
+import { appendFiles } from '@/utils/media';
 
 export const getUsuarios = async (rol) => {
   const { datos } = await apiClient.get(rol ? `/users?rol=${rol}` : '/users');
@@ -22,5 +23,13 @@ export const updateMyPassword = (password_actual, password_nueva) =>
   apiClient.patch('/users/me/password', { password_actual, password_nueva });
 export const updateMyProfile = (payload) => apiClient.patch('/users/me', payload);
 export const deactivateMyAccount = () => apiClient.patch('/users/me/estado', { estado: 0 });
+export const updateMyAcademicDetail = (payload) => {
+  const form = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (key !== 'imagenes' && value !== undefined && value !== null) form.append(key, value);
+  });
+  appendFiles(form, payload.imagenes);
+  return apiClient.patch('/users/me/aprendiz', form);
+};
 export const crearCelador = (payload) => apiClient.post('/users/celador', payload);
 export const actualizarEstadoUsuario = (id, estado) => apiClient.patch(`/users/${id}/estado`, { estado });

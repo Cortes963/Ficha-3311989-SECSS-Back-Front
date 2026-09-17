@@ -5,7 +5,7 @@
  */
 
 import db from '../db.js';
-import { actorId, error, integer, page, required, PQRS } from '../lib.js';
+import { actorId, assertEditableWithinWindow, error, integer, page, required, PQRS } from '../lib.js';
 
 // GET /reportes: list reports with pagination.
 export async function indexReport(req, res) {
@@ -41,7 +41,7 @@ export async function indexPqrs(req, res) {
     const [datos] = await db.query(
       `SELECT p.*, u.primer_nombre, u.primer_apellido,
               r.id AS respuesta_id, r.asunto AS respuesta_asunto, r.cuerpo AS respuesta_cuerpo,
-              r.fecha_creacion AS respuesta_fecha, r.id_usuario_administrador AS respuesta_id_usuario,
+              r.created_at AS respuesta_fecha, r.id_usuario_administrador AS respuesta_id_usuario,
               CONCAT(ra.primer_nombre,' ',ra.primer_apellido) AS respuesta_respondiente,
               EXISTS(SELECT 1 FROM respuesta rx WHERE rx.id_pqrs=p.id) tiene_respuesta
        FROM pqrs p JOIN usuario u ON u.id=p.id_usuario
@@ -66,7 +66,7 @@ export async function showPqrsId(req, res) {
     const [filas] = await db.query(
       `SELECT p.*, u.primer_nombre, u.primer_apellido,
               r.id AS respuesta_id, r.asunto AS respuesta_asunto, r.cuerpo AS respuesta_cuerpo,
-              r.fecha_creacion AS respuesta_fecha, r.id_usuario_administrador AS respuesta_id_usuario,
+              r.created_at AS respuesta_fecha, r.id_usuario_administrador AS respuesta_id_usuario,
               CONCAT(ra.primer_nombre,' ',ra.primer_apellido) AS respuesta_respondiente,
               EXISTS(SELECT 1 FROM respuesta rx WHERE rx.id_pqrs=p.id) tiene_respuesta
        FROM pqrs p JOIN usuario u ON u.id=p.id_usuario
@@ -109,35 +109,14 @@ export async function updatePqrs(req, res) {
     const id = integer(req.params.id, 'id');
     required(req.body, ['asunto', 'cuerpo']);
 
-    const [filas] = await db.query('SELECT id_usuario, estado FROM pqrs WHERE id=?', [id]);
+    const [filas] = await db.query('SELECT id_usuario, estado, fecha_creacion FROM pqrs WHERE id=?', [id]);
     if (!filas.length) return res.status(404).json({ ok: false, mensaje: 'PQRS no encontrada.' });
     if (filas[0].id_usuario !== actorId(req)) return res.status(403).json({ ok: false, mensaje: 'No tiene permisos para esta operación.' });
     if (filas[0].estado !== PQRS.RADICADO) throw Object.assign(new Error('Solo se puede editar una PQRS en estado RADICADO.'), { status: 409 });
+    assertEditableWithinWindow(filas[0].fecha_creacion, 'La PQRS');
 
     await db.query('UPDATE pqrs SET asunto=?,cuerpo=? WHERE id=?', [req.body.asunto, req.body.cuerpo, id]);
     res.json({ ok: true, mensaje: 'PQRS actualizada.' });
-  } catch (e) {
-    return error(res, e);
-  }
-}
-
-// DELETE /pqrs/:id: el propio solicitante puede retirarla mientras no tenga respuesta.
-export async function destroyPqrs(req, res) {
-  try {
-    const id = integer(req.params.id, 'id');
-
-    const [filas] = await db.query('SELECT id_usuario FROM pqrs WHERE id=?', [id]);
-    if (!filas.length) return res.status(404).json({ ok: false, mensaje: 'PQRS no encontrada.' });
-
-    const esDueno = filas[0].id_usuario === actorId(req);
-    const esAdmin = req.user.roles.includes('ADMINISTRADOR');
-    if (!esDueno && !esAdmin) return res.status(403).json({ ok: false, mensaje: 'No tiene permisos para esta operación.' });
-
-    const [tieneRespuesta] = await db.query('SELECT id FROM respuesta WHERE id_pqrs=?', [id]);
-    if (tieneRespuesta.length) throw Object.assign(new Error('No se puede eliminar una PQRS ya respondida.'), { status: 409 });
-
-    await db.query('DELETE FROM pqrs WHERE id=?', [id]);
-    res.json({ ok: true, mensaje: 'PQRS eliminada.' });
   } catch (e) {
     return error(res, e);
   }
@@ -170,24 +149,6 @@ export async function storePqrsAnswer(req, res) {
     return error(res, e);
   } finally {
     c.release();
-  }
-}
-
-export async function updatePqrsState(req, res) {
-  try {
-    const id = integer(req.params.id, 'id');
-    const estado = Number(req.body.estado);
-
-    if (!Object.values(PQRS).includes(estado)) {
-      throw Object.assign(new Error('Estado PQRS inválido.'), { status: 400 });
-    }
-
-    const [r] = await db.query('UPDATE pqrs SET estado=? WHERE id=?', [estado, id]);
-    if (!r.affectedRows) return res.status(404).json({ ok: false, mensaje: 'PQRS no encontrada.' });
-
-    res.json({ ok: true, mensaje: 'Estado actualizado.' });
-  } catch (e) {
-    return error(res, e);
   }
 }
 
@@ -227,36 +188,15 @@ export async function updateAnswer(req, res) {
     const id = integer(req.params.id, 'id');
     required(req.body, ['asunto', 'cuerpo']);
 
+    const [rows] = await db.query('SELECT created_at FROM respuesta WHERE id=?', [id]);
+    if (!rows.length) return res.status(404).json({ ok: false, mensaje: 'Respuesta no encontrada.' });
+    assertEditableWithinWindow(rows[0].created_at, 'La respuesta');
     const [r] = await db.query('UPDATE respuesta SET asunto=?,cuerpo=? WHERE id=?', [req.body.asunto, req.body.cuerpo, id]);
     if (!r.affectedRows) return res.status(404).json({ ok: false, mensaje: 'Respuesta no encontrada.' });
 
     res.json({ ok: true, mensaje: 'Respuesta actualizada.' });
   } catch (e) {
     return error(res, e);
-  }
-}
-
-// DELETE /respuestas/:id: un administrador retira la respuesta y la PQRS vuelve a EN_TRAMITE.
-export async function destroyAnswer(req, res) {
-  const c = await db.getConnection();
-  try {
-    const id = integer(req.params.id, 'id');
-
-    await c.beginTransaction();
-
-    const [filas] = await c.query('SELECT id_pqrs FROM respuesta WHERE id=? FOR UPDATE', [id]);
-    if (!filas.length) throw Object.assign(new Error('Respuesta no encontrada.'), { status: 404 });
-
-    await c.query('DELETE FROM respuesta WHERE id=?', [id]);
-    await c.query('UPDATE pqrs SET estado=? WHERE id=?', [PQRS.EN_TRAMITE, filas[0].id_pqrs]);
-
-    await c.commit();
-    res.json({ ok: true, mensaje: 'Respuesta eliminada; la PQRS vuelve a estar en trámite.' });
-  } catch (e) {
-    await c.rollback();
-    return error(res, e);
-  } finally {
-    c.release();
   }
 }
 
@@ -270,11 +210,6 @@ export async function storeReport(req, res) {
       ? integer(req.body.id_entrada_salida, 'id_entrada_salida')
       : null;
     // reporte.estado es NOT NULL (0: NO_REVISADO, 1: REVISADO) según el DDL; nunca insertar NULL aquí.
-    const estado = req.body.estado === undefined ? 0 : Number(req.body.estado);
-    if (![0, 1].includes(estado)) {
-      throw Object.assign(new Error('estado debe ser 0 o 1.'), { status: 400 });
-    }
-
     const [celadorExiste] = await db.query('SELECT id FROM usuario WHERE id = ?', [idCelador]);
     if (!celadorExiste.length) {
       return res.status(404).json({ ok: false, mensaje: 'El usuario celador indicado no existe.' });
@@ -282,8 +217,8 @@ export async function storeReport(req, res) {
 
     const [resultado] = await db.query(
       `INSERT INTO reporte (id_usuario_celador, fecha_hora, asunto, cuerpo, estado, id_entrada_salida)
-       VALUES (?, NOW(), ?, ?, ?, ?)`,
-      [idCelador, req.body.asunto, req.body.cuerpo, estado, idEntradaSalida]
+       VALUES (?, NOW(), ?, ?, 0, ?)`,
+      [idCelador, req.body.asunto, req.body.cuerpo, idEntradaSalida]
     );
 
     return res.status(201).json({
@@ -323,25 +258,23 @@ export async function showReportId(req, res) {
   }
 }
 
-// PUT /reportes/:id: corrige asunto/cuerpo/estado de un reporte ya radicado.
+// PUT /reportes/:id: corrige únicamente el contenido de un reporte ya radicado.
 export async function updateReport(req, res) {
   try {
     const id = integer(req.params.id, 'id');
-    const [owner] = await db.query('SELECT id_usuario_celador FROM reporte WHERE id=?', [id]);
+    const [owner] = await db.query('SELECT id_usuario_celador, fecha_hora FROM reporte WHERE id=?', [id]);
     if (!owner.length) return res.status(404).json({ ok: false, mensaje: 'Reporte no encontrado.' });
     if (owner[0].id_usuario_celador !== actorId(req)) {
       return res.status(403).json({ ok: false, mensaje: 'Solo puede editar sus propios reportes.' });
     }
+    assertEditableWithinWindow(owner[0].fecha_hora, 'El reporte');
 
-    const allowedFields = ['asunto', 'cuerpo', 'estado'];
+    const allowedFields = ['asunto', 'cuerpo'];
     const assignments = [];
     const values = [];
 
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
-        if (field === 'estado' && ![0, 1].includes(Number(req.body.estado))) {
-          throw Object.assign(new Error('estado debe ser 0 o 1.'), { status: 400 });
-        }
         assignments.push(`${field} = ?`);
         values.push(req.body[field]);
       }

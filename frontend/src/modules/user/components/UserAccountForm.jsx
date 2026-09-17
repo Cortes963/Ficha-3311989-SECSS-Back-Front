@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 
 export const UserAccountForm = ({ initialData = null, readOnly = false, mode = 'registro', onSubmit = null }) => {
   const isReadOnly = readOnly || mode === 'consulta';
+  const documentReadOnly = isReadOnly || Boolean(initialData);
   
   const [formData, setFormData] = useState({
     tipoDoc: 'CC',
@@ -29,6 +30,8 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, mode = '
         telefono: initialData.n_celular || '',
         correo: initialData.correo || '',
         password: initialData.password || '',
+        estado: initialData.estado === undefined ? true : Boolean(initialData.estado),
+        fechaCreacion: initialData.cuenta_created_at || initialData.created_at || initialData.fecha_creacion || '—',
         
         // Distribución inteligente de la cadena nombre_completo
         nombre1: initialData.primer_nombre || nombrespartes[0] || '',
@@ -85,7 +88,7 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, mode = '
             <div className="row g-2 mb-3">
               <div className="col-md-4">
                 <label className="form-label small fw-bold">Tipo Doc.</label>
-                <select className="form-select" name="tipoDoc" value={formData.tipoDoc} onChange={handleChange} disabled={isReadOnly}>
+                <select className="form-select" name="tipoDoc" value={formData.tipoDoc} onChange={handleChange} disabled={documentReadOnly}>
                   <option value="CC">C.C.</option>
                   <option value="TI">T.I.</option>
                   <option value="CE">C.E.</option>
@@ -95,7 +98,7 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, mode = '
               </div>
               <div className="col-md-8">
                 <label className="form-label small fw-bold">Número de Documento</label>
-                <input type="text" className="form-control" name="documento" value={formData.documento} onChange={handleChange} disabled={isReadOnly} required={!isReadOnly} />
+                <input type="text" className="form-control" name="documento" value={formData.documento} onChange={handleChange} disabled={documentReadOnly} required={!isReadOnly} />
               </div>
             </div>
 
@@ -121,6 +124,14 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, mode = '
               </div>
             </div>
 
+            {initialData && <div className="mb-3">
+              <label className="form-label small fw-bold">Estado</label>
+              <input className="form-control" value={formData.estado ? 'Activo' : 'Inactivo'} readOnly />
+            </div>}
+            {initialData && <div className="mb-3">
+              <label className="form-label small fw-bold">Fecha de creación</label>
+              <input className="form-control" value={formData.fechaCreacion || '—'} readOnly />
+            </div>}
             <div className="mb-3">
               <label className="form-label small fw-bold">Teléfono de Contacto</label>
               <input type="tel" className="form-control" name="telefono" value={formData.telefono} onChange={handleChange} disabled={isReadOnly} required={!isReadOnly} />
@@ -138,7 +149,7 @@ export const UserAccountForm = ({ initialData = null, readOnly = false, mode = '
                 <input type="email" className="form-control" name="correo" value={formData.correo} onChange={handleChange} disabled={isReadOnly} required={!isReadOnly} />
               </div>
 
-              {!isReadOnly && (
+              {!isReadOnly && !initialData && (
                 <div className="mb-3">
                   <label className="form-label small fw-bold">Contraseña de Acceso</label>
                   <input type="password" className="form-control" name="password" value={formData.password} onChange={handleChange} disabled={readOnly} required={!readOnly} minLength={10} />

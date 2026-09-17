@@ -1,8 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { Fragment, useEffect, useState } from 'react';
-import { useAuth } from '@/modules/auth/context/AuthContext';
-import { listarPqrs, responderPqrs } from '@/modules/pqrs/services/pqrsService';
-import { estadoPqrsInfo, pqrsYaRespondida } from '@/modules/pqrs/utils/estadoPqrs';
+import { listarPqrs } from '@/modules/pqrs/services/pqrsService';
+import { estadoPqrsInfo } from '@/modules/pqrs/utils/estadoPQRS';
 import { Link } from 'react-router-dom';
 
 const paginaVacia = { content: [], totalPages: 0, number: 0 };
@@ -13,17 +12,12 @@ const paginaVacia = { content: [], totalPages: 0, number: 0 };
  * backend marca automaticamente la PQRS como RESUELTO.
  */
 export const PqrsAdminList = () => {
-  const { user } = useAuth();
 
   const [pagina, setPagina] = useState(0);
   const [pqrsPage, setPqrsPage] = useState(paginaVacia);
   const [cargando, setCargando] = useState(true);
   const [errorCarga, setErrorCarga] = useState(null);
 
-  const [idEnRespuesta, setIdEnRespuesta] = useState(null);
-  const [formRespuesta, setFormRespuesta] = useState({ asunto: '', cuerpo: '' });
-  const [enviando, setEnviando] = useState(false);
-  const [mensaje, setMensaje] = useState(null);
 
   const cargar = async () => {
     setCargando(true);
@@ -42,48 +36,6 @@ export const PqrsAdminList = () => {
     cargar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagina]);
-
-  const abrirRespuesta = (pqrs) => {
-    setIdEnRespuesta(pqrs.id);
-    setFormRespuesta({ asunto: `Re: ${pqrs.asunto}`, cuerpo: '' });
-    setMensaje(null);
-  };
-
-  const detallePqrs = (pqrs) => (
-    <div className="bg-white border rounded p-3 mb-3">
-      <strong>Asunto:</strong> {pqrs.asunto}<br />
-      <strong>Descripción:</strong><p className="mb-2">{pqrs.cuerpo || 'Sin descripción.'}</p>
-      <strong>Solicitante:</strong> {nombreSolicitante(pqrs)}<br />
-      <strong>Fecha:</strong> {formatearFecha(pqrs.fechaHora)}<br />
-      <strong>Estado:</strong> {estadoPqrsInfo(pqrs.estado).label}
-      {pqrs.anexos?.length > 0 && <><br /><strong>Anexos:</strong> {pqrs.anexos.join(', ')}</>}
-    </div>
-  );
-
-  const cancelarRespuesta = () => {
-    setIdEnRespuesta(null);
-    setFormRespuesta({ asunto: '', cuerpo: '' });
-  };
-
-  const enviarRespuesta = async (event, idPqrs) => {
-    event.preventDefault();
-    setEnviando(true);
-    setMensaje(null);
-    try {
-      await responderPqrs(idPqrs, {
-        idUsuarioAdministrador: user.id,
-        asunto: formRespuesta.asunto.trim(),
-        cuerpo: formRespuesta.cuerpo.trim(),
-      });
-      setIdEnRespuesta(null);
-      setFormRespuesta({ asunto: '', cuerpo: '' });
-      await cargar();
-    } catch (error) {
-      setMensaje({ tipo: 'danger', texto: error.message || 'No fue posible registrar la respuesta.' });
-    } finally {
-      setEnviando(false);
-    }
-  };
 
   const formatearFecha = (fechaHora) => (fechaHora ? fechaHora.substring(0, 16).replace('T', ' ') : '—');
   const nombreSolicitante = (pqrs) =>
@@ -124,8 +76,6 @@ export const PqrsAdminList = () => {
                 )}
                 {pqrsPage.content.map((pqrs) => {
                   const estadoInfo = estadoPqrsInfo(pqrs.estado);
-                  const yaRespondida = pqrsYaRespondida(pqrs.estado);
-                  const estaAbierta = idEnRespuesta === pqrs.id;
 
                   return (
                     <Fragment key={pqrs.id}>
@@ -138,62 +88,9 @@ export const PqrsAdminList = () => {
                         <td>{pqrs.respuesta ? <div><div>{pqrs.respuesta.cuerpo}</div><small className="text-muted">{pqrs.respuesta.fechaHora || '—'} · {pqrs.respuesta.respondiente || pqrs.respuesta.idUsuarioAdministrador || '—'}</small></div> : 'Sin respuesta'}</td>
                         <td className="text-end pe-3">
                           <Link className="btn btn-sm btn-outline-primary me-2" to={`/pqrs/${pqrs.id}`}>Consultar</Link>
-                          {yaRespondida ? (
-                            <span className="text-muted small">Ya respondida</span>
-                          ) : (
-                            <button
-                              className="btn btn-sm btn-sena"
-                              onClick={() => (estaAbierta ? cancelarRespuesta() : abrirRespuesta(pqrs))}
-                            >
-                              <i className="bi bi-reply-fill"></i> {estaAbierta ? 'Cerrar' : 'Responder'}
-                            </button>
-                          )}
                         </td>
                       </tr>
 
-                      {estaAbierta && (
-                        <tr>
-                          <td colSpan={7} className="bg-light">
-                            <form onSubmit={(event) => enviarRespuesta(event, pqrs.id)} className="p-3">
-                              {detallePqrs(pqrs)}
-                              <div className="mb-2">
-                                <label className="form-label small fw-bold" htmlFor={`asunto-${pqrs.id}`}>
-                                  Asunto de la respuesta
-                                </label>
-                                <input
-                                  id={`asunto-${pqrs.id}`}
-                                  className="form-control form-control-sm"
-                                  value={formRespuesta.asunto}
-                                  onChange={(e) => setFormRespuesta((f) => ({ ...f, asunto: e.target.value }))}
-                                  required
-                                />
-                              </div>
-                              <div className="mb-2">
-                                <label className="form-label small fw-bold" htmlFor={`cuerpo-${pqrs.id}`}>
-                                  Respuesta
-                                </label>
-                                <textarea
-                                  id={`cuerpo-${pqrs.id}`}
-                                  className="form-control form-control-sm"
-                                  rows="3"
-                                  value={formRespuesta.cuerpo}
-                                  onChange={(e) => setFormRespuesta((f) => ({ ...f, cuerpo: e.target.value }))}
-                                  required
-                                />
-                              </div>
-                              {mensaje && (
-                                <div className={`alert alert-${mensaje.tipo} py-2`} role="alert">{mensaje.texto}</div>
-                              )}
-                              <button type="button" className="btn btn-sm btn-outline-secondary me-2" onClick={cancelarRespuesta}>
-                                Cancelar
-                              </button>
-                              <button type="submit" className="btn btn-sm btn-sena" disabled={enviando}>
-                                {enviando ? 'Enviando…' : 'Enviar respuesta'}
-                              </button>
-                            </form>
-                          </td>
-                        </tr>
-                      )}
                     </Fragment>
                   );
                 })}

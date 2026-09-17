@@ -9,7 +9,7 @@ import { allowRoles } from '../middleware/auth.js';
 import { ROLES } from '../lib.js';
 import { indexQuota, showQuotaByUser, showMyQuota, showQuotaDetail, updateQuotaState } from '../controller/quota.controller.js';
 const r = Router();
-r.get('/', allowRoles(ROLES.ADMIN, ROLES.JEFE, ROLES.CELADOR, ROLES.APRENDIZ, ROLES.INVITADO), indexQuota);
+r.get('/', allowRoles(ROLES.ADMIN, ROLES.JEFE, ROLES.CELADOR), indexQuota);
 r.get('/me', allowRoles(ROLES.ADMIN, ROLES.JEFE, ROLES.CELADOR, ROLES.APRENDIZ, ROLES.INVITADO), showMyQuota);
 r.get('/usuario/:idUsuario', showQuotaByUser);
 r.get('/detalle/:idUsuario/:idVehiculo', showQuotaDetail);

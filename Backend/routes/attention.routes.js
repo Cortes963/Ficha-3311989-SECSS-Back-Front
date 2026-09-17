@@ -17,13 +17,10 @@ import {
   showPqrsId,
   storePqrs,
   updatePqrs,
-  destroyPqrs,
   storePqrsAnswer,
   showPqrsAnswer,
-  updatePqrsState,
   indexAnswer,
   updateAnswer,
-  destroyAnswer,
 } from '../controller/attention.controller.js';
 
 const router = Router();
@@ -40,10 +37,8 @@ router.get('/pqrs', indexPqrs);
 router.get('/pqrs/:id', showPqrsId);
 router.post('/pqrs', allowRoles(ROLES.JEFE, ROLES.CELADOR, ROLES.APRENDIZ, ROLES.INVITADO), storePqrs);
 router.put('/pqrs/:id', updatePqrs);
-router.delete('/pqrs/:id', destroyPqrs);
 router.get('/pqrs/:id/respuesta', showPqrsAnswer);
 router.post('/pqrs/:id/respuesta', allowRoles(ROLES.ADMIN), storePqrsAnswer);
-router.patch('/pqrs/:id/estado', allowRoles(ROLES.ADMIN), updatePqrsState);
 
 // Respuestas: de solo lectura/edición para administradores. updateAnswer y
 // destroyAnswer no validan rol por dentro (a diferencia de showPqrsId/updatePqrs/
@@ -51,6 +46,5 @@ router.patch('/pqrs/:id/estado', allowRoles(ROLES.ADMIN), updatePqrsState);
 // protección — no quitarlo sin agregar la validación dentro del controller.
 router.get('/respuestas', allowRoles(ROLES.ADMIN), indexAnswer);
 router.put('/respuestas/:id', allowRoles(ROLES.ADMIN), updateAnswer);
-router.delete('/respuestas/:id', allowRoles(ROLES.ADMIN), destroyAnswer);
 
 export default router;

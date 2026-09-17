@@ -1,5 +1,6 @@
 import { apiClient } from '@/services/apiClient';
 
 export const listarCentros = async () => (await apiClient.get('/core/centros')).datos;
-export const crearCentro = () => Promise.reject(new Error('El backend no expone aún el contrato de registro de centros.'));
-export const editarCentro = () => Promise.reject(new Error('El backend no expone aún el contrato de edición de centros.'));
+export const listarCentrosPublicos = async () => (await apiClient.get('/core/centros-publicos')).datos;
+export const crearCentro = (nombre_centro) => apiClient.post('/core/centros', { nombre_centro });
+export const editarCentro = (id, nombre_centro) => apiClient.patch(`/core/centros/${id}`, { nombre_centro });

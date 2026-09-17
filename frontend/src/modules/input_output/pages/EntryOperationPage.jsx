@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { listarCupos, obtenerDetalleCupo } from '@/modules/quota/services/Quotaservices';
 import { registrarEntrada, registrarSalida } from '@/modules/input_output/services/input_outputservice';
 import { FormField } from '@/components/ui/FormField';
+import { UserForm } from '@/modules/user/components/UserForm';
+import { ApprenticeDetailForm } from '@/modules/user/components/ApprenticeDetailForm';
+import { VehicleDetailForm } from '@/modules/vehicle/components/VehicleDetailForm';
 
 export const EntryOperationPage = () => {
+  const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(null);
@@ -36,6 +41,7 @@ export const EntryOperationPage = () => {
         ? await registrarEntrada({ id_usuario_entra: selected.id_usuario, id_vehiculo: selected.id_vehiculo })
         : await registrarSalida(detail.idEntradaAbierta || selected.registro_id);
       setMessage(result.mensaje);
+      setTimeout(() => navigate('/entradas-salidas'), 500);
     } catch (e) { setMessage(e.message); }
   };
 
@@ -76,25 +82,9 @@ export const EntryOperationPage = () => {
       {detail && (
         <div className="border rounded p-3 mb-3">
           <h3 className="h5">Información validada</h3>
-          <dl className="row mb-0">
-            {[
-              ['Usuario', detail.usuario],
-              ['Documento', detail.numero_documento],
-              ['Ficha', detail.ficha],
-              ['Centro', detail.nombre_centro],
-              ['Vinculación', detail.fecha_vinculacion],
-              ['Terminación', detail.fecha_terminacion],
-              ['Vehículo', `${detail.tipo_vehiculo || ''} ${detail.marca || ''}`],
-              ['Placa / marco', detail.identificador_vehiculo],
-              ['Autorización', detail.estado_autorizacion || detail.estado],
-              ['Auditor', detail.administrador_auditor]
-            ].map(([label, value]) => (
-              <div className="row" key={label}>
-                <dt className="col-sm-4">{label}</dt>
-                <dd className="col-sm-8">{value || '—'}</dd>
-              </div>
-            ))}
-          </dl>
+          <UserForm initialData={{ numero_documento: detail.numero_documento, nombre_completo: detail.usuario, estado: 1 }} mode="consulta" readOnly />
+          {detail.ficha && <ApprenticeDetailForm initialData={detail} mode="consulta" readOnly />}
+          <VehicleDetailForm initialData={{ tipo_vehiculo: detail.tipo_vehiculo, marca: detail.marca, color: detail.color, detalles: { placa: detail.placa, cilindraje: detail.cilindraje, modelo: detail.modelo, numero_marco: detail.numero_marco, clase_bicicleta: detail.clase_bicicleta } }} readOnly />
         </div>
       )}
 

@@ -46,11 +46,7 @@ export const EntriesPage = () => {
         { key: 'actions', label: 'Acciones', render: (row) => <Link className="btn btn-sm btn-outline-primary" to={`/entradas-salidas/${row.registro_id || row.id}`}>Consultar</Link> }
       ]}
       rows={rows}
-      actions={user?.roles?.includes('CELADOR') && (
-        <button className="btn btn-primary" onClick={() => navigate('/entradas-salidas/operar')}>
-          Registrar operación
-        </button>
-      )}
+      actions={user?.roles?.includes('CELADOR') && <div className="d-flex gap-2"><button className="btn btn-primary" onClick={() => navigate('/entradas-salidas/operar')}>Registrar operación</button><button className="btn btn-outline-primary" onClick={() => navigate('/entradas-salidas/invitado/nuevo')}>Registrar invitado</button></div>}
     />
         <div className="small text-danger mt-2">{error}</div>
   </>;

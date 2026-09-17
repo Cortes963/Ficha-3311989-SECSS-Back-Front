@@ -32,8 +32,8 @@ export const PqrsDetailPage = () => {
     try { await actualizarRespuesta(pqrs.respuesta.id, payload); setPqrs({ ...pqrs, respuesta: { ...pqrs.respuesta, ...payload } }); setMessage('Respuesta actualizada.'); } catch (e) { setMessage(e.message); }
   };
 
-  return <div className="card border-0 shadow-sm p-4">
-    <div className="d-flex justify-content-between align-items-center mb-3"><h2 className="h4 mb-0">Detalle de PQRS</h2><Link to="/pqrs" className="btn btn-outline-secondary">Volver</Link></div>
+  return <div className="card border-0 shadow-sm p-4 rounded-3 border-top border-3 border-success">
+    <div className="d-flex justify-content-between align-items-center mb-3"><h2 className="h4 mb-0">Detalle de PQRS</h2><Link to="/pqrs" className="btn btn-outline-success rounded-pill px-3">← Volver</Link></div>
     {editing ? <form onSubmit={savePqrs}><FormField label="Asunto" name="asunto" value={pqrs.asunto} onChange={(e) => setPqrs({ ...pqrs, asunto: e.target.value })} required /><FormField label="Descripcion" name="cuerpo" value={pqrs.cuerpo} onChange={(e) => setPqrs({ ...pqrs, cuerpo: e.target.value })} required /><button className="btn btn-primary me-2">Guardar</button><button type="button" className="btn btn-outline-secondary" onClick={() => setEditing(false)}>Cancelar</button></form> : <dl className="row">{[['Solicitante', pqrs.usuario ? `${pqrs.usuario.primerNombre} ${pqrs.usuario.primerApellido}` : pqrs.idUsuario], ['Asunto', pqrs.asunto], ['Descripcion', pqrs.cuerpo], ['Fecha', pqrs.fechaHora], ['Estado', pqrs.estado], ['Anexos', pqrs.anexos?.join(', ') || '-']].map(([label, value]) => <div className="row" key={label}><dt className="col-sm-3">{label}</dt><dd className="col-sm-9">{value || '-'}</dd></div>)}</dl>}
     {isOwner && !canEditOwn && Number(pqrs.estado) === 1 && <p className="text-muted small">La edicion de esta PQRS esta disponible solo durante los primeros 5 minutos.</p>}
     {canEditOwn && <button className="btn btn-outline-primary mb-3" onClick={() => setEditing(true)}>Editar PQRS</button>}

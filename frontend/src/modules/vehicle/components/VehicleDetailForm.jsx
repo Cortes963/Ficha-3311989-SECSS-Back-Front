@@ -1,3 +1,4 @@
 import { VehicleForm } from './VehicleForm';
 
-export const VehicleDetailForm = (props) => <VehicleForm {...props} />;
+/** Vista de consulta: el mismo formulario, siempre en solo lectura. */
+export const VehicleDetailForm = (props) => <VehicleForm {...props} readOnly />;

@@ -25,6 +25,9 @@ import { ReportCreatePage } from '@/modules/pqrs/pages/ReportCreatePage';
 import { ReportDetailPage } from '@/modules/pqrs/pages/ReportDetailPage';
 import { PqrsDetailPage } from '@/modules/pqrs/pages/PqrsDetailPage';
 import { VehiclePage } from '@/modules/vehicle/pages/VehiclePage';
+import { VehicleCreatePage } from '@/modules/vehicle/pages/VehicleCreatePage';
+import { VehicleEditPage } from '@/modules/vehicle/pages/VehicleEditPage';
+import { VehicleDetailPage } from '@/modules/vehicle/pages/VehicleDetailPage';
 
 const roles = {
   admin: ['ADMINISTRADOR'],
@@ -73,6 +76,9 @@ const router = createBrowserRouter([
     { path: 'cupos/detalle', element: <Navigate to="/cupos" replace /> },
     guarded(roles.ownQuota, 'mi-cupo', <MyQuotaSummaryPage />),
     guarded(['APRENDIZ', 'INVITADO'], 'vehiculos', <VehiclePage />),
+    guarded(['APRENDIZ'], 'vehiculos/nuevo', <VehicleCreatePage />),
+    guarded(['APRENDIZ', 'INVITADO'], 'vehiculos/:id', <VehicleDetailPage />),
+    guarded(['APRENDIZ'], 'vehiculos/:id/editar', <VehicleEditPage />),
     guarded(roles.reportRead, 'reportes', <ReportsPage />),
     guarded(roles.reportWrite, 'reportes/nuevo', <ReportCreatePage />),
     guarded(roles.reportRead, 'reportes/:id', <ReportDetailPage />),

@@ -1,7 +1,7 @@
 import { apiClient } from '@/services/apiClient';
 
 /**
- * Operaciones del módulo PQRS contra el backend Express real (Backend/routes/attention.routes.js).
+ * Operaciones del módulo PQRS contra la API Express real (api/routes/attention.routes.js).
  *
  * El backend habla en snake_case y pagina desde 1, con el sobre
  * { ok, mensaje, pagina, limite, total, datos }. Los componentes de este

@@ -1,0 +1,59 @@
+$kind: http-request
+url: "{{baseUrl}}/api/vehicle"
+method: POST
+headers:
+  Authorization: Bearer {{tokenAprendizNuevo}}
+body:
+  type: formdata
+  content:
+    - type: text
+      key: tipo_vehiculo
+      value: MOTO
+    - type: text
+      key: marca
+      value: AKT
+    - type: text
+      key: color
+      value: Rojo
+    - type: text
+      key: placa
+      value: TST{{$timestamp}}
+    - type: text
+      key: cilindraje
+      value: "150"
+    - type: text
+      key: modelo
+      value: "2026"
+    - type: file
+      key: imagen_url_tarjeta_propiedad
+      src:
+        - C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\storage\3\6174426c-cc93-42c9-a968-28e5b470c31f.jpg
+      description: Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.
+    - type: file
+      key: imagen_url_identificacion_vehiculo
+      src:
+        - C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\storage\3\6174426c-cc93-42c9-a968-28e5b470c31f.jpg
+      description: Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.
+    - type: file
+      key: imagen_url_vehiculo
+      src:
+        - C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\storage\3\6174426c-cc93-42c9-a968-28e5b470c31f.jpg
+      description: Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.
+    - type: file
+      key: imagen_url_soat
+      src:
+        - C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\storage\3\6174426c-cc93-42c9-a968-28e5b470c31f.jpg
+      description: Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.
+    - type: file
+      key: imagen_url_tecnomecanica_vigente
+      src:
+        - C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\storage\3\6174426c-cc93-42c9-a968-28e5b470c31f.jpg
+      description: Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("201 creado", () => pm.response.to.have.status(201));
+      pm.test("mensaje pendiente de aprobacion", () => pm.expect(pm.response.json().mensaje).to.include('pendiente'));
+      pm.environment.set('nuevoVehiculoId', pm.response.json().id_vehiculo);
+    language: text/javascript
+order: 2000

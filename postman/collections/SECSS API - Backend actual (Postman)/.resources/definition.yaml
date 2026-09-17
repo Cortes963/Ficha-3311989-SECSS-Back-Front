@@ -1,0 +1,19 @@
+$kind: collection
+description: Colecci?n alineada con las rutas actuales de api/. Ejecutar 00 - Auth y Core primero. Las solicitudes multipart requieren seleccionar archivos locales en cada campo file.
+variables:
+  baseUrl: http://localhost:4000
+  testPassword: SECSS-Testing-2026!
+  docAdmin: "1021312836"
+  docJefe: "80112233"
+  docCelador: "79888777"
+  docAprendizSemilla: "1055444333"
+  docInvitadoSemilla: "52888999"
+  docAprendizNuevo: ""
+  tokenAdmin: ""
+  tokenJefe: ""
+  tokenCelador: ""
+  tokenAprendizSemilla: ""
+  tokenInvitadoSemilla: ""
+  tokenAprendizNuevo: ""
+  nuevoAprendizId: ""
+  nuevoVehiculoId: ""

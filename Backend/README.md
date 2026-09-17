@@ -1,50 +1,29 @@
-# Backend — SECSS
+# Backend de datos — SECSS
 
-API en Node.js (Express 5) + MySQL para el sistema de control vehicular SECSS.
+Esta carpeta contiene la lógica de negocio y persistencia de SECSS. No abre un
+puerto HTTP por sí sola: la capa `api/` expone las rutas y delega en estos
+controladores.
 
-## Requisitos
-
-- Node.js 18 o superior
-- MySQL corriendo (local o remoto) con la base de datos ya creada
-
-## Cómo levantar el proyecto
+Instala sus dependencias desde esta carpeta cuando se configure el proyecto:
 
 ```bash
 cd Backend
 npm install
-cp .env.example .env
 ```
 
-Edita `.env` con tus credenciales reales de MySQL. Luego:
+Las variables de entorno y el proceso HTTP se configuran desde `api/`; el
+Backend consume esas variables cuando sus controladores son invocados.
 
-```bash
-npm start
-```
-
-Si todo está bien, deberías ver:
-
-```
-Servidor ejecutándose en http://localhost:4000
-```
-
-## Si acabas de hacer `git pull` y te aparece `Cannot find package '...'`
-
-`node_modules/` no está versionado (a propósito — nunca debe subirse a git). Eso significa que **cada vez que clonas el repo por primera vez, o cambias de rama, tienes que correr `npm install` de nuevo** para regenerarlo. No es un error del código, es un paso de instalación que falta.
-
-## Variables de entorno
-
-Ver `.env.example` para la lista completa. Ninguna variable tiene un valor por defecto sensible hardcodeado en el código — todas se leen desde `.env`.
-
-## Inicio de sesión
-
-`POST /api/auth/storeAuthLogin` recibe `numero_documento` y `password`. La API nunca recibe ni expone `password_hash`: ese valor bcrypt se conserva únicamente en la tabla `cuenta`.
-
-## Estructura
-
-```
+```text
 Backend/
-├── controller/     # Lógica de negocio por módulo
-├── routes/         # Definición de endpoints Express, uno por módulo
-├── db.js           # Pool de conexión a MySQL
-└── index.js        # Punto de entrada del servidor
+├── controller/   # Acciones invocadas por las rutas HTTP
+├── services/     # Operaciones reutilizables
+├── middleware/   # JWT, roles y carga de archivos
+├── db.js         # Pool MySQL
+├── lib.js        # Validación y utilidades
+├── migrations/   # Cambios de base de datos
+└── storage/      # Archivos persistidos
 ```
+
+Las variables de entorno se cargan al iniciar `api/server.js`. Las conexiones
+MySQL son utilizadas por los controladores de esta carpeta.

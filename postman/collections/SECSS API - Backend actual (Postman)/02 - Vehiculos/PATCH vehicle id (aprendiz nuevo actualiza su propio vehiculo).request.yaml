@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/vehicle/{{nuevoVehiculoId}}"
+method: PATCH
+headers:
+  Authorization: Bearer {{tokenAprendizNuevo}}
+body:
+  type: formdata
+  content:
+    - type: text
+      key: color
+      value: Negro
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("200 OK", () => pm.response.to.have.status(200));
+      pm.test("avisa revision pendiente", () => pm.expect(pm.response.json().mensaje.toLowerCase()).to.match(/revisi/));
+    language: text/javascript
+order: 5000

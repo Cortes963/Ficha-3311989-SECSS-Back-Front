@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
   /**
    * Procesa las credenciales contra el backend real (POST /api/auth/storeAuthLogin).
    * El backend ya compara con bcrypt y devuelve un JWT (ver
-   * Backend/controller/auth.controller.js); ese token se guarda vía
+   * api/controller/auth.controller.js); ese token se guarda vía
    * apiClient.setToken para que las siguientes peticiones a rutas protegidas
    * (todo lo que no sea /auth o /core) manden el header Authorization.
    */

@@ -1,0 +1,20 @@
+$kind: http-request
+name: PATCH quota idUsuario idVehiculo (admin aprueba cupo del vehiculo nuevo del aprendiz)
+url: "{{baseUrl}}/api/quota/{{nuevoAprendizId}}/{{nuevoVehiculoId}}"
+method: PATCH
+headers:
+  Authorization: Bearer {{tokenAdmin}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "estado": 1
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("200 OK", () => pm.response.to.have.status(200));
+      pm.test("mensaje habilitado", () => pm.expect(pm.response.json().mensaje).to.include('habilitado'));
+    language: text/javascript
+order: 3000

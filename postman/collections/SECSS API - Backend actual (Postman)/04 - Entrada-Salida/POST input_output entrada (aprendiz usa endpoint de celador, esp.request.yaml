@@ -1,0 +1,19 @@
+$kind: http-request
+name: POST input_output entrada (aprendiz usa endpoint de celador, esperado 403)
+url: "{{baseUrl}}/api/input_output/entrada"
+method: POST
+headers:
+  Authorization: Bearer {{tokenAprendizNuevo}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "id_usuario_entra": 5,
+      "id_vehiculo": 1
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("403 rol incorrecto", () => pm.response.to.have.status(403));
+    language: text/javascript
+order: 10000

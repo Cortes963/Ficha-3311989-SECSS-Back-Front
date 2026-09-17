@@ -1,13 +1,10 @@
 {
-  "name": "secss-backend",
+  "name": "secss-data-backend",
   "private": true,
   "type": "module",
-  "scripts": { "start": "node index.js", "dev": "node --watch index.js" },
+  "scripts": { "check": "node --check db.js && node --check lib.js" },
   "dependencies": {
     "bcryptjs": "^3.0.3",
-    "cors": "^2.8.5",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.23.3",
     "multer": "^2.0.2"

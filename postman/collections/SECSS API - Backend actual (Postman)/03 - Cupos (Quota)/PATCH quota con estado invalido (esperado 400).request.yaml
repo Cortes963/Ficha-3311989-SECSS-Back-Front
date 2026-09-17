@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/api/quota/{{nuevoAprendizId}}/{{nuevoVehiculoId}}"
+method: PATCH
+headers:
+  Authorization: Bearer {{tokenAdmin}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "estado": 5
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("400 estado invalido", () => pm.response.to.have.status(400));
+    language: text/javascript
+order: 6000

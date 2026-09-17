@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/pqrs"
+method: POST
+headers:
+  Authorization: Bearer {{tokenAprendizNuevo}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "asunto": "Prueba Postman",
+      "cuerpo": "PQRS de prueba generada desde la coleccion."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("201 creado", () => pm.response.to.have.status(201));
+      pm.environment.set('nuevaPqrsId', pm.response.json().id_pqrs);
+    language: text/javascript
+order: 8000

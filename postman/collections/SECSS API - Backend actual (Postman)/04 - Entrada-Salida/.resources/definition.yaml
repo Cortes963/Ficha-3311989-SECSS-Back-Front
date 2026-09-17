@@ -1,0 +1,3 @@
+$kind: collection
+description: Usa el vehiculo 1 de Diego (cupo activo, sin entrada abierta) para el caso feliz, y el vehiculo 5 de Patricia (ya tiene entrada abierta en el DML) para el caso 409.
+order: 5000

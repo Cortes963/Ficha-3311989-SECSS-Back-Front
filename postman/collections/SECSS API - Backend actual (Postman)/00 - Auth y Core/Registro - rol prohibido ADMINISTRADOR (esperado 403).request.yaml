@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/storeAuthRegister"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "tipo_documento": "CC",
+      "numero_documento": "{{$timestamp}}9",
+      "primer_nombre": "Intento",
+      "primer_apellido": "Prohibido",
+      "n_celular": "300{{$timestamp}}",
+      "correo": "intento{{$timestamp}}@test.com",
+      "password": "ClaveLargaSegura123",
+      "nombre_rol": "ADMINISTRADOR"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("403 rol no permitido", () => pm.response.to.have.status(403));
+    language: text/javascript
+order: 10000

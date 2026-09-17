@@ -1,0 +1,19 @@
+$kind: http-request
+name: POST users asignar-celador (jefe, par ya existente, esperado 409)
+url: "{{baseUrl}}/api/users/asignar-celador"
+method: POST
+headers:
+  Authorization: Bearer {{tokenJefe}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "id_usuario_jefe_seguridad": 2,
+      "id_usuario_celador": 3
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("409 ya existe (sembrado en el DML)", () => pm.response.to.have.status(409));
+    language: text/javascript
+order: 11000

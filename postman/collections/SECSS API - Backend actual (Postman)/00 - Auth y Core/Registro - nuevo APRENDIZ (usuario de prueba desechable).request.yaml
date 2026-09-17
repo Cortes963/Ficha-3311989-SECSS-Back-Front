@@ -1,0 +1,68 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/storeAuthRegister"
+method: POST
+body:
+  type: formdata
+  content:
+    - type: text
+      key: tipo_documento
+      value: CC
+    - type: text
+      key: numero_documento
+      value: "{{docAprendizNuevo}}"
+    - type: text
+      key: primer_nombre
+      value: Prueba
+    - type: text
+      key: primer_apellido
+      value: Postman
+    - type: text
+      key: n_celular
+      value: 310{{$timestamp}}
+    - type: text
+      key: correo
+      value: aprendiz.postman.{{$timestamp}}@test.com
+    - type: text
+      key: password
+      value: "{{testPassword}}"
+    - type: text
+      key: nombre_rol
+      value: APRENDIZ
+    - type: text
+      key: detalle_aprendiz[id_centro]
+      value: "1"
+    - type: text
+      key: detalle_aprendiz[ficha]
+      value: "999999"
+    - type: text
+      key: detalle_aprendiz[direccion]
+      value: Calle de prueba 1
+    - type: text
+      key: detalle_aprendiz[fecha_vinculacion]
+      value: 2026-01-01
+    - type: file
+      key: imagen_url_aprendiz
+      src:
+        - C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\storage\3\6174426c-cc93-42c9-a968-28e5b470c31f.jpg
+      description: Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.
+    - type: file
+      key: imagen_url_identificacion
+      src:
+        - C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\storage\3\6174426c-cc93-42c9-a968-28e5b470c31f.jpg
+      description: Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.
+    - type: file
+      key: imagen_url_carnet_sena
+      src:
+        - C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\storage\3\6174426c-cc93-42c9-a968-28e5b470c31f.jpg
+      description: Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.
+scripts:
+  - type: beforeRequest
+    code: pm.environment.set('docAprendizNuevo', String(Date.now()) + '1');
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test("201 creado", () => pm.response.to.have.status(201));
+      const data = pm.response.json();
+      pm.environment.set('nuevoAprendizId', data.id_usuario);
+    language: text/javascript
+order: 12000

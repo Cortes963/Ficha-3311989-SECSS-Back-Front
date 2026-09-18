@@ -1,0 +1,1453 @@
+{
+  "info": {
+    "name": "SECSS PHP Mobile API - Postman",
+    "description": "Pruebas para la API m?vil PHP independiente. Requiere PHP 8.1+, Composer instalado y el servicio en http://localhost:4200.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4200"
+    },
+    {
+      "key": "testPassword",
+      "value": "SECSS-Testing-2026!"
+    },
+    {
+      "key": "docAdmin",
+      "value": "1021312836"
+    },
+    {
+      "key": "docJefe",
+      "value": "80112233"
+    },
+    {
+      "key": "docCelador",
+      "value": "79888777"
+    },
+    {
+      "key": "docAprendizSemilla",
+      "value": "1055444333"
+    },
+    {
+      "key": "docInvitadoSemilla",
+      "value": "52888999"
+    },
+    {
+      "key": "docAprendizNuevo",
+      "value": ""
+    },
+    {
+      "key": "tokenAdmin",
+      "value": ""
+    },
+    {
+      "key": "tokenJefe",
+      "value": ""
+    },
+    {
+      "key": "tokenCelador",
+      "value": ""
+    },
+    {
+      "key": "tokenAprendizSemilla",
+      "value": ""
+    },
+    {
+      "key": "tokenInvitadoSemilla",
+      "value": ""
+    },
+    {
+      "key": "tokenAprendizNuevo",
+      "value": ""
+    },
+    {
+      "key": "nuevoAprendizId",
+      "value": ""
+    },
+    {
+      "key": "nuevoVehiculoId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Auth y Core",
+      "description": "Corre esta carpeta PRIMERO y completa: llena las variables de token que usan las demas carpetas.",
+      "item": [
+        {
+          "name": "Health Check [PHP API]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/core/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "core",
+                "health"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"ok:true\", () => pm.expect(pm.response.json().ok).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Public - listar centros [PHP API]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/core/centros-publicos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "core",
+                "centros-publicos"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - ADMINISTRADOR (Steven) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthLogin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"{{docAdmin}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test(\"devuelve token\", () => pm.expect(data.token).to.be.a('string'));",
+                  "if (data.token) pm.environment.set('tokenAdmin', data.token);",
+                  "if (data.usuario) pm.environment.set('tokenAdmin_userId', data.usuario.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - JEFE_SEGURIDAD (Marcos) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthLogin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"{{docJefe}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test(\"devuelve token\", () => pm.expect(data.token).to.be.a('string'));",
+                  "if (data.token) pm.environment.set('tokenJefe', data.token);",
+                  "if (data.usuario) pm.environment.set('tokenJefe_userId', data.usuario.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - CELADOR (Carlos) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthLogin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"{{docCelador}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test(\"devuelve token\", () => pm.expect(data.token).to.be.a('string'));",
+                  "if (data.token) pm.environment.set('tokenCelador', data.token);",
+                  "if (data.usuario) pm.environment.set('tokenCelador_userId', data.usuario.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - APRENDIZ semilla (Diego, tiene vehiculo activo) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthLogin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"{{docAprendizSemilla}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test(\"devuelve token\", () => pm.expect(data.token).to.be.a('string'));",
+                  "if (data.token) pm.environment.set('tokenAprendizSemilla', data.token);",
+                  "if (data.usuario) pm.environment.set('tokenAprendizSemilla_userId', data.usuario.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - INVITADO semilla (Patricia, tiene entrada abierta) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthLogin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"{{docInvitadoSemilla}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test(\"devuelve token\", () => pm.expect(data.token).to.be.a('string'));",
+                  "if (data.token) pm.environment.set('tokenInvitadoSemilla', data.token);",
+                  "if (data.usuario) pm.environment.set('tokenInvitadoSemilla_userId', data.usuario.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - cuenta inactiva (Maria, esperado 403) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthLogin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"T753159\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"403 cuenta inactiva\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - credenciales invalidas (esperado 401) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthLogin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"{{docAdmin}}\",\n  \"password\": \"clave-incorrecta-cualquiera\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"401 credenciales invalidas\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registro - rol prohibido ADMINISTRADOR (esperado 403) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthRegister",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthRegister"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo_documento\": \"CC\",\n  \"numero_documento\": \"{{$timestamp}}9\",\n  \"primer_nombre\": \"Intento\",\n  \"primer_apellido\": \"Prohibido\",\n  \"n_celular\": \"300{{$timestamp}}\",\n  \"correo\": \"intento{{$timestamp}}@test.com\",\n  \"password\": \"ClaveLargaSegura123\",\n  \"nombre_rol\": \"ADMINISTRADOR\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"403 rol no permitido\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registro - contrasena muy corta (esperado 400) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthRegister",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthRegister"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo_documento\": \"CC\",\n  \"numero_documento\": \"{{$timestamp}}8\",\n  \"primer_nombre\": \"Corta\",\n  \"primer_apellido\": \"Clave\",\n  \"n_celular\": \"301{{$timestamp}}\",\n  \"correo\": \"corta{{$timestamp}}@test.com\",\n  \"password\": \"abc123\",\n  \"nombre_rol\": \"APRENDIZ\",\n  \"detalle_aprendiz\": {\n    \"id_centro\": \"1\",\n    \"ficha\": \"999998\",\n    \"direccion\": \"Calle de prueba 2\",\n    \"fecha_vinculacion\": \"2026-01-01\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 password corta\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registro - nuevo APRENDIZ (usuario de prueba desechable) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthRegister",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthRegister"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "tipo_documento",
+                  "type": "text",
+                  "value": "CC"
+                },
+                {
+                  "key": "numero_documento",
+                  "type": "text",
+                  "value": "{{docAprendizNuevo}}"
+                },
+                {
+                  "key": "primer_nombre",
+                  "type": "text",
+                  "value": "Prueba"
+                },
+                {
+                  "key": "primer_apellido",
+                  "type": "text",
+                  "value": "Postman"
+                },
+                {
+                  "key": "n_celular",
+                  "type": "text",
+                  "value": "310{{$timestamp}}"
+                },
+                {
+                  "key": "correo",
+                  "type": "text",
+                  "value": "aprendiz.postman.{{$timestamp}}@test.com"
+                },
+                {
+                  "key": "password",
+                  "type": "text",
+                  "value": "{{testPassword}}"
+                },
+                {
+                  "key": "nombre_rol",
+                  "type": "text",
+                  "value": "APRENDIZ"
+                },
+                {
+                  "key": "detalle_aprendiz[id_centro]",
+                  "type": "text",
+                  "value": "1"
+                },
+                {
+                  "key": "detalle_aprendiz[ficha]",
+                  "type": "text",
+                  "value": "999999"
+                },
+                {
+                  "key": "detalle_aprendiz[direccion]",
+                  "type": "text",
+                  "value": "Calle de prueba 1"
+                },
+                {
+                  "key": "detalle_aprendiz[fecha_vinculacion]",
+                  "type": "text",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "imagen_url_aprendiz",
+                  "type": "file",
+                  "value": "",
+                  "description": "Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.",
+                  "src": "C:\\Users\\andresmunoz\\OneDrive\\Documentos\\Ficha-3311989-SECSS-Back-Front\\Backend\\storage\\3\\6174426c-cc93-42c9-a968-28e5b470c31f.jpg"
+                },
+                {
+                  "key": "imagen_url_identificacion",
+                  "type": "file",
+                  "value": "",
+                  "description": "Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.",
+                  "src": "C:\\Users\\andresmunoz\\OneDrive\\Documentos\\Ficha-3311989-SECSS-Back-Front\\Backend\\storage\\3\\6174426c-cc93-42c9-a968-28e5b470c31f.jpg"
+                },
+                {
+                  "key": "imagen_url_carnet_sena",
+                  "type": "file",
+                  "value": "",
+                  "description": "Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.",
+                  "src": "C:\\Users\\andresmunoz\\OneDrive\\Documentos\\Ficha-3311989-SECSS-Back-Front\\Backend\\storage\\3\\6174426c-cc93-42c9-a968-28e5b470c31f.jpg"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('docAprendizNuevo', String(Date.now()) + '1');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 creado\", () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.environment.set('nuevoAprendizId', data.id_usuario);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - nuevo APRENDIZ [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthLogin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"{{docAprendizNuevo}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test(\"devuelve token\", () => pm.expect(data.token).to.be.a('string'));",
+                  "if (data.token) pm.environment.set('tokenAprendizNuevo', data.token);",
+                  "if (data.usuario) pm.environment.set('tokenAprendizNuevo_userId', data.usuario.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registro publico INVITADO no permitido (esperado 403) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthRegister",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthRegister"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo_documento\": \"CC\",\n  \"numero_documento\": \"{{$timestamp}}2\",\n  \"primer_nombre\": \"Visitante\",\n  \"primer_apellido\": \"Postman\",\n  \"n_celular\": \"320{{$timestamp}}\",\n  \"correo\": \"invitado.postman.{{$timestamp}}@test.com\",\n  \"password\": \"{{testPassword}}\",\n  \"nombre_rol\": \"INVITADO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"403 rol no permitido\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login INVITADO nuevo (credencial temporal devuelta por celador) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthLogin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"{{docInvitadoNuevo}}\",\n  \"password\": \"{{passwordInvitadoNuevo}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Ejecutar despu?s de POST input_output invitado; usa la contrase?a temporal guardada autom?ticamente."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test(\"devuelve token\", () => pm.expect(data.token).to.be.a('string'));",
+                  "if (data.token) pm.environment.set('tokenInvitadoNuevo', data.token);",
+                  "if (data.usuario) pm.environment.set('tokenInvitadoNuevo_userId', data.usuario.id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 - Usuarios",
+      "description": "",
+      "item": [
+        {
+          "name": "GET users me (como aprendiz nuevo) [PHP API]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAprendizNuevo}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  pm.test(\"trae detalle_aprendiz\", () => pm.expect(pm.response.json().datos.detalle_aprendiz).to.not.be.null);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH users me (actualizar celular propio) [PHP API]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAprendizNuevo}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "users",
+                "me"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"n_celular\": \"3999999999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"avisa revision de cupos\", () => pm.expect(pm.response.json().mensaje).to.include('cupos'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login bloqueado tras deshabilitar (esperado 403) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/auth/storeAuthLogin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "auth",
+                "storeAuthLogin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_documento\": \"{{docAprendizNuevo}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"403 cuenta inactiva\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Vehiculos",
+      "description": "Usa usuarios NUEVOS (no los sembrados) para no alterar los cupos activos del DML.",
+      "item": [
+        {
+          "name": "GET vehicle me (aprendiz semilla Diego, ya tiene 1 vehiculo) [PHP API]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAprendizSemilla}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/vehicle/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "vehicle",
+                "me"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  pm.test(\"al menos un vehiculo\", () => pm.expect(pm.response.json().datos.length).to.be.above(0));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST vehicle (aprendiz nuevo registra una MOTO) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAprendizNuevo}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/vehicle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "vehicle"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "tipo_vehiculo",
+                  "type": "text",
+                  "value": "MOTO"
+                },
+                {
+                  "key": "marca",
+                  "type": "text",
+                  "value": "AKT"
+                },
+                {
+                  "key": "color",
+                  "type": "text",
+                  "value": "Rojo"
+                },
+                {
+                  "key": "placa",
+                  "type": "text",
+                  "value": "TST{{$timestamp}}"
+                },
+                {
+                  "key": "cilindraje",
+                  "type": "text",
+                  "value": "150"
+                },
+                {
+                  "key": "modelo",
+                  "type": "text",
+                  "value": "2026"
+                },
+                {
+                  "key": "imagen_url_tarjeta_propiedad",
+                  "type": "file",
+                  "value": "",
+                  "description": "Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.",
+                  "src": "C:\\Users\\andresmunoz\\OneDrive\\Documentos\\Ficha-3311989-SECSS-Back-Front\\Backend\\storage\\3\\6174426c-cc93-42c9-a968-28e5b470c31f.jpg"
+                },
+                {
+                  "key": "imagen_url_identificacion_vehiculo",
+                  "type": "file",
+                  "value": "",
+                  "description": "Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.",
+                  "src": "C:\\Users\\andresmunoz\\OneDrive\\Documentos\\Ficha-3311989-SECSS-Back-Front\\Backend\\storage\\3\\6174426c-cc93-42c9-a968-28e5b470c31f.jpg"
+                },
+                {
+                  "key": "imagen_url_vehiculo",
+                  "type": "file",
+                  "value": "",
+                  "description": "Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.",
+                  "src": "C:\\Users\\andresmunoz\\OneDrive\\Documentos\\Ficha-3311989-SECSS-Back-Front\\Backend\\storage\\3\\6174426c-cc93-42c9-a968-28e5b470c31f.jpg"
+                },
+                {
+                  "key": "imagen_url_soat",
+                  "type": "file",
+                  "value": "",
+                  "description": "Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.",
+                  "src": "C:\\Users\\andresmunoz\\OneDrive\\Documentos\\Ficha-3311989-SECSS-Back-Front\\Backend\\storage\\3\\6174426c-cc93-42c9-a968-28e5b470c31f.jpg"
+                },
+                {
+                  "key": "imagen_url_tecnomecanica_vigente",
+                  "type": "file",
+                  "value": "",
+                  "description": "Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.",
+                  "src": "C:\\Users\\andresmunoz\\OneDrive\\Documentos\\Ficha-3311989-SECSS-Back-Front\\Backend\\storage\\3\\6174426c-cc93-42c9-a968-28e5b470c31f.jpg"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 creado\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"mensaje pendiente de aprobacion\", () => pm.expect(pm.response.json().mensaje).to.include('pendiente'));",
+                  "pm.environment.set('nuevoVehiculoId', pm.response.json().id_vehiculo);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST vehicle (falta tipo_vehiculo, esperado 400) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAprendizNuevo}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/vehicle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "vehicle"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "marca",
+                  "type": "text",
+                  "value": "X"
+                },
+                {
+                  "key": "color",
+                  "type": "text",
+                  "value": "Y"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 campo faltante\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST vehicle BICICLETA como INVITADO (esperado 403) [PHP API]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitadoSemilla}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/vehicle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "vehicle"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "tipo_vehiculo",
+                  "type": "text",
+                  "value": "BICICLETA"
+                },
+                {
+                  "key": "marca",
+                  "type": "text",
+                  "value": "GW"
+                },
+                {
+                  "key": "color",
+                  "type": "text",
+                  "value": "Azul"
+                },
+                {
+                  "key": "numero_marco",
+                  "type": "text",
+                  "value": "MARCO-TEST-{{$timestamp}}"
+                },
+                {
+                  "key": "clase_bicicleta",
+                  "type": "text",
+                  "value": "Urbana"
+                },
+                {
+                  "key": "imagen_url_tarjeta_propiedad",
+                  "type": "file",
+                  "value": "",
+                  "description": "Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.",
+                  "src": "C:\\Users\\andresmunoz\\OneDrive\\Documentos\\Ficha-3311989-SECSS-Back-Front\\Backend\\storage\\3\\6174426c-cc93-42c9-a968-28e5b470c31f.jpg"
+                },
+                {
+                  "key": "imagen_url_identificacion_vehiculo",
+                  "type": "file",
+                  "value": "",
+                  "description": "Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.",
+                  "src": "C:\\Users\\andresmunoz\\OneDrive\\Documentos\\Ficha-3311989-SECSS-Back-Front\\Backend\\storage\\3\\6174426c-cc93-42c9-a968-28e5b470c31f.jpg"
+                },
+                {
+                  "key": "imagen_url_vehiculo",
+                  "type": "file",
+                  "value": "",
+                  "description": "Seleccione un archivo de imagen JPG, PNG o WEBP en Postman.",
+                  "src": "C:\\Users\\andresmunoz\\OneDrive\\Documentos\\Ficha-3311989-SECSS-Back-Front\\Backend\\storage\\3\\6174426c-cc93-42c9-a968-28e5b470c31f.jpg"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"403 rol no permitido\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH vehicle id (aprendiz nuevo actualiza su propio vehiculo) [PHP API]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAprendizNuevo}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/vehicle/{{nuevoVehiculoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "vehicle",
+                "{{nuevoVehiculoId}}"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "color",
+                  "type": "text",
+                  "value": "Negro"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"avisa revision pendiente\", () => pm.expect(pm.response.json().mensaje.toLowerCase()).to.match(/revisi/));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH vehicle id inactivar (aprendiz nuevo inactiva su vehiculo de prueba) [PHP API]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAprendizNuevo}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/vehicle/{{nuevoVehiculoId}}/inactivar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "vehicle",
+                "{{nuevoVehiculoId}}",
+                "inactivar"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH vehicle id inactivar de nuevo (esperado 404, ya inactivo) [PHP API]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAprendizNuevo}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mobile/v1/vehicle/{{nuevoVehiculoId}}/inactivar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mobile",
+                "v1",
+                "vehicle",
+                "{{nuevoVehiculoId}}",
+                "inactivar"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"404 ya estaba inactivo\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

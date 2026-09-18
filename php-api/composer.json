@@ -1,0 +1,18 @@
+{
+  "name": "secss/mobile-php-api",
+  "description": "PHP implementation of the SECSS mobile API",
+  "type": "project",
+  "require": {
+    "php": "^8.1",
+    "firebase/php-jwt": "^7.0",
+    "vlucas/phpdotenv": "^5.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Secss\\": "src/"
+    }
+  },
+  "scripts": {
+    "serve": "php -S 0.0.0.0:4200 -t public public/index.php"
+  }
+}

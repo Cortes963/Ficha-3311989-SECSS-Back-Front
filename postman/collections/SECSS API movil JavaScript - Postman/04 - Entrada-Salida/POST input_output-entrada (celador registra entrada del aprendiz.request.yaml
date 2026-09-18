@@ -1,0 +1,24 @@
+$kind: http-request
+name: POST input_output/entrada (celador registra entrada del aprendiz nuevo)
+description: Requiere que el cupo del vehiculo este en estado=1 (ver 03 - Cupos, PATCH que lo habilita).
+url: "{{baseUrl}}/api/mobile/v1/input_output/entrada"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenCelador}}
+body:
+  type: json
+  content: |-
+    {
+      "id_usuario_entra": "{{idAprendizNuevo}}",
+      "id_vehiculo": "{{nuevoVehiculoId}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("201 creado", function () { pm.response.to.have.status(201); });
+      let json = {};
+      try { json = pm.response.json(); } catch (e) { json = {}; }
+      if (json.id_entrada_salida) pm.environment.set("nuevaEntradaId", json.id_entrada_salida);
+    language: text/javascript
+order: 2000

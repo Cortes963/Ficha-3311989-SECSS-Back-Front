@@ -39,8 +39,8 @@ const mountApi = (prefix) => {
   app.use(prefix, (_req, res) => res.status(404).json({ ok: false, mensaje: 'Ruta no encontrada.' }));
 };
 
-mountApi('/api');
 mountApi('/api/web/v1');
+mountApi('/api');
 
 app.use((err, _req, res, _next) => {
   console.error(err);

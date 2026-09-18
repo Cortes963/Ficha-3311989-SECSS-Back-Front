@@ -1,3 +1,0 @@
-$kind: collection
-description: Usa usuarios NUEVOS (no los sembrados) para no alterar los cupos activos del DML.
-order: 3000

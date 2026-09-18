@@ -1,0 +1,19 @@
+$kind: http-request
+name: POST input_output/entrada (mismo vehiculo otra vez, esperado 409 ya abierta)
+url: "{{baseUrl}}/api/mobile/v1/input_output/entrada"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenCelador}}
+body:
+  type: json
+  content: |-
+    {
+      "id_usuario_entra": "{{idAprendizNuevo}}",
+      "id_vehiculo": "{{nuevoVehiculoId}}"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("409 esperado", function () { pm.response.to.have.status(409); });
+    language: text/javascript
+order: 3000

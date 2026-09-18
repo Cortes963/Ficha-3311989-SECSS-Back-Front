@@ -1,0 +1,27 @@
+$kind: http-request
+name: POST input_output/invitado (aprendiz usa endpoint de celador, esperado 403)
+url: "{{baseUrl}}/api/mobile/v1/input_output/invitado"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAprendizNuevo}}
+body:
+  type: json
+  content: |-
+    {
+      "tipo_vehiculo": "BICICLETA",
+      "marca": "X",
+      "color": "Y",
+      "expira_en": "2027-01-01T00:00:00",
+      "tipo_documento": "CC",
+      "numero_documento": "900000099",
+      "primer_nombre": "X",
+      "primer_apellido": "Y",
+      "n_celular": "3000000000",
+      "correo": "x@example.com"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("403 esperado", function () { pm.response.to.have.status(403); });
+    language: text/javascript
+order: 12000

@@ -1,0 +1,19 @@
+$kind: http-request
+name: PATCH users/me/aprendiz (aprendiz nuevo corrige direccion)
+description: Las 3 imagenes son opcionales aqui (solo se exigen en el registro inicial); este PATCH funciona como JSON plano sin adjuntar archivos.
+url: "{{baseUrl}}/api/mobile/v1/users/me/aprendiz"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAprendizNuevo}}
+body:
+  type: json
+  content: |-
+    {
+      "direccion": "Carrera 45 # 10-20"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("200 OK", function () { pm.response.to.have.status(200); });
+    language: text/javascript
+order: 5000

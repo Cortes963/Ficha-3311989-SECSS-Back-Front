@@ -1,0 +1,72 @@
+name: SECSS Local - API movil JavaScript
+values:
+  - key: baseUrl
+    value: 'http://localhost:4100'
+  - key: testPassword
+    value: SECSS-Testing-2026!
+  - key: docAdmin
+    value: '1021312836'
+  - key: docJefe
+    value: '80112233'
+  - key: docCelador
+    value: '79888777'
+  - key: docAprendizSemilla
+    value: '1055444333'
+  - key: docInvitadoSemilla
+    value: '52888999'
+  - key: tokenAdmin
+    value: ''
+  - key: idAdmin
+    value: ''
+  - key: tokenJefe
+    value: ''
+  - key: idJefe
+    value: ''
+  - key: tokenCelador
+    value: ''
+  - key: idCelador
+    value: ''
+  - key: tokenAprendizSemilla
+    value: ''
+  - key: idAprendizSemilla
+    value: ''
+  - key: tokenInvitadoSemilla
+    value: ''
+  - key: idInvitadoSemilla
+    value: ''
+  - key: nuevoCentroId
+    value: ''
+  - key: docAprendizNuevo
+    value: ''
+  - key: tokenAprendizNuevo
+    value: ''
+  - key: idAprendizNuevo
+    value: ''
+  - key: nuevoAprendizId
+    value: ''
+  - key: nuevoCeladorId
+    value: ''
+  - key: passwordCeladorNuevo
+    value: ''
+  - key: nuevoJefeId
+    value: ''
+  - key: nuevoVehiculoId
+    value: ''
+  - key: docInvitadoNuevo
+    value: ''
+  - key: nuevoInvitadoId
+    value: ''
+  - key: nuevoVehiculoInvitadoId
+    value: ''
+  - key: passwordInvitadoNuevo
+    value: ''
+  - key: nuevaEntradaId
+    value: ''
+  - key: nuevoReporteId
+    value: ''
+  - key: nuevaPqrsId
+    value: ''
+  - key: nuevaRespuestaId
+    value: ''
+  - key: resetToken
+    value: ''

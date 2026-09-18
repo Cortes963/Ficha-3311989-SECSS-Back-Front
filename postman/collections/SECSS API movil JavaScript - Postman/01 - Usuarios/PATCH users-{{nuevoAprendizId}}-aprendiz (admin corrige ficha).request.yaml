@@ -1,0 +1,18 @@
+$kind: http-request
+name: PATCH users/{{nuevoAprendizId}}/aprendiz (admin corrige ficha)
+url: "{{baseUrl}}/api/mobile/v1/users/{{nuevoAprendizId}}/aprendiz"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAdmin}}
+body:
+  type: json
+  content: |-
+    {
+      "ficha": "3311989-A"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("200 OK", function () { pm.response.to.have.status(200); });
+    language: text/javascript
+order: 15000

@@ -1,0 +1,2 @@
+$kind: collection
+description: Colecci?n para la API m?vil independiente de api/. Usa http://localhost:4100 y el prefijo /api/mobile/v1. No corresponde a php-api/.

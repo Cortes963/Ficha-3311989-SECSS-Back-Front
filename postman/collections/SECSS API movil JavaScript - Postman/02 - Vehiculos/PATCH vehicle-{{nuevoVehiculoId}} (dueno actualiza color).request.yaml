@@ -1,0 +1,19 @@
+$kind: http-request
+name: PATCH vehicle/{{nuevoVehiculoId}} (dueno actualiza color)
+description: Cualquier PATCH exitoso vuelve a poner el cupo en estado 0 (pendiente de revision); hay que volver a habilitarlo en 03 - Cupos antes de usarlo en 04 - Entrada-Salida.
+url: "{{baseUrl}}/api/mobile/v1/vehicle/{{nuevoVehiculoId}}"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAprendizNuevo}}
+body:
+  type: json
+  content: |-
+    {
+      "color": "Azul"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("200 OK", function () { pm.response.to.have.status(200); });
+    language: text/javascript
+order: 6000

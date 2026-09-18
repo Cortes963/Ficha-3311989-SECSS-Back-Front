@@ -1,0 +1,18 @@
+$kind: http-request
+name: PATCH users/{{nuevoAprendizId}}/estado (jefe rehabilita, necesario para el resto de la coleccion)
+url: "{{baseUrl}}/api/mobile/v1/users/{{nuevoAprendizId}}/estado"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenJefe}}
+body:
+  type: json
+  content: |-
+    {
+      "estado": 1
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("200 OK", function () { pm.response.to.have.status(200); });
+    language: text/javascript
+order: 17000

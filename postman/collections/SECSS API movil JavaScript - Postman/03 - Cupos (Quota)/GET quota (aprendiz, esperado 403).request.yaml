@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{baseUrl}}/api/mobile/v1/quota"
+method: GET
+headers:
+  Authorization: Bearer {{tokenAprendizNuevo}}
+scripts:
+  - type: afterResponse
+    code: pm.test("403 esperado", function () { pm.response.to.have.status(403); });
+    language: text/javascript
+order: 2000

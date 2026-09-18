@@ -1,0 +1,11 @@
+$kind: http-request
+name: GET users/{{nuevoAprendizId}}/aprendiz (jefe)
+url: "{{baseUrl}}/api/mobile/v1/users/{{nuevoAprendizId}}/aprendiz"
+method: GET
+headers:
+  Authorization: Bearer {{tokenJefe}}
+scripts:
+  - type: afterResponse
+    code: pm.test("200 OK", function () { pm.response.to.have.status(200); });
+    language: text/javascript
+order: 14000

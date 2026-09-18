@@ -1,0 +1,18 @@
+$kind: http-request
+name: PATCH quota/999999/999999 (esperado 404)
+url: "{{baseUrl}}/api/mobile/v1/quota/999999/999999"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAdmin}}
+body:
+  type: json
+  content: |-
+    {
+      "estado": 1
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("404 esperado", function () { pm.response.to.have.status(404); });
+    language: text/javascript
+order: 10000

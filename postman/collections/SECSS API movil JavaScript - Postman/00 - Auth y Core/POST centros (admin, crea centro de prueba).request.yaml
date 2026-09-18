@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/mobile/v1/core/centros"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAdmin}}
+body:
+  type: json
+  content: |-
+    {
+      "nombre_centro": "Centro de Pruebas Postman"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("201 creado", function () { pm.response.to.have.status(201); });
+      let json = {};
+      try { json = pm.response.json(); } catch (e) { json = {}; }
+      if (json.datos && json.datos.id) pm.environment.set("nuevoCentroId", json.datos.id);
+    language: text/javascript
+order: 9000

@@ -1,0 +1,36 @@
+$kind: http-request
+name: POST input_output/invitado (celador crea invitado, vehiculo y entrada)
+description: "numero_marco/clase_bicicleta no se piden aqui porque el endpoint de invitado no crea detalle_moto/detalle_bicicleta (revisar con el equipo si es un vacio intencional o un bug: el vehiculo del invitado queda sin fila en detalle_bicicleta)."
+url: "{{baseUrl}}/api/mobile/v1/input_output/invitado"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenCelador}}
+body:
+  type: json
+  content: |-
+    {
+      "tipo_vehiculo": "BICICLETA",
+      "marca": "GenericaBici",
+      "color": "Negra",
+      "expira_en": "2027-01-01T00:00:00",
+      "tipo_documento": "CC",
+      "numero_documento": "{{$timestamp}}",
+      "primer_nombre": "Invitado",
+      "primer_apellido": "DePrueba",
+      "n_celular": "3031234567",
+      "correo": "invitado.prueba.{{$timestamp}}@example.com"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("201 creado", function () { pm.response.to.have.status(201); });
+      let json = {};
+      try { json = pm.response.json(); } catch (e) { json = {}; }
+      if (json.id_usuario) pm.environment.set("nuevoInvitadoId", json.id_usuario);
+      if (json.id_vehiculo) pm.environment.set("nuevoVehiculoInvitadoId", json.id_vehiculo);
+      var sentDoc = pm.request.body.mode === "raw" ? JSON.parse(pm.request.body.raw).numero_documento : null;
+      if (sentDoc) pm.environment.set("docInvitadoNuevo", sentDoc);
+      if (json.credenciales_temporales) pm.environment.set("passwordInvitadoNuevo", json.credenciales_temporales.password);
+    language: text/javascript
+order: 11000

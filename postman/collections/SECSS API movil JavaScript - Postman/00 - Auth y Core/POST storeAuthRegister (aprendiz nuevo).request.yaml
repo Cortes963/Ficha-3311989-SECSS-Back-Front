@@ -1,0 +1,63 @@
+$kind: http-request
+description: "IMPORTANTE: adjunta manualmente 3 archivos JPG/PNG pequenos en imagen_url_aprendiz, imagen_url_identificacion e imagen_url_carnet_sena antes de correr esta request; los 3 son obligatorios (400 si falta alguno). Corre primero 'POST centros' de esta carpeta para tener nuevoCentroId."
+url: "{{baseUrl}}/api/mobile/v1/auth/storeAuthRegister"
+method: POST
+body:
+  type: formdata
+  content:
+    - type: text
+      key: tipo_documento
+      value: CC
+    - type: text
+      key: numero_documento
+      value: "{{$timestamp}}"
+    - type: text
+      key: primer_nombre
+      value: Aprendiz
+    - type: text
+      key: primer_apellido
+      value: DePrueba
+    - type: text
+      key: n_celular
+      value: "3001234567"
+    - type: text
+      key: correo
+      value: aprendiz.prueba.{{$timestamp}}@example.com
+    - type: text
+      key: password
+      value: "{{testPassword}}"
+    - type: text
+      key: nombre_rol
+      value: APRENDIZ
+    - type: text
+      key: detalle_aprendiz[id_centro]
+      value: "{{nuevoCentroId}}"
+    - type: text
+      key: detalle_aprendiz[ficha]
+      value: "3311989"
+    - type: text
+      key: detalle_aprendiz[direccion]
+      value: Calle Falsa 123
+    - type: text
+      key: detalle_aprendiz[fecha_vinculacion]
+      value: 2026-01-15
+    - type: file
+      key: imagen_url_aprendiz
+      src: []
+    - type: file
+      key: imagen_url_identificacion
+      src: []
+    - type: file
+      key: imagen_url_carnet_sena
+      src: []
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("201 creado", function () { pm.response.to.have.status(201); });
+      let json = {};
+      try { json = pm.response.json(); } catch (e) { json = {}; }
+      if (json.id_usuario) pm.environment.set("nuevoAprendizId", json.id_usuario);
+      var sentDoc = pm.request.body.formdata.get("numero_documento");
+      if (sentDoc) pm.environment.set("docAprendizNuevo", sentDoc.value || sentDoc);
+    language: text/javascript
+order: 14000

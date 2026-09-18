@@ -1,0 +1,11 @@
+$kind: http-request
+name: GET quota/usuario/{{idAprendizNuevo}} (otro usuario sin privilegio, esperado 403)
+url: "{{baseUrl}}/api/mobile/v1/quota/usuario/{{idAprendizNuevo}}"
+method: GET
+headers:
+  Authorization: Bearer {{tokenInvitadoSemilla}}
+scripts:
+  - type: afterResponse
+    code: pm.test("403 esperado", function () { pm.response.to.have.status(403); });
+    language: text/javascript
+order: 5000

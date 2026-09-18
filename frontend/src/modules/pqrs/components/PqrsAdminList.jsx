@@ -40,7 +40,6 @@ export const PqrsAdminList = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagina]);
 
-  const formatearFecha = (fechaHora) => (fechaHora ? fechaHora.substring(0, 16).replace('T', ' ') : '—');
   const nombreSolicitante = (pqrs) =>
     pqrs.usuario ? `${pqrs.usuario.primerNombre} ${pqrs.usuario.primerApellido}`.trim() : `Usuario #${pqrs.idUsuario}`;
 

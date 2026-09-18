@@ -1,0 +1,11 @@
+$kind: http-request
+name: GET reportes/999999 (esperado 404)
+url: "{{baseUrl}}/api/mobile/v1/reportes/999999"
+method: GET
+headers:
+  Authorization: Bearer {{tokenCelador}}
+scripts:
+  - type: afterResponse
+    code: pm.test("404 esperado", function () { pm.response.to.have.status(404); });
+    language: text/javascript
+order: 5000

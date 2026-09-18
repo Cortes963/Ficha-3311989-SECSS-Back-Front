@@ -1,0 +1,20 @@
+$kind: http-request
+name: PUT pqrs/{{nuevaPqrsId}} (dueno edita mientras sigue RADICADO)
+description: Igual que los reportes, solo se puede editar dentro de EDIT_WINDOW_MINUTES y mientras la PQRS siga en estado RADICADO (no respondida).
+url: "{{baseUrl}}/api/mobile/v1/pqrs/{{nuevaPqrsId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAprendizNuevo}}
+body:
+  type: json
+  content: |-
+    {
+      "asunto": "Demora en aprobacion de cupo (actualizado)",
+      "cuerpo": "Mi cupo lleva 4 dias pendiente de aprobacion."
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("200 OK", function () { pm.response.to.have.status(200); });
+    language: text/javascript
+order: 12000

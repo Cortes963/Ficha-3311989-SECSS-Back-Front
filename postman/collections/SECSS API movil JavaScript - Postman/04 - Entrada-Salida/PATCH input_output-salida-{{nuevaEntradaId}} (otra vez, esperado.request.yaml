@@ -1,0 +1,11 @@
+$kind: http-request
+name: PATCH input_output/salida/{{nuevaEntradaId}} (otra vez, esperado 409 ya tiene salida)
+url: "{{baseUrl}}/api/mobile/v1/input_output/salida/{{nuevaEntradaId}}"
+method: PATCH
+headers:
+  Authorization: Bearer {{tokenCelador}}
+scripts:
+  - type: afterResponse
+    code: pm.test("409 esperado", function () { pm.response.to.have.status(409); });
+    language: text/javascript
+order: 9000

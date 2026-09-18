@@ -1,0 +1,19 @@
+$kind: http-request
+name: POST pqrs/{{nuevaPqrsId}}/respuesta (otra vez, esperado 409 ya respondida)
+url: "{{baseUrl}}/api/mobile/v1/pqrs/{{nuevaPqrsId}}/respuesta"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAdmin}}
+body:
+  type: json
+  content: |-
+    {
+      "asunto": "Otra respuesta",
+      "cuerpo": "Esto no deberia pasar."
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("409 esperado", function () { pm.response.to.have.status(409); });
+    language: text/javascript
+order: 14000

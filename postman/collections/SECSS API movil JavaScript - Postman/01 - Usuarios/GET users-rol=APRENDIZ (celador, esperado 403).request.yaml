@@ -1,0 +1,13 @@
+$kind: http-request
+name: GET users?rol=APRENDIZ (celador, esperado 403)
+url: "{{baseUrl}}/api/mobile/v1/users?rol=APRENDIZ"
+method: GET
+headers:
+  Authorization: Bearer {{tokenCelador}}
+queryParams:
+  rol: APRENDIZ
+scripts:
+  - type: afterResponse
+    code: pm.test("403 esperado (celador solo consulta invitados)", function () { pm.response.to.have.status(403); });
+    language: text/javascript
+order: 12000

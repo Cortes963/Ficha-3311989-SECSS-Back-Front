@@ -1,0 +1,51 @@
+$kind: http-request
+name: 05 Credenciales inv?lidas - 401
+url: "{{baseUrl}}/api/auth/storeAuthLogin"
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenInvitado}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenJefe}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+body:
+  type: json
+  content: |-
+    {
+      "numero_documento": "{{docAdmin}}",
+      "password": "contrase?a-invalida"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("HTTP 401 esperado", function () { pm.response.to.have.status(401); });
+    language: text/javascript
+order: 5000

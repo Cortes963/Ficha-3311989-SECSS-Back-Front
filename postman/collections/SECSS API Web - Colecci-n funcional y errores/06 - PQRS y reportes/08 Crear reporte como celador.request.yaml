@@ -1,0 +1,53 @@
+$kind: http-request
+url: "{{baseUrl}}/api/reportes"
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenInvitado}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenJefe}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+body:
+  type: json
+  content: |-
+    {
+      "asunto": "Reporte de prueba",
+      "cuerpo": "Observaci?n de prueba."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 201", function () { pm.response.to.have.status(201); });
+      let j={}; try {j=pm.response.json();} catch(e) {}
+      if (j.id_reporte) pm.environment.set("nuevoReporteId", String(j.id_reporte));
+    language: text/javascript
+order: 8000

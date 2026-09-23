@@ -1,0 +1,55 @@
+$kind: http-request
+name: 03 Tipo de veh?culo inv?lido - 400
+url: "{{baseUrl}}/api/vehicle"
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenInvitado}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenJefe}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+body:
+  type: json
+  content: |-
+    {
+      "tipo_vehiculo": "AVION",
+      "marca": "X",
+      "color": "Rojo",
+      "placa": "XXX",
+      "cilindraje": "1",
+      "modelo": "2024"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("HTTP 400 esperado", function () { pm.response.to.have.status(400); });
+    language: text/javascript
+order: 3000

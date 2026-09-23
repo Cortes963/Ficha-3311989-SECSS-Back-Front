@@ -1,0 +1,50 @@
+$kind: http-request
+url: "{{baseUrl}}/api/input_output/entrada"
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenInvitado}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenJefe}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+body:
+  type: json
+  content: |-
+    {
+      "id_usuario_entra": "{{idAprendiz}}",
+      "id_vehiculo": "{{nuevoVehiculoId}}"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("HTTP 409 esperado", function () { pm.response.to.have.status(409); });
+    language: text/javascript
+order: 3000

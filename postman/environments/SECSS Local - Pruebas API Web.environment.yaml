@@ -1,0 +1,58 @@
+name: SECSS Local - Pruebas API Web
+values:
+  - key: baseUrl
+    value: 'http://localhost:4000'
+  - key: testPassword
+    value: SECSS-Testing-2026!
+  - key: newPassword
+    value: SECSS-New-Password-2026!
+  - key: correoPrueba
+    value: pruebas@secss.local
+  - key: docAdmin
+    value: '1021312836'
+  - key: docJefe
+    value: '80112233'
+  - key: docCelador
+    value: '79888777'
+  - key: docAprendizSemilla
+    value: '1055444333'
+  - key: docInvitado
+    value: '52888999'
+  - key: tokenAdmin
+    value: ''
+  - key: tokenJefe
+    value: ''
+  - key: tokenCelador
+    value: ''
+  - key: tokenAprendiz
+    value: ''
+  - key: tokenInvitado
+    value: ''
+  - key: idAdmin
+    value: ''
+  - key: idJefe
+    value: ''
+  - key: idCelador
+    value: ''
+  - key: idAprendiz
+    value: ''
+  - key: nuevoCentroId
+    value: ''
+  - key: nombreCentroPrueba
+    value: 'Centro Postman {{randomInt 100 999}}'
+  - key: nombreCentroActualizado
+    value: Centro Postman Actualizado
+  - key: nuevoVehiculoId
+    value: ''
+  - key: placaPrueba
+    value: '{{randomInt 100 999}}ABC'
+  - key: uniquePhone
+    value: '300{{randomInt 1000000 9999999}}'
+  - key: nuevaEntradaId
+    value: ''
+  - key: nuevaPqrsId
+    value: ''
+  - key: nuevaRespuestaId
+    value: ''
+  - key: nuevoReporteId
+    value: ''

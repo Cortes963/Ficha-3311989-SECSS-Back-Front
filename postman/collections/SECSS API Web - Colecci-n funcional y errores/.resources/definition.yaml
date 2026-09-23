@@ -1,0 +1,5 @@
+$kind: collection
+name: SECSS API Web - Colecci?n funcional y errores
+description: Colecci?n creada desde cero para Postman con base en el an?lisis previo del backend SECSS. Ordenada por flujo funcional y escenarios comunes/error. No incluye PHP ni API m?vil. Las variables y datos semilla deben coincidir con la base de datos local.
+variables:
+  baseUrl: http://localhost:4000

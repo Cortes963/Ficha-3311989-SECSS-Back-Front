@@ -1,0 +1,51 @@
+$kind: http-request
+name: 08 Reset token inv?lido - 400
+url: "{{baseUrl}}/api/auth/reset-password"
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenInvitado}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenJefe}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenAdmin}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenCelador}}
+  - key: Authorization
+    value: Bearer {{tokenAprendiz}}
+body:
+  type: json
+  content: |-
+    {
+      "token": "token-invalido",
+      "password": "{{newPassword}}"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("HTTP 400 esperado", function () { pm.response.to.have.status(400); });
+    language: text/javascript
+order: 8000

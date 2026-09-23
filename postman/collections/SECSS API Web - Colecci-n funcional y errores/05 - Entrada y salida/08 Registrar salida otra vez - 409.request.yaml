@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{baseUrl}}/api/input_output/salida/{{nuevaEntradaId}}"
+method: PATCH
+headers:
+  Authorization: Bearer {{tokenCelador}}
+scripts:
+  - type: afterResponse
+    code: pm.test("HTTP 409 esperado", function () { pm.response.to.have.status(409); });
+    language: text/javascript
+order: 8000

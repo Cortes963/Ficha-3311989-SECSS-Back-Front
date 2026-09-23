@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/users?rol=APRENDIZ"
+method: GET
+headers:
+  Authorization: Bearer {{tokenCelador}}
+queryParams:
+  rol: APRENDIZ
+scripts:
+  - type: afterResponse
+    code: pm.test("HTTP 403 esperado", function () { pm.response.to.have.status(403); });
+    language: text/javascript
+order: 7000

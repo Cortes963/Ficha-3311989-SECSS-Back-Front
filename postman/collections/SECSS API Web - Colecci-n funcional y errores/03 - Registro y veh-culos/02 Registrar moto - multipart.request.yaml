@@ -1,0 +1,51 @@
+$kind: http-request
+url: "{{baseUrl}}/api/vehicle"
+method: POST
+headers:
+  Authorization: Bearer {{tokenAprendiz}}
+body:
+  type: json
+  content: |-
+    {
+      "mode": "formdata",
+      "formdata": [
+        {
+          "key": "tipo_vehiculo",
+          "value": "MOTO",
+          "type": "text"
+        },
+        {
+          "key": "marca",
+          "value": "Honda",
+          "type": "text"
+        },
+        {
+          "key": "color",
+          "value": "Negro",
+          "type": "text"
+        },
+        {
+          "key": "placa",
+          "value": "{{placaPrueba}}",
+          "type": "text"
+        },
+        {
+          "key": "cilindraje",
+          "value": "125",
+          "type": "text"
+        },
+        {
+          "key": "modelo",
+          "value": "2024",
+          "type": "text"
+        }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 201", function () { pm.response.to.have.status(201); });
+      let j={}; try {j=pm.response.json();} catch(e) {}
+      if (j.id_vehiculo) pm.environment.set("nuevoVehiculoId", String(j.id_vehiculo));
+    language: text/javascript
+order: 2000

@@ -1,0 +1,11 @@
+$kind: http-request
+name: 01 Veh?culos propios inicialmente
+url: "{{baseUrl}}/api/vehicle/me"
+method: GET
+headers:
+  Authorization: Bearer {{tokenAprendiz}}
+scripts:
+  - type: afterResponse
+    code: pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+    language: text/javascript
+order: 1000

@@ -1,0 +1,11 @@
+$kind: http-request
+name: 07 Inactivar veh?culo pendiente - 404 esperado
+url: "{{baseUrl}}/api/vehicle/{{nuevoVehiculoId}}/inactivar"
+method: PATCH
+headers:
+  Authorization: Bearer {{tokenAprendiz}}
+scripts:
+  - type: afterResponse
+    code: pm.test("HTTP 404 esperado", function () { pm.response.to.have.status(404); });
+    language: text/javascript
+order: 7000

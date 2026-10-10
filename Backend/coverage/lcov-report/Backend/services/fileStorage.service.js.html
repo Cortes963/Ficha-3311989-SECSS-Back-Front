@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">7.69% </span>
+                <span class="strong">84.61% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/13</span>
+                <span class='fraction'>11/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>2/6</span>
+                <span class='fraction'>3/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">9.09% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/11</span>
+                <span class='fraction'>11/11</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -94,44 +94,44 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
 &nbsp;
-const root = path.resolve(process.env.LOCAL_STORAGE_PATH || 'storage');
+const root = path.resolve(process.env.LOCAL_STORAGE_PATH || <span class="branch-1 cbranch-no" title="branch not covered" >'storage')</span>;
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >saveUploadedFile(</span>file, userId) {
-<span class="cstat-no" title="statement not covered" >  if (!file) <span class="cstat-no" title="statement not covered" >return null;</span></span>
-  const directory = <span class="cstat-no" title="statement not covered" >path.join(root, String(userId));</span>
-<span class="cstat-no" title="statement not covered" >  await fs.mkdir(directory, { recursive: true });</span>
-  const extension = <span class="cstat-no" title="statement not covered" >path.extname(file.originalname).toLowerCase();</span>
-  const filename = <span class="cstat-no" title="statement not covered" >`${crypto.randomUUID()}${extension}`;</span>
-  const destination = <span class="cstat-no" title="statement not covered" >path.join(directory, filename);</span>
-<span class="cstat-no" title="statement not covered" >  await fs.rename(file.path, destination);</span>
-<span class="cstat-no" title="statement not covered" >  return {</span>
+export async function saveUploadedFile(file, userId) {
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (!file) <span class="cstat-no" title="statement not covered" >return null;</span>
+  const directory = path.join(root, String(userId));
+  await fs.mkdir(directory, { recursive: true });
+  const extension = path.extname(file.originalname).toLowerCase();
+  const filename = `${crypto.randomUUID()}${extension}`;
+  const destination = path.join(directory, filename);
+  await fs.rename(file.path, destination);
+  return {
     nombre_original: file.originalname,
     nombre_almacenado: filename,
     mime_type: file.mimetype,
@@ -140,9 +140,9 @@ export async function <span class="fstat-no" title="function not covered" >saveU
   };
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >removeUploadedFile(</span>relativePath) {
-<span class="cstat-no" title="statement not covered" >  if (!relativePath) <span class="cstat-no" title="statement not covered" >return;</span></span>
-<span class="cstat-no" title="statement not covered" >  await fs.rm(path.join(root, relativePath), { force: true });</span>
+export async function removeUploadedFile(relativePath) {
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (!relativePath) <span class="cstat-no" title="statement not covered" >return;</span>
+  await fs.rm(path.join(root, relativePath), { force: true });
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -151,7 +151,7 @@ export async function <span class="fstat-no" title="function not covered" >remov
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-07T20:29:04.812Z
+                at 2026-10-09T20:21:36.082Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

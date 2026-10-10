@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">28.57% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>4/14</span>
+                <span class='fraction'>14/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">12.5% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/4</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">27.27% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/11</span>
+                <span class='fraction'>11/11</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -98,22 +98,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">64x</span>
+<span class="cline-any cline-yes">64x</span>
+<span class="cline-any cline-yes">51x</span>
+<span class="cline-any cline-yes">51x</span>
+<span class="cline-any cline-yes">45x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">314x</span>
+<span class="cline-any cline-yes">414x</span>
+<span class="cline-any cline-yes">124x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">290x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * Backend module: middleware/auth.js
@@ -123,23 +123,23 @@
 &nbsp;
 import jwt from 'jsonwebtoken';
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >requireAuth(</span>req, res, next) {
-  const [scheme, token] = <span class="cstat-no" title="statement not covered" >(req.get('authorization') || '').split(' ');</span>
-<span class="cstat-no" title="statement not covered" >  if (scheme !== 'Bearer' || !token) <span class="cstat-no" title="statement not covered" >return res.status(401).json({ ok: false, mensaje: 'Token requerido.' });</span></span>
-<span class="cstat-no" title="statement not covered" >  try {</span>
-<span class="cstat-no" title="statement not covered" >    req.user = jwt.verify(token, process.env.JWT_SECRET);</span>
-<span class="cstat-no" title="statement not covered" >    return next();</span>
+export function requireAuth(req, res, next) {
+  const [scheme, token] = (req.get('authorization') || '').split(' ');
+  if (scheme !== 'Bearer' || !token) return res.status(401).json({ ok: false, mensaje: 'Token requerido.' });
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    return next();
   } catch (e) {
-<span class="cstat-no" title="statement not covered" >    console.error('JWT ERROR:', e.name, '-', e.message);</span>
-<span class="cstat-no" title="statement not covered" >    return res.status(401).json({ ok: false, mensaje: 'Token inválido o expirado.' });</span>
+    console.error('JWT ERROR:', e.name, '-', e.message);
+    return res.status(401).json({ ok: false, mensaje: 'Token inválido o expirado.' });
   }
 }
 &nbsp;
 export const allowRoles = (...roles) =&gt; (req, res, next) =&gt; {
-  <span class="missing-if-branch" title="else path not taken" >E</span>if (!req.user?.roles?.some(<span class="fstat-no" title="function not covered" >(r</span>ole) =&gt; <span class="cstat-no" title="statement not covered" >roles.includes(role))</span>) {
+  if (!req.user?.roles?.some((role) =&gt; roles.includes(role))) {
     return res.status(403).json({ ok: false, mensaje: 'No tiene permisos para esta operación.' });
   }
-<span class="cstat-no" title="statement not covered" >  return next();</span>
+  return next();
 };
 &nbsp;</pre></td></tr></table></pre>
 
@@ -148,7 +148,7 @@ export const allowRoles = (...roles) =&gt; (req, res, next) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-07T20:29:04.812Z
+                at 2026-10-09T20:21:36.082Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

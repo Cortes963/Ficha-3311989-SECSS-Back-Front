@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">14.28% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>4/28</span>
+                <span class='fraction'>28/28</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.89% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>2/29</span>
+                <span class='fraction'>29/29</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">19.04% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>4/21</span>
+                <span class='fraction'>21/21</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -110,41 +110,41 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">412x</span>
+<span class="cline-any cline-yes">412x</span>
+<span class="cline-any cline-yes">359x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">47x</span>
+<span class="cline-any cline-yes">44x</span>
+<span class="cline-any cline-yes">44x</span>
+<span class="cline-any cline-yes">38x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">519x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">170x</span>
+<span class="cline-any cline-yes">161x</span>
+<span class="cline-any cline-yes">158x</span>
+<span class="cline-any cline-yes">158x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">151x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * Backend module: lib.js
  * HTTP handlers and infrastructure for this resource.
@@ -155,37 +155,37 @@ export const ROLES = Object.freeze({ ADMIN: 'ADMINISTRADOR', JEFE: 'JEFE_SEGURID
 export const PQRS = Object.freeze({ RADICADO: 1, EN_TRAMITE: 2, RESUELTO: 3, CERRADO: 4 });
 export const EDIT_WINDOW_MINUTES = Number(process.env.EDIT_WINDOW_MINUTES || 5);
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >assertEditableWithinWindow(</span>value, resource) {
-  const createdAt = <span class="cstat-no" title="statement not covered" >new Date(value);</span>
-<span class="cstat-no" title="statement not covered" >  if (Number.isNaN(createdAt.getTime())) {</span>
-<span class="cstat-no" title="statement not covered" >    throw Object.assign(new Error(`No se puede validar la fecha de ${resource}.`), { status: 500 });</span>
+export function assertEditableWithinWindow(value, resource) {
+  const createdAt = new Date(value);
+  if (Number.isNaN(createdAt.getTime())) {
+    throw Object.assign(new Error(`No se puede validar la fecha de ${resource}.`), { status: 500 });
   }
-<span class="cstat-no" title="statement not covered" >  if (Date.now() - createdAt.getTime() &gt; EDIT_WINDOW_MINUTES * 60 * 1000) {</span>
-<span class="cstat-no" title="statement not covered" >    throw Object.assign(new Error(`${resource} solo puede editarse durante los primeros ${EDIT_WINDOW_MINUTES} minutos.`), { status: 409 });</span>
+  if (Date.now() - createdAt.getTime() &gt; EDIT_WINDOW_MINUTES * 60 * 1000) {
+    throw Object.assign(new Error(`${resource} solo puede editarse durante los primeros ${EDIT_WINDOW_MINUTES} minutos.`), { status: 409 });
   }
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >integer(</span>value, name) {
-  const parsed = <span class="cstat-no" title="statement not covered" >Number(value);</span>
-<span class="cstat-no" title="statement not covered" >  if (!Number.isInteger(parsed) || parsed &lt; 1) <span class="cstat-no" title="statement not covered" >throw Object.assign(new Error(`${name} debe ser un entero positivo.`), { status: 400 });</span></span>
-<span class="cstat-no" title="statement not covered" >  return parsed;</span>
+export function integer(value, name) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed &lt; 1) throw Object.assign(new Error(`${name} debe ser un entero positivo.`), { status: 400 });
+  return parsed;
 }
-export function <span class="fstat-no" title="function not covered" >page(</span>query) {
-  const pagina = <span class="cstat-no" title="statement not covered" >query.pagina === undefined ? 1 : integer(query.pagina, 'pagina');</span>
-  const limite = <span class="cstat-no" title="statement not covered" >query.limite === undefined ? 20 : integer(query.limite, 'limite');</span>
-<span class="cstat-no" title="statement not covered" >  if (limite &gt; 100) <span class="cstat-no" title="statement not covered" >throw Object.assign(new Error('limite no puede superar 100.'), { status: 400 });</span></span>
-<span class="cstat-no" title="statement not covered" >  return { pagina, limite, offset: (pagina - 1) * limite };</span>
+export function page(query) {
+  const pagina = query.pagina === undefined ? 1 : integer(query.pagina, 'pagina');
+  const limite = query.limite === undefined ? 20 : integer(query.limite, 'limite');
+  if (limite &gt; 100) throw Object.assign(new Error('limite no puede superar 100.'), { status: 400 });
+  return { pagina, limite, offset: (pagina - 1) * limite };
 }
-export function <span class="fstat-no" title="function not covered" >required(</span>body, fields) {
-<span class="cstat-no" title="statement not covered" >  for (const field of fields) <span class="cstat-no" title="statement not covered" >if (body[field] === undefined || body[field] === null || body[field] === '') <span class="cstat-no" title="statement not covered" >throw Object.assign(new Error(`Falta el campo obligatorio: ${field}.`), { status: 400 });</span></span></span>
+export function required(body, fields) {
+  for (const field of fields) if (body[field] === undefined || body[field] === null || body[field] === '') throw Object.assign(new Error(`Falta el campo obligatorio: ${field}.`), { status: 400 });
 }
-export function <span class="fstat-no" title="function not covered" >error(</span>res, err) {
-<span class="cstat-no" title="statement not covered" >  if (err?.code === 'ER_DUP_ENTRY') <span class="cstat-no" title="statement not covered" >return res.status(409).json({ ok: false, mensaje: 'El registro ya existe.' });</span></span>
-<span class="cstat-no" title="statement not covered" >  if (err?.code === 'ER_NO_REFERENCED_ROW_2') <span class="cstat-no" title="statement not covered" >return res.status(400).json({ ok: false, mensaje: 'Una referencia indicada no existe.' });</span></span>
-<span class="cstat-no" title="statement not covered" >  console.error(err);</span>
-<span class="cstat-no" title="statement not covered" >  return res.status(err?.status || 500).json({ ok: false, mensaje: err?.status ? err.message : 'Error interno del servidor.' });</span>
+export function error(res, err) {
+  if (err?.code === 'ER_DUP_ENTRY') return res.status(409).json({ ok: false, mensaje: 'El registro ya existe.' });
+  if (err?.code === 'ER_NO_REFERENCED_ROW_2') return res.status(400).json({ ok: false, mensaje: 'Una referencia indicada no existe.' });
+  console.error(err);
+  return res.status(err?.status || 500).json({ ok: false, mensaje: err?.status ? err.message : 'Error interno del servidor.' });
 }
-export const actorId = <span class="fstat-no" title="function not covered" >(r</span>eq) =&gt; <span class="cstat-no" title="statement not covered" >integer(req.user.id, 'usuario del token');</span>
+export const actorId = (req) =&gt; integer(req.user.id, 'usuario del token');
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -193,7 +193,7 @@ export const actorId = <span class="fstat-no" title="function not covered" >(r</
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-07T20:29:04.812Z
+                at 2026-10-09T20:21:36.082Z
             </div>
         <script src="../prettify.js"></script>
         <script>

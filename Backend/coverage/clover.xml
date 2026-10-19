@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1791929259630" clover="3.2.0">
-  <project timestamp="1791929259630" name="All files">
+<coverage generated="1792435561021" clover="3.2.0">
+  <project timestamp="1792435561022" name="All files">
     <metrics statements="88" coveredstatements="88" conditionals="10" coveredconditionals="9" methods="9" coveredmethods="9" elements="107" coveredelements="106" complexity="0" loc="88" ncloc="88" packages="1" files="7" classes="7"/>
     <file name="attention.routes.js" path="C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\routes\attention.routes.js">
       <metrics statements="13" coveredstatements="13" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>

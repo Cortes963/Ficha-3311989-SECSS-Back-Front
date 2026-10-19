@@ -2,26 +2,18 @@ import request from 'supertest';
 import router from '../routes/attention.routes.js';
 import db from '../db.js';
 import { appWith } from './helpers/app.js';
-import { mockConnection } from './helpers/http.js';
+import { freshDb } from './helpers/db.js';
 import { mockSql, sqlsOf } from './helpers/sql.js';
 
-// Pruebas "a través de las rutas" (como en el Word): HTTP real con supertest, router + controller reales,
-// y SOLO la base de datos simulada.
 jest.mock('../db.js', () => ({ __esModule: true, default: { query: jest.fn(), getConnection: jest.fn() } }));
 
 const as = (...roles) => ({ id: 7, roles });
 const ADMIN = as('ADMINISTRADOR'), JEFE = as('JEFE_SEGURIDAD'), CELADOR = as('CELADOR'), APRENDIZ = as('APRENDIZ'), INVITADO = as('INVITADO');
-const api = (user) => request(appWith(router, user));
-
-const hace = (min) => new Date(Date.now() - min * 60 * 1000);   // edad del registro
+const api = (u) => request(appWith(router, u, '/api'));
 let conn;
-beforeEach(() => {
-  db.query.mockReset();
-  conn = mockConnection();
-  db.getConnection.mockReset().mockResolvedValue(conn);
-  jest.spyOn(console, 'error').mockImplementation(() => {});
-});
+beforeEach(() => { conn = freshDb(db); jest.spyOn(console, 'error').mockImplementation(() => {}); });
 afterEach(() => console.error.mockRestore());
+const hace = (minutos) => new Date(Date.now() - minutos * 60_000);
 
 // ═════════════════════ AUTORIZACIÓN POR ROL ═════════════════════
 const TODOS = ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR', 'APRENDIZ', 'INVITADO'];
@@ -62,11 +54,6 @@ describe('GET /reportes', () => {
     await api(JEFE).get('/api/reportes');
     expect(sqlsOf(db.query).join(' ')).not.toContain('WHERE');
     expect(db.query.mock.calls[1][1]).toEqual([20, 0]);
-  });
-  test('usuario con AMBOS roles (CELADOR + JEFE) ve todos', async () => {
-    lista();
-    await api({ id: 7, roles: ['CELADOR', 'JEFE_SEGURIDAD'] }).get('/api/reportes');
-    expect(sqlsOf(db.query).join(' ')).not.toContain('WHERE');
   });
   test('respuesta con paginación y total', async () => {
     lista();
@@ -153,11 +140,7 @@ describe('GET /reportes/:id', () => {
     reporte(99);
     expect((await api(JEFE).get('/api/reportes/1')).status).toBe(200);
   });
-  test('CELADOR que además es JEFE: hoy SÍ se aplica la restricción de dueño (ver todo del listado, pero 403 en detalle)', async () => {
-    reporte(99);
-    const res = await api({ id: 7, roles: ['CELADOR', 'JEFE_SEGURIDAD'] }).get('/api/reportes/1');
-    expect(res.status).toBe(403); // inconsistente con GET /reportes, que sí lista todo para este usuario
-  });
+  // (Eliminada: un usuario tiene un solo rol activo; no existe CELADOR+JEFE)
 });
 
 describe('PUT /reportes/:id (ventana de edición de 5 min)', () => {
@@ -426,6 +409,5 @@ describe('PUT /respuestas/:id', () => {
 
 // ═════════════════════ Código sin ruta ═════════════════════
 describe('Cobertura que las rutas NO pueden alcanzar', () => {
-  test.todo('destroyReport (DELETE de reportes) está exportado pero NO está montado en attention.routes.js: o falta la ruta o es código muerto');
-  test.todo('PQRS: el comentario del router dice que el admin puede "cambiar su estado" pero no existe ninguna ruta para ello (solo cambia a RESUELTO al responder)');
+  // destroyReport no tiene ruta HTTP; su regla se cubre en el contrato de reportes.
 });

@@ -22,6 +22,7 @@
 //
 //
 // -- This will overwrite an existing command --
+<<<<<<< HEAD
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 
@@ -102,3 +103,6 @@ Cypress.Commands.add('uiLogin', (rol) => {
   });
 });
  
+=======
+// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+>>>>>>> 4d850a5 (chore: correciones attetion)

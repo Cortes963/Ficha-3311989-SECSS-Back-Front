@@ -6,7 +6,9 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "jest --coverage",
-    "check": "node --check app.js && node --check server.js && node --check db.js && node --check lib.js"
+    "check": "node --check app.js && node --check server.js && node --check db.js && node --check lib.js",
+    "test:defectos": "jest --coverage=false -t \"DEFECTO\"",
+    "test:estables": "jest --coverage=false -t \"^((?!DEFECTO).)*$\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

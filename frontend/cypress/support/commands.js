@@ -21,11 +21,8 @@
 // Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
 //
 //
-// -- This will overwrite an existing command --
-<<<<<<< HEAD
+// -- This will overwrite an existing command -- HEAD
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-
-
 
 const apiUrl = () => Cypress.expose('apiUrl');
 const cache = {}; // sesiones por rol (se reinicia en cada spec)
@@ -103,6 +100,6 @@ Cypress.Commands.add('uiLogin', (rol) => {
   });
 });
  
-=======
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
->>>>>>> 4d850a5 (chore: correciones attetion)
+
+// Cypress.Commands=======.overwrite('visit', (originalFn, url, options) => { ... })
+// 4d850a5 (chore: correciones attetion)

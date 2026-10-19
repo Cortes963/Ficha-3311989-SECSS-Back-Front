@@ -1,4 +1,4 @@
-// Pruebas de caja negra del módulo input_output: API (CP-IO) e interfaz (CP-UI-IO).
+// Pruebas de caja negra del módulo input_output, organizadas por historia de usuario:
 import {
   GENERICA,
   INEXISTENTE,
@@ -17,32 +17,323 @@ import {
   asegurarDentro,
   registroCerrado,
   crearInvitado,
+  refrescarCupo,
 } from '../support/helpers';
 
 const IDS_INVALIDOS = ['abc', '0', '-1', '1.5'];
-
 const SIN_CUPO = 'El usuario no tiene un cupo activo para ese vehículo.';
 const TRES_IMAGENES = ['imagen_url_vehiculo', 'imagen_url_identificacion_vehiculo', 'imagen_url_tarjeta_propiedad'];
 
 const doc = (rol) => Cypress.expose('users')[rol].documento;
-
 const seleccionarCupo = (rol) => {
   cy.get('#cupo').clear().type(doc(rol));
   cy.get('.list-group-item-action').first().click();
 };
 
-// input_output · API (CP-IO)
+/** Línea base compartida por todas las pruebas del módulo. */
+const prepararBase = () => {
+  fijarCupo('aprendiz1', 1);
+  fijarCupo('invitado1', 1);
+  fijarCupo('aprendiz2', 0);
+  asegurarFuera('aprendiz1');
+  asegurarFuera('invitado1');
+};
+const dejarTodoFuera = () => { asegurarFuera('aprendiz1'); asegurarFuera('invitado1'); };
 
-describe('Pruebas de Caja Negra - input_output (API)', () => {
-  before(() => {
-    fijarCupo('aprendiz1', 1);
-    fijarCupo('invitado1', 1);
-    fijarCupo('aprendiz2', 0);
-    asegurarFuera('aprendiz1');
-    asegurarFuera('invitado1');
+/** Tras operar, la lista /entradas-salidas debe tener primero el registro más reciente. */
+const primeraFilaDeLaLista = () => cy.get('tbody tr').first();
+
+// HU-IO-01 · REGISTRAR ENTRADA
+
+describe('HU-IO-01 · Registrar entrada', () => {
+  before(prepararBase);
+  after(dejarTodoFuera);
+
+  //  API 
+  describe('POST /input_output/entrada', () => {
+    const entrada = (usuario, vehiculo, rol = 'celador') =>
+      cy.apiCall(rol, 'POST', '/input_output/entrada', { body: { id_usuario_entra: usuario, id_vehiculo: vehiculo } });
+
+    it('CP-IO-29: cupo activo y sin entrada abierta → 201 y queda DENTRO', () => {
+      asegurarFuera('aprendiz1');
+      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
+        entrada(id, v).then((r) => {
+          esperarOk(r, 201);
+          expect(r.body.mensaje).to.eq('Entrada registrada correctamente.');
+          expect(r.body.id_entrada_salida).to.be.a('number');
+          cy.apiCall('celador', 'GET', `/input_output/${r.body.id_entrada_salida}`).then((d) => {
+            expect(d.body.datos.fecha_hora_salida).to.eq(null);
+            expect(d.body.datos.celador_ingreso).to.be.a('string');
+          });
+        });
+      }));
+    });
+    it('CP-IO-30: repetir la entrada → 409', () => {
+      asegurarDentro('aprendiz1');
+      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
+        entrada(id, v).then((r) => esperarError(r, 409, 'El vehículo ya tiene una entrada abierta.'));
+      }));
+    });
+    it('CP-IO-31: cupo inactivo → 403', () => {
+      fijarCupo('aprendiz2', 0);
+      cy.sesionApi('aprendiz2').then(({ id }) => vehiculoDe('aprendiz2').then((v) => {
+        entrada(id, v).then((r) => esperarError(r, 403, SIN_CUPO));
+      }));
+    });
+    it('CP-IO-32: usuario sin cupo → 403', () => {
+      cy.sesionApi('aprendiz3').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
+        entrada(id, v).then((r) => esperarError(r, 403, SIN_CUPO));
+      }));
+    });
+    it('CP-IO-33: vehículo de otro usuario → 403', () => {
+      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('invitado1').then((v) => {
+        entrada(id, v).then((r) => esperarError(r, 403, SIN_CUPO));
+      }));
+    });
+    it('CP-IO-34: falta id_usuario_entra → 400', () => {
+      vehiculoDe('aprendiz1').then((v) => cy.apiCall('celador', 'POST', '/input_output/entrada', { body: { id_vehiculo: v } })
+        .then((r) => esperarError(r, 400, 'Falta el campo obligatorio: id_usuario_entra.')));
+    });
+    it('CP-IO-35: falta id_vehiculo → 400', () => {
+      cy.sesionApi('aprendiz1').then(({ id }) => cy.apiCall('celador', 'POST', '/input_output/entrada', { body: { id_usuario_entra: id } })
+        .then((r) => esperarError(r, 400, 'Falta el campo obligatorio: id_vehiculo.')));
+    });
+    [['', 'cadena vacía'], [null, 'null']].forEach(([valor, nombre]) => {
+      ['id_usuario_entra', 'id_vehiculo'].forEach((campo) => it(`CP-IO-36: ${campo} con ${nombre} → 400`, () => {
+        cy.apiCall('celador', 'POST', '/input_output/entrada', { body: { id_usuario_entra: 1, id_vehiculo: 1, [campo]: valor } })
+          .then((r) => esperarError(r, 400, `Falta el campo obligatorio: ${campo}.`));
+      }));
+    });
+    [0, -1, 1.5, 'abc'].forEach((v) => ['id_usuario_entra', 'id_vehiculo'].forEach((campo) => {
+      it(`CP-IO-37: ${campo}=${v} → 400`, () => {
+        cy.apiCall('celador', 'POST', '/input_output/entrada', { body: { id_usuario_entra: 1, id_vehiculo: 1, [campo]: v } })
+          .then((r) => esperarError(r, 400, `${campo} debe ser un entero positivo.`));
+      });
+    }));
+    it('CP-IO-38: ids numéricos como texto se aceptan', () => {
+      asegurarFuera('aprendiz1');
+      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
+        entrada(String(id), String(v)).then((r) => esperarOk(r, 201));
+      }));
+    });
+    it('CP-IO-39: cuerpo vacío → 400 y JSON malformado no devuelve 500', () => {
+      cy.apiCall('celador', 'POST', '/input_output/entrada', { body: {} }).then((r) => esperarError(r, 400));
+      cy.apiCall('celador', 'POST', '/input_output/entrada', {
+        body: '{"id_usuario_entra": ', headers: { 'Content-Type': 'application/json' },
+      }).then((r) => expect(r.status, 'JSON malformado (ver H-12)').to.be.within(400, 499));
+    });
+    it('CP-IO-40: dos entradas simultáneas → una 201 y una 409', () => {
+      asegurarFuera('aprendiz1');
+      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
+        const body = { id_usuario_entra: id, id_vehiculo: v };
+        cy.apiParalelo('celador', [
+          { method: 'POST', path: '/input_output/entrada', body },
+          { method: 'POST', path: '/input_output/entrada', body },
+        ]).then((rs) => expect(rs.map((r) => r.status).sort()).to.deep.eq([201, 409]));
+      }));
+    });
+    it('CP-IO-41: tras la salida se puede registrar una nueva entrada', () => {
+      registroCerrado('aprendiz1');
+      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
+        entrada(id, v).then((r) => esperarOk(r, 201));
+      }));
+    });
+    ['aprendiz1', 'invitado1', 'jefe', 'admin'].forEach((rol) => it(`CP-IO-42: ${rol} no puede registrar entradas → 403`, () => {
+      entrada(1, 1, rol).then((r) => esperarError(r, 403));
+    }));
   });
 
-  // ---------------------------------------------------------------- 7.2 GET /input_output
+  // ---- Interfaz ----------------------------------------------------------
+  describe('Interfaz · pantalla Registrar operación (entrada)', () => {
+    before(() => { refrescarCupo('aprendiz1', 1); refrescarCupo('aprendiz2', 0); asegurarFuera('aprendiz1'); });
+    beforeEach(() => { cy.uiLogin('celador'); cy.visit('/entradas-salidas/operar'); });
+
+    it('CP-UI-IO-10: el buscador filtra y muestra "No hay coincidencias."', () => {
+      cy.get('#cupo').type('zzz-no-existe');
+      cy.contains('.list-group-item', 'No hay coincidencias.');
+      cy.get('#cupo').clear().type(doc('aprendiz1'));
+      cy.get('.list-group-item-action').should('have.length.at.least', 1);
+    });
+    it('CP-UI-IO-11: cupo activo muestra información y botones de operación', () => {
+      seleccionarCupo('aprendiz1');
+      cy.contains('h3', 'Información validada');
+      cy.contains('button', 'Registrar entrada');
+      cy.contains('button', 'Registrar salida');
+    });
+    it('CP-UI-IO-12: cupo inactivo no muestra botones', () => {
+      seleccionarCupo('aprendiz2');
+      cy.contains('h3', 'Información validada');
+      cy.contains('button', 'Registrar entrada').should('not.exist');
+      cy.contains('button', 'Registrar salida').should('not.exist');
+    });
+    it('CP-UI-IO-13: registrar entrada → mensaje y redirección a la lista', () => {
+      asegurarFuera('aprendiz1');
+      cy.reload();
+      seleccionarCupo('aprendiz1');
+      cy.contains('button', 'Registrar entrada').click();
+      cy.contains('Entrada registrada correctamente.');
+      cy.location('pathname').should('eq', '/entradas-salidas');
+    });
+    it('CP-UI-IO-14: entrada con vehículo ya dentro → mensaje de conflicto', () => {
+      asegurarDentro('aprendiz1');
+      cy.reload();
+      seleccionarCupo('aprendiz1');
+      cy.contains('button', 'Registrar entrada').click();
+      cy.contains('El vehículo ya tiene una entrada abierta.');
+    });
+
+    it('CP-UI-IO-21: tras registrar la entrada, la lista muestra el registro DENTRO (sin fecha de salida)', () => {
+      asegurarFuera('aprendiz1');
+      cy.reload();
+      seleccionarCupo('aprendiz1');
+      cy.contains('button', 'Registrar entrada').click();
+      cy.contains('Entrada registrada correctamente.');
+      cy.location('pathname').should('eq', '/entradas-salidas');
+      cy.apiCall('aprendiz1', 'GET', '/quota/me').then((m) => {
+        primeraFilaDeLaLista().should('contain', m.body.vehiculo.identificador_vehiculo);
+        primeraFilaDeLaLista().find('td').eq(6).should('have.text', '—');
+      });
+    });
+  });
+
+  describe('Interfaz · control de acceso a Registrar operación', () => {
+    ['jefe', 'admin', 'aprendiz1', 'invitado1'].forEach((rol) => it(`CP-UI-IO-23: ${rol} no accede a /entradas-salidas/operar`, () => {
+      cy.uiLogin(rol);
+      cy.visit('/entradas-salidas/operar');
+      cy.location('pathname').should('eq', '/unauthorized');
+    }));
+  });
+});
+
+// HU-IO-02 · REGISTRAR SALIDA
+
+describe('HU-IO-02 · Registrar salida', () => {
+  before(prepararBase);
+  after(dejarTodoFuera);
+
+  // ---- API ---------------------------------------------------------------
+  describe('PATCH /input_output/salida/:id', () => {
+    const salida = (id, rol = 'celador') => cy.apiCall(rol, 'PATCH', `/input_output/salida/${id}`, { body: {} });
+
+    it('CP-IO-43: registro abierto → 200 y queda FUERA', () => {
+      asegurarDentro('invitado1').then((id) => {
+        salida(id).then((r) => {
+          esperarOk(r);
+          expect(r.body.mensaje).to.eq('Salida registrada correctamente.');
+          cy.apiCall('celador', 'GET', `/input_output/${id}`).then((d) => {
+            expect(d.body.datos.fecha_hora_salida).to.not.eq(null);
+            expect(d.body.datos.celador_salida).to.be.a('string');
+          });
+        });
+      });
+    });
+    it('CP-IO-44: repetir la salida → 409', () => {
+      asegurarDentro('invitado1').then((id) => {
+        salida(id);
+        salida(id).then((r) => esperarError(r, 409, 'Este registro ya tiene una salida.'));
+      });
+    });
+    it('CP-IO-45: registro ya cerrado → 409', () => {
+      registroCerrado('aprendiz1').then((id) => salida(id).then((r) => esperarError(r, 409, 'Este registro ya tiene una salida.')));
+    });
+    it('CP-IO-46: id inexistente → 404', () => {
+      salida(INEXISTENTE).then((r) => esperarError(r, 404, 'Registro de entrada no encontrado.'));
+    });
+    ['abc', '0', '-1', 'undefined'].forEach((v) => it(`CP-IO-47: id=${v} → 400`, () => {
+      salida(v).then((r) => esperarError(r, 400, 'id debe ser un entero positivo.'));
+    }));
+    const hayCelador2 = !!(Cypress.expose('users') || {}).celador2?.documento;
+    (hayCelador2 ? it : it.skip)('CP-IO-48: otro celador puede cerrar la entrada y queda como celador de salida', () => {
+      asegurarFuera('invitado1');
+      asegurarDentro('invitado1').then((id) => {
+        salida(id, 'celador2').then((r) => {
+          esperarOk(r);
+          cy.apiCall('jefe', 'GET', `/input_output/${id}`).then((d) => {
+            expect(d.body.datos.celador_salida).to.not.eq(d.body.datos.celador_ingreso);
+          });
+        });
+      });
+    });
+    it('CP-IO-49: dos salidas simultáneas → una 200 y una 409', () => {
+      asegurarDentro('invitado1').then((id) => {
+        cy.apiParalelo('celador', [
+          { method: 'PATCH', path: `/input_output/salida/${id}`, body: {} },
+          { method: 'PATCH', path: `/input_output/salida/${id}`, body: {} },
+        ]).then((rs) => expect(rs.map((r) => r.status).sort()).to.deep.eq([200, 409]));
+      });
+    });
+    ['aprendiz1', 'invitado1', 'jefe', 'admin'].forEach((rol) => it(`CP-IO-50: ${rol} no puede registrar salidas → 403`, () => {
+      salida(1, rol).then((r) => esperarError(r, 403));
+    }));
+  });
+
+  describe('API · ciclo completo de un vehículo', () => {
+    it('CP-IO-71: entrada → salida → nueva entrada, con /quota/me coherente en cada paso', () => {
+      asegurarFuera('aprendiz1');
+      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
+        const body = { id_usuario_entra: id, id_vehiculo: v };
+        cy.apiCall('celador', 'POST', '/input_output/entrada', { body }).then((e1) => {
+          esperarOk(e1, 201);
+          cy.apiCall('aprendiz1', 'GET', '/quota/me').then((m) => {
+            expect(m.body.vehiculoEnParqueadero).to.eq(true);
+            expect(m.body.idEntradaAbierta).to.eq(e1.body.id_entrada_salida);
+          });
+          cy.apiCall('celador', 'PATCH', `/input_output/salida/${e1.body.id_entrada_salida}`, { body: {} }).then((s) => esperarOk(s));
+          cy.apiCall('aprendiz1', 'GET', '/quota/me').then((m) => {
+            expect(m.body.vehiculoEnParqueadero).to.eq(false);
+            expect(m.body.idEntradaAbierta).to.eq(null);
+          });
+          cy.apiCall('celador', 'POST', '/input_output/entrada', { body }).then((e2) => {
+            esperarOk(e2, 201);
+            expect(e2.body.id_entrada_salida).to.not.eq(e1.body.id_entrada_salida);
+          });
+        });
+      }));
+      asegurarFuera('aprendiz1');
+    });
+  });
+
+  // Interfaz 
+  describe('Interfaz · pantalla Registrar operación (salida)', () => {
+    before(() => { refrescarCupo('aprendiz1', 1); refrescarCupo('aprendiz2', 0); asegurarFuera('aprendiz1'); });
+    beforeEach(() => { cy.uiLogin('celador'); cy.visit('/entradas-salidas/operar'); });
+
+    it('CP-UI-IO-15: registrar salida con vehículo dentro → mensaje y redirección', () => {
+      asegurarDentro('aprendiz1');
+      cy.reload();
+      seleccionarCupo('aprendiz1');
+      cy.contains('button', 'Registrar salida').click();
+      cy.contains('Salida registrada correctamente.');
+      cy.location('pathname').should('eq', '/entradas-salidas');
+    });
+    it('CP-UI-IO-16: salida con vehículo que no está dentro → mensaje de error (H-06)', () => {
+      asegurarFuera('aprendiz1');
+      cy.reload();
+      seleccionarCupo('aprendiz1');
+      cy.contains('button', 'Registrar salida').click();
+      cy.get('p.mt-3').should('not.be.empty').and('not.contain', 'Salida registrada correctamente.');
+      cy.location('pathname').should('eq', '/entradas-salidas/operar');
+    });
+
+    it('CP-UI-IO-24: tras registrar la salida, la lista muestra la fecha de salida del registro', () => {
+      asegurarDentro('aprendiz1');
+      cy.reload();
+      seleccionarCupo('aprendiz1');
+      cy.contains('button', 'Registrar salida').click();
+      cy.contains('Salida registrada correctamente.');
+      cy.location('pathname').should('eq', '/entradas-salidas');
+      primeraFilaDeLaLista().find('td').eq(6).invoke('text').should('match', /\d{2}\/\d{2}\/\d{4}/);
+    });
+  });
+});
+
+
+// COMPLEMENTARIAS · consultar registros y registrar invitado
+// (no pertenecen a las historias HU-IO-01 y HU-IO-02, pero son del mismo módulo)
+describe('Complementarias de input_output · API', () => {
+  before(prepararBase);
+  after(dejarTodoFuera);
+
   describe('GET /input_output (listado general)', () => {
     it('CP-IO-01: CELADOR sin parámetros → 200, página 1, límite 20, orden descendente', () => {
       cy.apiCall('celador', 'GET', '/input_output').then((r) => {
@@ -161,7 +452,6 @@ describe('Pruebas de Caja Negra - input_output (API)', () => {
     }));
   });
 
-  // ---------------------------------------------------------------- 7.3 GET /input_output/me
   describe('GET /input_output/me (mis registros)', () => {
     it('CP-IO-16: APRENDIZ ve solo sus registros', () => {
       registroCerrado('aprendiz1');
@@ -204,7 +494,6 @@ describe('Pruebas de Caja Negra - input_output (API)', () => {
     }));
   });
 
-  // ---------------------------------------------------------------- 7.4 GET /input_output/:id
   describe('GET /input_output/:id (detalle)', () => {
     it('CP-IO-21: CELADOR y JEFE ven el detalle completo', () => {
       asegurarDentro('aprendiz1').then((id) => {
@@ -258,157 +547,6 @@ describe('Pruebas de Caja Negra - input_output (API)', () => {
     });
   });
 
-  // ---------------------------------------------------------------- 7.5 POST /entrada
-  describe('POST /input_output/entrada', () => {
-    const entrada = (usuario, vehiculo, rol = 'celador') =>
-      cy.apiCall(rol, 'POST', '/input_output/entrada', { body: { id_usuario_entra: usuario, id_vehiculo: vehiculo } });
-
-    it('CP-IO-29: cupo activo y sin entrada abierta → 201 y queda DENTRO', () => {
-      asegurarFuera('aprendiz1');
-      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
-        entrada(id, v).then((r) => {
-          esperarOk(r, 201);
-          expect(r.body.mensaje).to.eq('Entrada registrada correctamente.');
-          expect(r.body.id_entrada_salida).to.be.a('number');
-          cy.apiCall('celador', 'GET', `/input_output/${r.body.id_entrada_salida}`).then((d) => {
-            expect(d.body.datos.fecha_hora_salida).to.eq(null);
-            expect(d.body.datos.celador_ingreso).to.be.a('string');
-          });
-        });
-      }));
-    });
-    it('CP-IO-30: repetir la entrada → 409', () => {
-      asegurarDentro('aprendiz1');
-      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
-        entrada(id, v).then((r) => esperarError(r, 409, 'El vehículo ya tiene una entrada abierta.'));
-      }));
-    });
-    it('CP-IO-31: cupo inactivo → 403', () => {
-      fijarCupo('aprendiz2', 0);
-      cy.sesionApi('aprendiz2').then(({ id }) => vehiculoDe('aprendiz2').then((v) => {
-        entrada(id, v).then((r) => esperarError(r, 403, SIN_CUPO));
-      }));
-    });
-    it('CP-IO-32: usuario sin cupo → 403', () => {
-      cy.sesionApi('aprendiz3').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
-        entrada(id, v).then((r) => esperarError(r, 403, SIN_CUPO));
-      }));
-    });
-    it('CP-IO-33: vehículo de otro usuario → 403', () => {
-      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('invitado1').then((v) => {
-        entrada(id, v).then((r) => esperarError(r, 403, SIN_CUPO));
-      }));
-    });
-    it('CP-IO-34: falta id_usuario_entra → 400', () => {
-      vehiculoDe('aprendiz1').then((v) => cy.apiCall('celador', 'POST', '/input_output/entrada', { body: { id_vehiculo: v } })
-        .then((r) => esperarError(r, 400, 'Falta el campo obligatorio: id_usuario_entra.')));
-    });
-    it('CP-IO-35: falta id_vehiculo → 400', () => {
-      cy.sesionApi('aprendiz1').then(({ id }) => cy.apiCall('celador', 'POST', '/input_output/entrada', { body: { id_usuario_entra: id } })
-        .then((r) => esperarError(r, 400, 'Falta el campo obligatorio: id_vehiculo.')));
-    });
-    [['', 'cadena vacía'], [null, 'null']].forEach(([valor, nombre]) => {
-      ['id_usuario_entra', 'id_vehiculo'].forEach((campo) => it(`CP-IO-36: ${campo} con ${nombre} → 400`, () => {
-        cy.apiCall('celador', 'POST', '/input_output/entrada', { body: { id_usuario_entra: 1, id_vehiculo: 1, [campo]: valor } })
-          .then((r) => esperarError(r, 400, `Falta el campo obligatorio: ${campo}.`));
-      }));
-    });
-    [0, -1, 1.5, 'abc'].forEach((v) => ['id_usuario_entra', 'id_vehiculo'].forEach((campo) => {
-      it(`CP-IO-37: ${campo}=${v} → 400`, () => {
-        cy.apiCall('celador', 'POST', '/input_output/entrada', { body: { id_usuario_entra: 1, id_vehiculo: 1, [campo]: v } })
-          .then((r) => esperarError(r, 400, `${campo} debe ser un entero positivo.`));
-      });
-    }));
-    it('CP-IO-38: ids numéricos como texto se aceptan', () => {
-      asegurarFuera('aprendiz1');
-      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
-        entrada(String(id), String(v)).then((r) => esperarOk(r, 201));
-      }));
-    });
-    it('CP-IO-39: cuerpo vacío → 400 y JSON malformado no devuelve 500', () => {
-      cy.apiCall('celador', 'POST', '/input_output/entrada', { body: {} }).then((r) => esperarError(r, 400));
-      cy.apiCall('celador', 'POST', '/input_output/entrada', {
-        body: '{"id_usuario_entra": ', headers: { 'Content-Type': 'application/json' },
-      }).then((r) => expect(r.status, 'JSON malformado (ver H-12)').to.be.within(400, 499));
-    });
-    it('CP-IO-40: dos entradas simultáneas → una 201 y una 409', () => {
-      asegurarFuera('aprendiz1');
-      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
-        const body = { id_usuario_entra: id, id_vehiculo: v };
-        cy.apiParalelo('celador', [
-          { method: 'POST', path: '/input_output/entrada', body },
-          { method: 'POST', path: '/input_output/entrada', body },
-        ]).then((rs) => expect(rs.map((r) => r.status).sort()).to.deep.eq([201, 409]));
-      }));
-    });
-    it('CP-IO-41: tras la salida se puede registrar una nueva entrada', () => {
-      registroCerrado('aprendiz1');
-      cy.sesionApi('aprendiz1').then(({ id }) => vehiculoDe('aprendiz1').then((v) => {
-        entrada(id, v).then((r) => esperarOk(r, 201));
-      }));
-    });
-    ['aprendiz1', 'invitado1', 'jefe', 'admin'].forEach((rol) => it(`CP-IO-42: ${rol} no puede registrar entradas → 403`, () => {
-      entrada(1, 1, rol).then((r) => esperarError(r, 403));
-    }));
-  });
-
-  // ---------------------------------------------------------------- 7.6 PATCH /salida/:id
-  describe('PATCH /input_output/salida/:id', () => {
-    const salida = (id, rol = 'celador') => cy.apiCall(rol, 'PATCH', `/input_output/salida/${id}`, { body: {} });
-
-    it('CP-IO-43: registro abierto → 200 y queda FUERA', () => {
-      asegurarDentro('invitado1').then((id) => {
-        salida(id).then((r) => {
-          esperarOk(r);
-          expect(r.body.mensaje).to.eq('Salida registrada correctamente.');
-          cy.apiCall('celador', 'GET', `/input_output/${id}`).then((d) => {
-            expect(d.body.datos.fecha_hora_salida).to.not.eq(null);
-            expect(d.body.datos.celador_salida).to.be.a('string');
-          });
-        });
-      });
-    });
-    it('CP-IO-44: repetir la salida → 409', () => {
-      asegurarDentro('invitado1').then((id) => {
-        salida(id);
-        salida(id).then((r) => esperarError(r, 409, 'Este registro ya tiene una salida.'));
-      });
-    });
-    it('CP-IO-45: registro ya cerrado → 409', () => {
-      registroCerrado('aprendiz1').then((id) => salida(id).then((r) => esperarError(r, 409, 'Este registro ya tiene una salida.')));
-    });
-    it('CP-IO-46: id inexistente → 404', () => {
-      salida(INEXISTENTE).then((r) => esperarError(r, 404, 'Registro de entrada no encontrado.'));
-    });
-    ['abc', '0', '-1', 'undefined'].forEach((v) => it(`CP-IO-47: id=${v} → 400`, () => {
-      salida(v).then((r) => esperarError(r, 400, 'id debe ser un entero positivo.'));
-    }));
-    const hayCelador2 = !!(Cypress.expose('users') || {}).celador2?.documento;
-    (hayCelador2 ? it : it.skip)('CP-IO-48: otro celador puede cerrar la entrada y queda como celador de salida', () => {
-      asegurarFuera('invitado1');
-      asegurarDentro('invitado1').then((id) => {
-        salida(id, 'celador2').then((r) => {
-          esperarOk(r);
-          cy.apiCall('jefe', 'GET', `/input_output/${id}`).then((d) => {
-            expect(d.body.datos.celador_salida).to.not.eq(d.body.datos.celador_ingreso);
-          });
-        });
-      });
-    });
-    it('CP-IO-49: dos salidas simultáneas → una 200 y una 409', () => {
-      asegurarDentro('invitado1').then((id) => {
-        cy.apiParalelo('celador', [
-          { method: 'PATCH', path: `/input_output/salida/${id}`, body: {} },
-          { method: 'PATCH', path: `/input_output/salida/${id}`, body: {} },
-        ]).then((rs) => expect(rs.map((r) => r.status).sort()).to.deep.eq([200, 409]));
-      });
-    });
-    ['aprendiz1', 'invitado1', 'jefe', 'admin'].forEach((rol) => it(`CP-IO-50: ${rol} no puede registrar salidas → 403`, () => {
-      salida(1, rol).then((r) => esperarError(r, 403));
-    }));
-  });
-
-  // ---------------------------------------------------------------- 7.7 POST /invitado
   describe('POST /input_output/invitado', () => {
     const enviar = (campos, archivos = [], rol = 'celador') => cy.apiMultipart(rol, '/input_output/invitado', campos, archivos);
 
@@ -527,21 +665,11 @@ describe('Pruebas de Caja Negra - input_output (API)', () => {
       enviar(invitadoBase(), [], rol).then((r) => esperarError(r, 403));
     }));
   });
-
-  after(() => {
-    asegurarFuera('aprendiz1');
-    asegurarFuera('invitado1');
-  });
 });
 
-// input_output · Interfaz (CP-UI-IO)
-
-describe('Pruebas de Caja Negra - input_output (UI)', () => {
-  before(() => {
-    fijarCupo('aprendiz1', 1);
-    fijarCupo('aprendiz2', 0);
-    asegurarFuera('aprendiz1');
-  });
+describe('Complementarias de input_output · Interfaz', () => {
+  before(() => { refrescarCupo('aprendiz1', 1); refrescarCupo('aprendiz2', 0); asegurarFuera('aprendiz1'); });
+  after(dejarTodoFuera);
 
   describe('Listado /entradas-salidas', () => {
     it('CP-UI-IO-01: CELADOR ve 10 columnas y los botones de registro', () => {
@@ -627,60 +755,6 @@ describe('Pruebas de Caja Negra - input_output (UI)', () => {
     });
   });
 
-  describe('Operar /entradas-salidas/operar', () => {
-    beforeEach(() => { cy.uiLogin('celador'); cy.visit('/entradas-salidas/operar'); });
-
-    it('CP-UI-IO-10: el buscador filtra y muestra "No hay coincidencias."', () => {
-      cy.get('#cupo').type('zzz-no-existe');
-      cy.contains('.list-group-item', 'No hay coincidencias.');
-      cy.get('#cupo').clear().type(doc('aprendiz1'));
-      cy.get('.list-group-item-action').should('have.length.at.least', 1);
-    });
-    it('CP-UI-IO-11: cupo activo muestra información y botones de operación', () => {
-      seleccionarCupo('aprendiz1');
-      cy.contains('h3', 'Información validada');
-      cy.contains('button', 'Registrar entrada');
-      cy.contains('button', 'Registrar salida');
-    });
-    it('CP-UI-IO-12: cupo inactivo no muestra botones', () => {
-      seleccionarCupo('aprendiz2');
-      cy.contains('h3', 'Información validada');
-      cy.contains('button', 'Registrar entrada').should('not.exist');
-      cy.contains('button', 'Registrar salida').should('not.exist');
-    });
-    it('CP-UI-IO-13: registrar entrada → mensaje y redirección a la lista', () => {
-      asegurarFuera('aprendiz1');
-      cy.reload();
-      seleccionarCupo('aprendiz1');
-      cy.contains('button', 'Registrar entrada').click();
-      cy.contains('Entrada registrada correctamente.');
-      cy.location('pathname').should('eq', '/entradas-salidas');
-    });
-    it('CP-UI-IO-14: entrada con vehículo ya dentro → mensaje de conflicto', () => {
-      asegurarDentro('aprendiz1');
-      cy.reload();
-      seleccionarCupo('aprendiz1');
-      cy.contains('button', 'Registrar entrada').click();
-      cy.contains('El vehículo ya tiene una entrada abierta.');
-    });
-    it('CP-UI-IO-15: registrar salida con vehículo dentro → mensaje y redirección', () => {
-      asegurarDentro('aprendiz1');
-      cy.reload();
-      seleccionarCupo('aprendiz1');
-      cy.contains('button', 'Registrar salida').click();
-      cy.contains('Salida registrada correctamente.');
-      cy.location('pathname').should('eq', '/entradas-salidas');
-    });
-    it('CP-UI-IO-16: salida con vehículo que no está dentro → mensaje de error (H-06)', () => {
-      asegurarFuera('aprendiz1');
-      cy.reload();
-      seleccionarCupo('aprendiz1');
-      cy.contains('button', 'Registrar salida').click();
-      cy.get('p.mt-3').should('not.be.empty').and('not.contain', 'Salida registrada correctamente.');
-      cy.location('pathname').should('eq', '/entradas-salidas/operar');
-    });
-  });
-
   describe('Registro de invitado /entradas-salidas/invitado/nuevo', () => {
     const URL = '/entradas-salidas/invitado/nuevo';
     const llenar = (d) => {
@@ -720,6 +794,4 @@ describe('Pruebas de Caja Negra - input_output (UI)', () => {
       cy.get('#correo').should('have.attr', 'type', 'email');
     });
   });
-
-  after(() => { asegurarFuera('aprendiz1'); asegurarFuera('invitado1'); });
 });

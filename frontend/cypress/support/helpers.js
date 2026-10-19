@@ -51,7 +51,7 @@ export const esperarOk = (res, status = 200) => {
   expect(res.body.ok, 'ok').to.eq(true);
 };
 
-// ---------- Preparación de estado (usa la API como precondición) ----------
+//  Preparación de estado (usa la API como precondición) 
 
 /** id del vehículo del cupo más reciente del usuario del rol indicado. */
 export const vehiculoDe = (rol) =>
@@ -97,3 +97,78 @@ export const crearInvitado = (cambios = {}) =>
     esperarOk(r, 201);
     return r.body;
   });
+
+// Utilidades para los demás módulos (auth, user, vehicle, pqrs, core) 
+
+/** Como `it`, pero para defectos conocidos del sistema; se omiten con env.omitirDefectosConocidos = true. */
+export const defecto = (titulo, fn) => (Cypress.expose('omitirDefectosConocidos') ? it.skip : it)(`[DEFECTO] ${titulo}`, fn);
+
+export const imagenBytes = (formato = 'png') => bytes(B64[formato]);
+
+const letra = () => String.fromCharCode(65 + Math.floor(Math.random() * 26));
+export const placaUnica = () => `${letra()}${letra()}${letra()}${Math.floor(10 + Math.random() * 90)}${letra()}`;
+
+export const motoBase = (cambios = {}) => ({
+  tipo_vehiculo: 'MOTO', marca: 'Honda', color: 'Rojo', placa: placaUnica(), cilindraje: 150, modelo: 2022, ...cambios,
+});
+export const bicicletaBase = (cambios = {}) => ({
+  tipo_vehiculo: 'BICICLETA', marca: 'Trek', color: 'Azul', numero_marco: `M${unico()}`, clase_bicicleta: 'Montaña', ...cambios,
+});
+export const IMAGENES_MOTO = ['imagen_url_tarjeta_propiedad', 'imagen_url_identificacion_vehiculo', 'imagen_url_vehiculo', 'imagen_url_soat', 'imagen_url_tecnomecanica_vigente'];
+
+/** id de un centro de formación (usa el primero público; si no hay, lo crea como ADMIN). */
+export const idCentro = () =>
+  cy.apiCall(null, 'GET', '/core/centros-publicos').then((r) => {
+    if (r.body.datos?.length) return r.body.datos[0].id;
+    return cy.apiCall('admin', 'POST', '/core/centros', { body: { nombre_centro: `Centro ${unico()}` } }).then((c) => c.body.datos.id);
+  });
+
+/** Campos de POST /auth/storeAuthRegister (los de detalle_aprendiz van con notación de corchetes). */
+export const datosAprendiz = (centro, cambios = {}) => {
+  const n = unico();
+  return {
+    tipo_documento: 'CC', numero_documento: n, primer_nombre: 'Aprendiz', segundo_nombre: '',
+    primer_apellido: 'Prueba', segundo_apellido: '', n_celular: '3001234567',
+    correo: `aprendiz.${n}@prueba.test`, password: 'Prueba12345!', nombre_rol: 'APRENDIZ',
+    'detalle_aprendiz[id_centro]': centro, 'detalle_aprendiz[ficha]': `F${n}`,
+    'detalle_aprendiz[direccion]': 'Calle 1 # 2-3', 'detalle_aprendiz[fecha_vinculacion]': '2026-01-15', ...cambios,
+  };
+};
+export const IMAGENES_APRENDIZ = ['imagen_url_aprendiz', 'imagen_url_identificacion', 'imagen_url_carnet_sena'];
+export const imagenesAprendiz = () => IMAGENES_APRENDIZ.map((c) => imagen(c, 'png'));
+
+/** Registra un aprendiz desechable por la API pública y lo deja disponible como rol `clave`. */
+export const crearAprendiz = (clave, cambios = {}) =>
+  idCentro().then((centro) => {
+    const datos = datosAprendiz(centro, cambios);
+    return cy.apiMultipart(null, '/auth/storeAuthRegister', datos, imagenesAprendiz()).then((r) => {
+      esperarOk(r, 201);
+      cy.registrarCredenciales(clave, { documento: datos.numero_documento, password: datos.password });
+      return { ...datos, id_usuario: r.body.id_usuario, documento: datos.numero_documento };
+    });
+  });
+
+/** Registra un invitado desechable (con vehículo, cupo activo y entrada abierta) disponible como rol `clave`. */
+export const crearInvitadoComo = (clave, cambios = {}) => {
+  const datos = invitadoBase(cambios);
+  return cy.apiMultipart('celador', '/input_output/invitado', datos).then((r) => {
+    esperarOk(r, 201);
+    cy.registrarCredenciales(clave, { documento: datos.numero_documento, password: r.body.credenciales_temporales.password });
+    return { ...r.body, documento: datos.numero_documento, correo: datos.correo };
+  });
+};
+
+/** Crea un vehículo del rol (APRENDIZ) y devuelve su id. */
+export const crearVehiculoApi = (rol, campos = motoBase(), archivos = []) =>
+  cy.apiMultipart(rol, '/vehicle', campos, archivos).then((r) => { esperarOk(r, 201); return r.body.id_vehiculo; });
+
+/** Crea un centro y devuelve { id, nombre_centro }. */
+export const crearCentroApi = (nombre = `Centro Prueba ${unico()}`) =>
+  cy.apiCall('admin', 'POST', '/core/centros', { body: { nombre_centro: nombre } }).then((r) => { esperarOk(r, 201); return r.body.datos; });
+
+/**
+ * Deja el cupo del rol en `estado` y como el MÁS RECIENTEMENTE actualizado.
+ * GET /quota ordena por updated_at y la interfaz solo carga los primeros 20 cupos (H-09),
+ * así que las pruebas de UI que buscan una fila necesitan que quede al inicio.
+ */
+export const refrescarCupo = (rol, estado) => fijarCupo(rol, estado ? 0 : 1).then(() => fijarCupo(rol, estado));

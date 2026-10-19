@@ -165,3 +165,51 @@ describe('Pruebas de Caja Negra - Integración input_output ↔ quota (API)', ()
     });
   });
 });
+
+// INTERFAZ GENERAL: menú por rol y sesión (CP-UI-QT-13, CP-UI-GEN)
+// (afectan a ambos módulos, por eso viven aquí y no en quota ni input_output)
+
+describe('Interfaz general: menú por rol y sesión', () => {
+  describe('Menú principal (tarjetas por rol)', () => {
+    const casos = {
+      admin: { si: ['/cupos'], no: ['/entradas-salidas'] },
+      jefe: { si: ['/cupos', '/entradas-salidas'], no: [] },
+      celador: { si: ['/cupos', '/entradas-salidas'], no: [] },
+      aprendiz1: { si: ['/entradas-salidas'], no: ['/cupos'] },
+      invitado1: { si: ['/entradas-salidas'], no: ['/cupos'] },
+    };
+    Object.entries(casos).forEach(([rol, { si, no }]) => it(`CP-UI-QT-13: opciones visibles para ${rol}`, () => {
+      cy.uiLogin(rol);
+      cy.visit('/');
+      si.forEach((href) => cy.get(`a[href="${href}"]`).should('exist'));
+      no.forEach((href) => cy.get(`a[href="${href}"]`).should('not.exist'));
+    }));
+  });
+
+  describe('Sesión', () => {
+    it('CP-UI-GEN-01: sin sesión, una ruta protegida redirige a /login', () => {
+      cy.clearAllLocalStorage();
+      cy.visit('/cupos');
+      cy.location('pathname').should('eq', '/login');
+    });
+    it('CP-UI-GEN-02: el formulario de login permite entrar y llegar a Cupos', () => {
+      const { documento, password } = Cypress.expose('users').admin;
+      cy.clearAllLocalStorage();
+      cy.visit('/login');
+      cy.get('#documento').type(documento);
+      cy.get('#password').type(password, { log: false });
+      cy.contains('button', 'Iniciar Sesión').click();
+      cy.location('pathname').should('eq', '/');
+      cy.visit('/cupos');
+      cy.contains('h2', 'Autorizaciones de vehículos');
+    });
+    it('CP-UI-GEN-03: credenciales incorrectas muestran el error', () => {
+      cy.clearAllLocalStorage();
+      cy.visit('/login');
+      cy.get('#documento').type('0000000');
+      cy.get('#password').type('incorrecta-123');
+      cy.contains('button', 'Iniciar Sesión').click();
+      cy.get('.alert-danger').should('contain', 'Credenciales inválidas.');
+    });
+  });
+});

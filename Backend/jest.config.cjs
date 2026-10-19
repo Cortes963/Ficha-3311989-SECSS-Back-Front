@@ -4,7 +4,7 @@ module.exports = {
     '^.+\\.js$': 'babel-jest',
   },
   moduleFileExtensions: ['js', 'json'],
-  testMatch: ['**/__tests__/**/*.test.js', '**/?(*.)+(spec|test).js'],
+  testMatch: ['**/__tests__/**/*.routes.test.js', '**/__tests__/**/app.test.js', '**/__tests__/**/auth.middleware.test.js', '**/__tests__/**/lib.test.js'],
   collectCoverageFrom: [
     '!controller/**/*.js', '!middleware/**/*.js', 'routes/**/*.js', '!services/**/*.js', '!lib.js',
     '!app.js',

@@ -17,6 +17,7 @@ import {
   asegurarDentro,
   registroCerrado,
   crearInvitado,
+  crearAprendiz,
   refrescarCupo,
 } from '../support/helpers';
 
@@ -480,10 +481,12 @@ describe('Complementarias de input_output · API', () => {
       }));
     });
     it('CP-IO-18: usuario sin registros → datos vacíos', () => {
-      cy.apiCall('aprendiz4', 'GET', '/input_output/me').then((r) => {
-        esperarOk(r);
-        expect(r.body.datos).to.have.length(0);
-        expect(r.body.total).to.eq(0);
+      crearAprendiz('ioSinRegistros').then(() => {
+        cy.apiCall('ioSinRegistros', 'GET', '/input_output/me').then((r) => {
+          esperarOk(r);
+          expect(r.body.datos).to.have.length(0);
+          expect(r.body.total).to.eq(0);
+        });
       });
     });
     it('CP-IO-19: estado=DENTRO y paginación sobre registros propios', () => {

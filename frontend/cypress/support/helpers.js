@@ -131,7 +131,7 @@ export const datosAprendiz = (centro, cambios = {}) => {
   const n = unico();
   return {
     tipo_documento: 'CC', numero_documento: n, primer_nombre: 'Aprendiz', segundo_nombre: '',
-    primer_apellido: 'Prueba', segundo_apellido: '', n_celular: '3001234567',
+    primer_apellido: 'Prueba', segundo_apellido: '', n_celular: `3${n.slice(-9)}`,
     correo: `aprendiz.${n}@prueba.test`, password: 'Prueba12345!', nombre_rol: 'APRENDIZ',
     'detalle_aprendiz[id_centro]': centro, 'detalle_aprendiz[ficha]': `F${n}`,
     'detalle_aprendiz[direccion]': 'Calle 1 # 2-3', 'detalle_aprendiz[fecha_vinculacion]': '2026-01-15', ...cambios,
@@ -146,8 +146,8 @@ export const crearAprendiz = (clave, cambios = {}) =>
     const datos = datosAprendiz(centro, cambios);
     return cy.apiMultipart(null, '/auth/storeAuthRegister', datos, imagenesAprendiz()).then((r) => {
       esperarOk(r, 201);
-      cy.registrarCredenciales(clave, { documento: datos.numero_documento, password: datos.password });
-      return { ...datos, id_usuario: r.body.id_usuario, documento: datos.numero_documento };
+      return cy.registrarCredenciales(clave, { documento: datos.numero_documento, password: datos.password })
+        .then(() => ({ ...datos, id_usuario: r.body.id_usuario, documento: datos.numero_documento }));
     });
   });
 

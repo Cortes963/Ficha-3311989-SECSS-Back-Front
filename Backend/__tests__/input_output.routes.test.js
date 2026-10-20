@@ -113,7 +113,12 @@ describe('GET /input_output/me', () => {
 
 // READ uno 
 describe('GET /input_output/:id', () => {
-  const fila = (idUsuario = 7) => mockSql(db.query, [[/^SELECT es\.id AS registro_id/, [[{ registro_id: 5, id_usuario_entra: idUsuario }]]]]);
+  const fila = (idUsuario = 7) => mockSql(db.query, [[/^SELECT es\.id AS registro_id/, [[{
+    registro_id: 5,
+    id_usuario_entra: idUsuario,
+    id_usuario_celador_ingreso: 3,
+    id_usuario_celador_salida: 4,
+  }]]]]);
   test('id inválido → 400', async () => { expect((await api(JEFE).get('/api/input_output/x')).status).toBe(400); });
   test('no existe → 404', async () => {
     mockSql(db.query, [[/^SELECT es\./, [[]]]]);
@@ -129,7 +134,12 @@ describe('GET /input_output/:id', () => {
     fila(7);
     const res = await api(APRENDIZ).get('/api/input_output/5');
     expect(res.status).toBe(200);
-    expect(res.body.datos).toMatchObject({ id: 5, registro_id: 5 });
+    expect(res.body.datos).toMatchObject({
+      id: 5,
+      registro_id: 5,
+      id_usuario_celador_ingreso: 3,
+      id_usuario_celador_salida: 4,
+    });
   });
   test.each([['CELADOR', CELADOR], ['JEFE', JEFE]])('%s puede ver el registro de cualquiera → 200', async (_n, u) => {
     fila(99);

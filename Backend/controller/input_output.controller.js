@@ -77,6 +77,7 @@ export async function showInputOutput(req, res) {
     const [rows] = await db.query(
       `SELECT es.id AS registro_id, es.id_usuario_entra, es.id_vehiculo,
               es.fecha_hora_ingreso, es.fecha_hora_salida,
+              es.id_usuario_celador_ingreso, es.id_usuario_celador_salida,
               CONCAT(u.primer_nombre,' ',u.primer_apellido) AS persona_ingresa,
               u.tipo_documento, u.primer_nombre, u.segundo_nombre, u.primer_apellido, u.segundo_apellido, u.n_celular, u.estado AS usuario_estado,
               c.correo, c.created_at AS cuenta_created_at, c.estado AS cuenta_estado,

@@ -1,25 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1792483410917" clover="3.2.0">
-  <project timestamp="1792483410917" name="All files">
-    <metrics statements="16" coveredstatements="16" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="4" elements="20" coveredelements="20" complexity="0" loc="16" ncloc="16" packages="1" files="1" classes="1"/>
-    <file name="user.routes.js" path="C:\Users\dayan\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\routes\user.routes.js">
-      <metrics statements="16" coveredstatements="16" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="4"/>
-      <line num="25" count="1" type="stmt"/>
-      <line num="27" count="2" type="stmt"/>
-      <line num="28" count="1" type="stmt"/>
-      <line num="29" count="1" type="stmt"/>
+<coverage generated="1792515781661" clover="3.2.0">
+  <project timestamp="1792515781662" name="All files">
+    <metrics statements="7" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0" elements="7" coveredelements="7" complexity="0" loc="7" ncloc="7" packages="1" files="1" classes="1"/>
+    <file name="input_output.routes.js" path="C:\Users\dayan\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\routes\input_output.routes.js">
+      <metrics statements="7" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <line num="22" count="1" type="stmt"/>
+      <line num="24" count="1" type="stmt"/>
       <line num="30" count="1" type="stmt"/>
-      <line num="31" count="1" type="stmt"/>
-      <line num="32" count="1" type="stmt"/>
-      <line num="33" count="1" type="stmt"/>
-      <line num="34" count="1" type="stmt"/>
-      <line num="35" count="1" type="stmt"/>
-      <line num="36" count="1" type="stmt"/>
       <line num="37" count="1" type="stmt"/>
-      <line num="38" count="1" type="stmt"/>
-      <line num="39" count="1" type="stmt"/>
-      <line num="40" count="1" type="stmt"/>
-      <line num="41" count="1" type="stmt"/>
+      <line num="43" count="1" type="stmt"/>
+      <line num="49" count="1" type="stmt"/>
+      <line num="55" count="1" type="stmt"/>
     </file>
   </project>
 </coverage>

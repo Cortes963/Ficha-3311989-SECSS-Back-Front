@@ -38,6 +38,7 @@ npm run seed:cypress
 
 El sembrador lee las cuentas directamente de `frontend/cypress.config.js`,
 prepara los datos de ficha de los aprendices, reserva el usuario inactivo y los
-IDs de vehículo esperados y se puede ejecutar más de una vez. No lo ejecutes
-contra una base de producción: sincroniza las contraseñas de esas cuentas con
-la contraseña de prueba de Cypress y modifica sus roles/estados.
+IDs de vehículo esperados, y deja `aprendiz3` sin cupos para las pruebas de
+usuario sin vehículo. Se puede ejecutar más de una vez. No lo ejecutes contra
+una base de producción: sincroniza las contraseñas de esas cuentas con la
+contraseña de prueba de Cypress y modifica sus roles/estados.

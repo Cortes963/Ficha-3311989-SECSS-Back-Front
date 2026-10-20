@@ -246,10 +246,13 @@ describe('HU-IO-02 · Registrar salida', () => {
     (hayCelador2 ? it : it.skip)('CP-IO-48: otro celador puede cerrar la entrada y queda como celador de salida', () => {
       asegurarFuera('invitado1');
       asegurarDentro('invitado1').then((id) => {
-        salida(id, 'celador2').then((r) => {
-          esperarOk(r);
-          cy.apiCall('jefe', 'GET', `/input_output/${id}`).then((d) => {
-            expect(d.body.datos.celador_salida).to.not.eq(d.body.datos.celador_ingreso);
+        cy.sesionApi('celador2').then(({ id: celadorSalidaId }) => {
+          salida(id, 'celador2').then((r) => {
+            esperarOk(r);
+            cy.apiCall('jefe', 'GET', `/input_output/${id}`).then((d) => {
+              expect(d.body.datos.id_usuario_celador_salida).to.eq(celadorSalidaId);
+              expect(d.body.datos.id_usuario_celador_salida).to.not.eq(d.body.datos.id_usuario_celador_ingreso);
+            });
           });
         });
       });
@@ -477,7 +480,7 @@ describe('Complementarias de input_output · API', () => {
       }));
     });
     it('CP-IO-18: usuario sin registros → datos vacíos', () => {
-      cy.apiCall('aprendiz3', 'GET', '/input_output/me').then((r) => {
+      cy.apiCall('aprendiz4', 'GET', '/input_output/me').then((r) => {
         esperarOk(r);
         expect(r.body.datos).to.have.length(0);
         expect(r.body.total).to.eq(0);

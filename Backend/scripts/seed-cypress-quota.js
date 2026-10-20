@@ -237,6 +237,7 @@ try {
   for (const vehicle of quotaVehicles) {
     await ensureVehicle(userIds[vehicle.alias], adminRows[0].id, vehicle);
   }
+  await connection.query('DELETE FROM auth_vehiculo WHERE id_usuario=?', [userIds.aprendiz3]);
 
   await connection.commit();
   console.log(JSON.stringify({

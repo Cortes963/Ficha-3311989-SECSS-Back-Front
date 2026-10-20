@@ -130,6 +130,9 @@ describe('PATCH /quota/:idUsuario/:idVehiculo (solo ADMIN)', () => {
     db.query.mockResolvedValueOnce([{ affectedRows: 0 }]);
     expect((await patch(0)).status).toBe(404);
   });
-  // HALLAZGO: con estado=1 se desactivan los otros cupos ANTES de saber si el cupo existe (y sin transacción)
-  test.todo('PATCH estado=1 sobre un cupo inexistente ya desactivó los cupos activos del usuario (dos UPDATE sin transacción)');
+  test('DEFECTO · PATCH de cupo inexistente devuelve 404 después de desactivar otros cupos', async () => {
+    mockSql(db.query, [[/^UPDATE auth_vehiculo SET estado=0/, [{ affectedRows: 1 }]], [/^UPDATE auth_vehiculo SET estado=/, [{ affectedRows: 0 }]]]);
+    expect((await patch(1)).status).toBe(404);
+    expect(sqlsOf(db.query).some((sql) => sql.startsWith('UPDATE auth_vehiculo SET estado=0'))).toBe(false);
+  });
 });

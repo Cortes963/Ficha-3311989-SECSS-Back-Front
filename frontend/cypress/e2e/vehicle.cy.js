@@ -13,9 +13,7 @@ import {
   bicicletaBase,
   IMAGENES_MOTO,
   INEXISTENTE,
-  idCentro,
-  datosAprendiz,
-  imagenesAprendiz,
+  crearAprendiz,
 } from '../support/helpers';
 
 const SIN_PERMISO = 'No tiene permisos para esta operación.';
@@ -24,8 +22,6 @@ const NO_ENCONTRADO = 'Vehículo no encontrado.';
 const IDS_INVALIDOS = ['abc', '0', '-1', '1.5'];
 const ROLES_STAFF = ['admin', 'jefe', 'celador'];
 
-const API = () => Cypress.expose('apiUrl');
-
 // ── Aprendices desechables ────────────────────────────────────────────────────
 const duenio = {}; // dueño de los vehículos que crean las pruebas
 const otro = {}; // segundo aprendiz: sirve para probar que no ve ni toca vehículos ajenos
@@ -33,33 +29,16 @@ const vacio = {}; // aprendiz que nunca registra vehículos (lista vacía)
 
 /** multipart/form-data con el token indicado (apiMultipart de commands.js solo acepta roles fijos). */
 const enviarMultipart = (token, method, path, campos = {}, archivos = []) => {
-  const form = new FormData();
-  Object.entries(campos).forEach(([k, v]) => { if (v !== undefined && v !== null) form.append(k, v); });
-  archivos.forEach((a) => form.append(a.campo, new Blob([a.contenido], { type: a.tipo }), a.nombre));
-  const promesa = fetch(`${API()}${path}`, {
-    method, headers: token ? { Authorization: `Bearer ${token}` } : {}, body: form,
-  }).then(async (r) => ({ status: r.status, body: await r.json().catch(() => null) }));
-  return cy.wrap(promesa, { timeout: 30000, log: false });
+  return cy.apiMultipartToken(token, path, campos, archivos, method);
 };
 
 /** Petición JSON a la API autenticada como el aprendiz desechable `u`. */
 const como = (u, method, path, opts = {}) => cy.apiCall(null, method, path, { auth: u.auth, ...opts });
 
-/** Registra un aprendiz por la API pública, inicia sesión y guarda token y usuario en `destino`. */
-const crearAprendizDesechable = (destino) =>
-  idCentro().then((centro) => {
-    const datos = datosAprendiz(centro);
-    return enviarMultipart(null, 'POST', '/auth/storeAuthRegister', datos, imagenesAprendiz()).then((r) => {
-      esperarOk(r, 201);
-      return cy.request({
-        method: 'POST',
-        url: `${API()}/auth/storeAuthLogin`,
-        body: { numero_documento: datos.numero_documento, password: datos.password },
-        log: false,
-      });
-    });
-  }).then(({ body }) => {
-    Object.assign(destino, { token: body.token, auth: `Bearer ${body.token}`, id: body.usuario.id, usuario: body.usuario });
+/** Registra un aprendiz usando el helper compartido y guarda su sesión en `destino`. */
+const crearAprendizDesechable = (destino, clave) =>
+  crearAprendiz(clave).then(() => cy.sesionApi(clave)).then((sesion) => {
+    Object.assign(destino, { token: sesion.token, auth: `Bearer ${sesion.token}`, id: sesion.id, usuario: sesion.usuario });
   });
 
 /** Sesión del frontend como un aprendiz desechable (token + usuario en localStorage). */
@@ -94,9 +73,9 @@ const activarCupo = (u, idVehiculo) =>
 const verVehiculo = (u, id) => como(u, 'GET', `/vehicle/${id}`).then((r) => { esperarOk(r); return r.body.datos; });
 
 before(() => {
-  crearAprendizDesechable(duenio);
-  crearAprendizDesechable(otro);
-  crearAprendizDesechable(vacio);
+  crearAprendizDesechable(duenio, 'vehicleDuenio');
+  crearAprendizDesechable(otro, 'vehicleOtro');
+  crearAprendizDesechable(vacio, 'vehicleVacio');
 });
 
 // ═════════════════════════════════════════════════════════════════════════════

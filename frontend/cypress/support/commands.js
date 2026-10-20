@@ -26,11 +26,17 @@
 
 const apiUrl = () => Cypress.expose('apiUrl');
 const cache = {}; // sesiones por rol (se reinicia en cada spec)
+const usuariosRuntime = { ...(Cypress.expose('users') || {}) };
+
+/** Registra credenciales creadas durante la prueba para poder iniciar sesión por API. */
+Cypress.Commands.add('registrarCredenciales', (rol, credenciales) => {
+  usuariosRuntime[rol] = credenciales;
+});
  
 /** Inicia sesión por API (una vez por spec y rol). Devuelve { token, id, roles, usuario }. */
 Cypress.Commands.add('sesionApi', (rol) => {
   if (cache[rol]) return cy.wrap(cache[rol], { log: false });
-  const cred = (Cypress.expose('users') || {})[rol];
+  const cred = usuariosRuntime[rol];
   if (!cred || !cred.documento) throw new Error(`Falta users.${rol} en cypress.expose.json`);
   return cy.request({
     method: 'POST',
@@ -64,16 +70,21 @@ Cypress.Commands.add('apiCall', (rol, method, path, opts = {}) => {
 });
  
 /** multipart/form-data. archivos: [{ campo, nombre, tipo, contenido }]. Devuelve { status, body }. */
-Cypress.Commands.add('apiMultipart', (rol, path, campos = {}, archivos = [], method = 'POST') =>
-  cy.sesionApi(rol).then((s) => {
+Cypress.Commands.add('apiMultipartToken', (token, path, campos = {}, archivos = [], method = 'POST') => {
     const form = new FormData();
     Object.entries(campos).forEach(([k, v]) => { if (v !== undefined && v !== null) form.append(k, v); });
     archivos.forEach((a) => form.append(a.campo, new Blob([a.contenido], { type: a.tipo }), a.nombre));
     const promesa = fetch(`${apiUrl()}${path}`, {
-      method, headers: { Authorization: `Bearer ${s.token}` }, body: form,
+      method, headers: token ? { Authorization: `Bearer ${token}` } : {}, body: form,
     }).then(async (r) => ({ status: r.status, body: await r.json().catch(() => null) }));
     return cy.wrap(promesa, { timeout: 30000, log: false });
-  }));
+});
+
+/** multipart/form-data autenticado por rol o público cuando rol es null. */
+Cypress.Commands.add('apiMultipart', (rol, path, campos = {}, archivos = [], method = 'POST') => {
+  if (!rol) return cy.apiMultipartToken(null, path, campos, archivos, method);
+  return cy.sesionApi(rol).then((s) => cy.apiMultipartToken(s.token, path, campos, archivos, method));
+});
  
 /** Dispara varias peticiones JSON a la vez (pruebas de concurrencia). Devuelve [{ status, body }]. */
 Cypress.Commands.add('apiParalelo', (rol, peticiones) =>

@@ -98,7 +98,7 @@ describe('POST /auth/storeAuthLogin', () => {
     expect(JSON.stringify(res.body)).not.toContain('secreto');
   });
   // HALLAZGO: Express 5 deja req.body = undefined cuando la petición no trae cuerpo.
-  test.failing('petición SIN cuerpo debería responder 400 (hoy responde 500 porque required(undefined) revienta)', async () => {
+  test('DEFECTO · petición SIN cuerpo debería responder 400', async () => {
     const res = await api().post(URL('storeAuthLogin'));
     expect(res.status).toBe(400);
   });
@@ -202,7 +202,7 @@ describe('POST /auth/storeAuthRegister (multipart)', () => {
     expect(res.body.mensaje).toContain('imagen_url_aprendiz');
   });
   // HALLAZGO: typeof null === 'object' → required(null, …) lanza TypeError
-  test.failing('detalle_aprendiz: null debería ser 400 (hoy es 500)', async () => {
+  test('DEFECTO · detalle_aprendiz: null debería responder 400', async () => {
     const res = await api().post(URL('storeAuthRegister')).send({ ...campos, detalle_aprendiz: null });
     expect(res.status).toBe(400);
   });

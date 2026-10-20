@@ -90,7 +90,7 @@ describe('Rutas protegidas /centros (solo ADMINISTRADOR)', () => {
   describe('PATCH /centros/:id', () => {
     const patch = (id, b) => request(app).patch(`${base}/${id}`).set('Authorization', ADMIN).send(b);
     // HALLAZGO: `next(e)` envía el error 400 de integer() al manejador global, que responde 500.
-    test.failing('id inválido debería responder 400 (core.routes usa next(e) en vez de error(res, e))', async () => {
+    test('DEFECTO · id inválido debería responder 400 (core.routes usa next(e) en vez de error(res, e))', async () => {
       expect((await patch('x', { nombre_centro: 'A' })).status).toBe(400);
     });
     test('nombre vacío → 400', async () => { expect((await patch(1, { nombre_centro: ' ' })).status).toBe(400); });

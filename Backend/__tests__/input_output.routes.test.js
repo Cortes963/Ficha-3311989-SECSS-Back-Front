@@ -17,7 +17,6 @@ beforeEach(() => { conn = freshDb(db); clearStorage(); jest.spyOn(console, 'erro
 afterEach(() => console.error.mockRestore());
 
 const FUTURO = new Date(Date.now() + 24 * 3600e3).toISOString();
-const PASADO = new Date(Date.now() - 24 * 3600e3).toISOString();
 
 //  Autorización 
 describe('Matriz de autorización de /input_output', () => {
@@ -25,7 +24,7 @@ describe('Matriz de autorización de /input_output', () => {
   const MATRIZ = [
     ['get', '/api/input_output/me', ['INVITADO', 'APRENDIZ']],
     ['post', '/api/input_output/invitado', ['CELADOR']],
-    ['get', '/api/input_output', ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR']],
+    ['get', '/api/input_output', ['JEFE_SEGURIDAD', 'CELADOR']],
     ['get', '/api/input_output/5', ['INVITADO', 'APRENDIZ', 'CELADOR', 'JEFE_SEGURIDAD']],   // ADMIN no está
     ['post', '/api/input_output/entrada', ['CELADOR']],
     ['patch', '/api/input_output/salida/5', ['CELADOR']],
@@ -52,7 +51,7 @@ describe('GET /input_output (lista con filtros)', () => {
   });
   test('filtros id_usuario + id_vehiculo + estado=DENTRO se combinan con AND', async () => {
     lista();
-    await api(ADMIN).get('/api/input_output?id_usuario=3&id_vehiculo=4&estado=DENTRO&pagina=2&limite=10');
+    await api(CELADOR).get('/api/input_output?id_usuario=3&id_vehiculo=4&estado=DENTRO&pagina=2&limite=10');
     const sql = sqlsOf(db.query)[0];
     expect(sql).toContain('WHERE es.id_usuario_entra=? AND es.id_vehiculo=? AND es.fecha_hora_salida IS NULL');
     expect(db.query.mock.calls[0][1]).toEqual([3, 4]);
@@ -67,18 +66,18 @@ describe('GET /input_output (lista con filtros)', () => {
     expect(sqlsOf(db.query).pop()).not.toContain('WHERE');
   });
   test.each([['id_usuario=x'], ['id_vehiculo=0'], ['pagina=0'], ['limite=101']])('parámetro inválido %s → 400', async (qs) => {
-    expect((await api(ADMIN).get(`/api/input_output?${qs}`)).status).toBe(400);
+    expect((await api(CELADOR).get(`/api/input_output?${qs}`)).status).toBe(400);
     expect(db.query).not.toHaveBeenCalled();
   });
   test('normaliza los alias de salida (id, persona, documento, fecha_ingreso, celadores…)', async () => {
     lista([{ registro_id: 9, persona_ingresa: 'Ana Paz', documento_persona: '123', fecha_hora_ingreso: 'I', fecha_hora_salida: null, celador_ingreso: 'C1', celador_salida: null, placa: '', numero_marco: 'M1' }]);
-    const res = await api(ADMIN).get('/api/input_output');
+    const res = await api(CELADOR).get('/api/input_output');
     expect(res.body.datos[0]).toMatchObject({ id: 9, persona: 'Ana Paz', documento: '123', fecha_ingreso: 'I', fecha_salida: null, celador_ingreso_nombre: 'C1', celador_salida_nombre: null, placa: null, numero_marco: 'M1' });
     expect(res.body.total).toBe(1);
   });
   test('error de BD → 500 genérico', async () => {
     db.query.mockRejectedValue(new Error('secreto'));
-    const res = await api(ADMIN).get('/api/input_output');
+    const res = await api(CELADOR).get('/api/input_output');
     expect(res.status).toBe(500);
     expect(JSON.stringify(res.body)).not.toContain('secreto');
   });
@@ -105,7 +104,7 @@ describe('GET /input_output/me', () => {
   });
   // HALLAZGO: en Express 5 req.query es un getter; "req.query.id_usuario = actorId(req)" se pierde.
   // Un usuario con APRENDIZ + CELADOR escapa de ownOnly y ve TODOS los registros en /me.
-  test.failing('usuario con roles APRENDIZ+CELADOR debería ver solo lo suyo en /me (hoy ve todo)', async () => {
+  test('DEFECTO · usuario con roles APRENDIZ+CELADOR ve solo sus registros en /me', async () => {
     lista();
     await api({ id: 7, roles: ['APRENDIZ', 'CELADOR'] }).get('/api/input_output/me');
     expect(db.query.mock.calls[0][1]).toEqual([7]);
@@ -208,7 +207,7 @@ describe('POST /input_output/entrada (registrar ingreso)', () => {
     expect(conn.rollback).toHaveBeenCalled();
     expect(conn.release).toHaveBeenCalled();
   });
-  test.failing('petición SIN cuerpo debería ser 400 (hoy 500: Express 5 deja req.body undefined)', async () => {
+  test('DEFECTO · petición SIN cuerpo debería ser 400 (Express 5 puede dejar req.body undefined)', async () => {
     expect((await api(CELADOR).post('/api/input_output/entrada')).status).toBe(400);
   });
 });
@@ -248,9 +247,8 @@ describe('PATCH /input_output/salida/:id (registrar salida)', () => {
 
 //  CREATE invitado 
 describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)', () => {
-  const vehiculo = { tipo_vehiculo: 'moto', marca: 'AKT', color: 'Rojo', expira_en: FUTURO };
+  const vehiculo = { tipo_vehiculo: 'moto', marca: 'AKT', color: 'Rojo' };
   const persona = { tipo_documento: 'CC', numero_documento: '9', primer_nombre: 'Luis', primer_apellido: 'Gil', n_celular: '3', correo: 'l@g.co' };
-  const GENERICA = '3/6174426c-cc93-42c9-a968-28e5b470c31f.jpg';
   const bd = ({ usuarioExiste = true, rol = [{ id: 5 }] } = {}) => mockSql(conn.query, [
     [/^SELECT id FROM usuario WHERE id=\? AND estado=1 FOR UPDATE/, [usuarioExiste ? [{ id: 9 }] : []]],
     [/INSERT INTO usuario\s+\(/, [{ insertId: 60 }]],
@@ -260,8 +258,8 @@ describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)',
   ]);
   const post = (b) => api(CELADOR).post('/api/input_output/invitado').send(b);
 
-  test.each([['tipo_vehiculo'], ['marca'], ['color'], ['expira_en']])('falta %s → 400', async (campo) => {
-    const body = { ...vehiculo, id_usuario: 9 }; delete body[campo];
+  test.each([['tipo_vehiculo'], ['marca'], ['color']])('falta %s → 400', async (campo) => {
+    const body = { ...vehiculo, ...persona }; delete body[campo];
     const res = await post(body);
     expect(res.status).toBe(400);
     expect(res.body.mensaje).toContain(campo);
@@ -273,30 +271,26 @@ describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)',
     expect(res.body.mensaje).toContain('tipo_documento');
   });
   test('tipo de vehículo fuera del catálogo → 400', async () => {
-    expect((await post({ ...vehiculo, tipo_vehiculo: 'CARRO', id_usuario: 9 })).status).toBe(400);
+    expect((await post({ ...vehiculo, ...persona, tipo_vehiculo: 'CARRO' })).status).toBe(400);
   });
-  test.each([['pasada', PASADO], ['inválida', 'mañana'], ['vacía', '']])('expira_en %s → 400', async (_n, valor) => {
-    expect((await post({ ...vehiculo, expira_en: valor, id_usuario: 9 })).status).toBe(400);
+  test('DEFECTO · id_usuario activo existente → 409 y no crea registros', async () => {
+    bd();
+    const res = await post({ ...vehiculo, expira_en: FUTURO, id_usuario: 9 });
+    expect(res.status).toBe(409);
+    expect(conn.rollback).toHaveBeenCalled();
+    expect(sqlsOf(conn.query).some((sql) => /INSERT INTO (usuario|usuario_rol|vehiculo|auth_vehiculo|entrada_salida)/.test(sql))).toBe(false);
   });
-  test('id_usuario existente pero INACTIVO o inexistente → 404 + rollback', async () => {
+  test('DEFECTO · id_usuario inactivo existente también requiere reactivación separada', async () => {
+    mockSql(conn.query, [[/^SELECT id FROM usuario WHERE id=/, [[{ id: 9, estado: 0 }]]], [/./, [{}]]]);
+    const res = await post({ ...vehiculo, expira_en: FUTURO, id_usuario: 9 });
+    expect(res.status).toBe(409);
+    expect(sqlsOf(conn.query).some((sql) => /INSERT INTO (usuario|usuario_rol|vehiculo|auth_vehiculo|entrada_salida)/.test(sql))).toBe(false);
+  });
+  test('id_usuario inexistente → 404 + rollback', async () => {
     bd({ usuarioExiste: false });
-    const res = await post({ ...vehiculo, id_usuario: 9 });
+    const res = await post({ ...vehiculo, expira_en: FUTURO, id_usuario: 9 });
     expect(res.status).toBe(404);
     expect(conn.rollback).toHaveBeenCalled();
-  });
-  test('usuario existente: 201, rol INVITADO, cupo ACTIVO auditado por el celador y entrada abierta; imagen genérica por defecto', async () => {
-    bd();
-    const res = await post({ ...vehiculo, id_usuario: 9 });
-    expect(res.status).toBe(201);
-    expect(res.body).toMatchObject({ ok: true, id_usuario: 9, id_vehiculo: 80 });
-    expect(res.body).not.toHaveProperty('credenciales_temporales');
-    expect(conn.query.mock.calls.find(([s]) => s.startsWith('SELECT id FROM rol'))[1]).toEqual(['INVITADO']);
-    const veh = conn.query.mock.calls.find(([s]) => s.includes('INSERT INTO vehiculo'))[1];
-    expect(veh).toEqual(['MOTO', 'AKT', 'Rojo', GENERICA, GENERICA, GENERICA]);
-    expect(conn.query.mock.calls.find(([s]) => s.includes('INSERT INTO auth_vehiculo'))[1]).toEqual([9, 80, 7]);
-    expect(conn.query.mock.calls.find(([s]) => s.includes('INSERT INTO entrada_salida'))[1]).toEqual([9, 80, 7]);
-    expect(conn.commit).toHaveBeenCalled();
-    expect(conn.release).toHaveBeenCalled();
   });
   test.each([[''], [null]])('id_usuario %p se trata como "invitado nuevo"', async (idUsuario) => {
     bd();
@@ -304,18 +298,31 @@ describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)',
     expect(res.status).toBe(201);
     expect(res.body.id_usuario).toBe(60);
   });
-  test('invitado nuevo: crea usuario+cuenta (servicios reales), devuelve credenciales temporales y guarda HASH', async () => {
+  test('DEFECTO · invitado nuevo no requiere expira_en; vence automáticamente a los seis meses', async () => {
     bd();
-    const res = await post({ ...vehiculo, ...persona, expira_en: FUTURO });
+    const inicio = new Date();
+    const esperado = new Date(inicio);
+    esperado.setMonth(esperado.getMonth() + 6);
+    const res = await post({ ...vehiculo, ...persona });
     expect(res.status).toBe(201);
     expect(res.body.credenciales_temporales).toMatchObject({ correo: 'l@g.co' });
     expect(res.body.credenciales_temporales.password).toMatch(/^[A-Za-z0-9_-]{12}$/);
     const cuenta = conn.query.mock.calls.find(([s]) => s.includes('INSERT INTO cuenta'))[1];
-    expect(cuenta).toEqual([60, 'l@g.co', 'HASH', FUTURO]);        // la cuenta nace con fecha de expiración
+    expect(cuenta.slice(0, 3)).toEqual([60, 'l@g.co', 'HASH']);
+    expect(Math.abs(new Date(cuenta[3]).getTime() - esperado.getTime())).toBeLessThan(2000); // ignora expira_en; vence en seis meses
+  });
+  test('DEFECTO · expira_en enviado por el cliente se ignora', async () => {
+    bd();
+    const esperado = new Date();
+    esperado.setMonth(esperado.getMonth() + 6);
+    const res = await post({ ...vehiculo, ...persona, expira_en: '2099-01-01' });
+    expect(res.status).toBe(201);
+    const cuenta = conn.query.mock.calls.find(([s]) => s.includes('INSERT INTO cuenta'))[1];
+    expect(Math.abs(new Date(cuenta[3]).getTime() - esperado.getTime())).toBeLessThan(2000);
   });
   test('rol INVITADO inexistente → 400 + rollback', async () => {
     bd({ rol: [] });
-    expect((await post({ ...vehiculo, id_usuario: 9 })).status).toBe(400);
+    expect((await post({ ...vehiculo, ...persona, expira_en: FUTURO })).status).toBe(400);
     expect(conn.rollback).toHaveBeenCalled();
   });
   test('documento duplicado → 409', async () => {
@@ -325,7 +332,7 @@ describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)',
   test('multipart con imágenes: se guardan en disco bajo el id del CELADOR y reemplazan las genéricas', async () => {
     bd();
     const res = await api(CELADOR).post('/api/input_output/invitado')
-      .field('tipo_vehiculo', 'BICICLETA').field('marca', 'GW').field('color', 'Azul').field('expira_en', FUTURO).field('id_usuario', '9')
+      .field('tipo_vehiculo', 'BICICLETA').field('marca', 'GW').field('color', 'Azul').field('tipo_documento', persona.tipo_documento).field('numero_documento', '19').field('primer_nombre', 'Luis').field('primer_apellido', 'Gil').field('n_celular', '3').field('correo', 'nuevo@g.co')
       .attach('imagen_url_vehiculo', PNG, { filename: 'v.png', contentType: 'image/png' })
       .attach('imagen_url_tarjeta_propiedad', PNG, { filename: 't.png', contentType: 'image/png' });
     expect(res.status).toBe(201);
@@ -343,18 +350,15 @@ describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)',
     expect(res.status).toBe(400);
     expect(db.getConnection).not.toHaveBeenCalled();
   });
-  // HALLAZGO: este controlador no registra los archivos guardados, así que no los borra si la transacción falla
-  test.failing('si la BD falla tras guardar imágenes, los archivos deberían eliminarse (hoy quedan huérfanos en disco)', async () => {
-    mockSql(conn.query, [[/^SELECT id FROM usuario WHERE id=/, [[{ id: 9 }]]], [/^SELECT id FROM rol/, [[{ id: 5 }]]], [/INSERT INTO vehiculo/, new Error('db caída')], [/./, [{}]]]);
+  // HALLAZGO: la transacción debe limpiar los archivos si el alta de un invitado nuevo falla.
+  test('DEFECTO · si la BD falla tras guardar imágenes, los archivos deberían eliminarse', async () => {
+    mockSql(conn.query, [[/INSERT INTO usuario/, [{ insertId: 60 }]], [/INSERT INTO cuenta/, [{}]], [/^SELECT id FROM rol/, [[{ id: 5 }]]], [/INSERT INTO archivo/, [{}]], [/INSERT INTO vehiculo/, new Error('db caída')], [/./, [{}]]]);
     const res = await api(CELADOR).post('/api/input_output/invitado')
-      .field('tipo_vehiculo', 'MOTO').field('marca', 'x').field('color', 'y').field('expira_en', FUTURO).field('id_usuario', '9')
+      .field('tipo_vehiculo', 'MOTO').field('marca', 'x').field('color', 'y').field('expira_en', FUTURO).field('tipo_documento', 'CC').field('numero_documento', '22').field('primer_nombre', 'Luis').field('primer_apellido', 'Gil').field('n_celular', '3').field('correo', 'l@g.co')
       .attach('imagen_url_vehiculo', PNG, { filename: 'v.png', contentType: 'image/png' });
     expect(res.status).toBe(500);
     expect(storedFiles()).toHaveLength(0);
   });
 });
 
-describe('Pendientes de decisión (reglas de negocio)', () => {
-  test.todo('POST /invitado crea el cupo ya ACTIVO y registra al CELADOR como id_usuario_administrador: salta la aprobación del administrador');
-  test.todo('POST /invitado usa una imagen genérica con ruta fija ("3/6174…jpg") que depende de un archivo del usuario 3');
-});
+// La creación con cupo activo y auditoría del CELADOR se verifica en el flujo del invitado nuevo.

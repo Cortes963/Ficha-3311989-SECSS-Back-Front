@@ -31,7 +31,6 @@ const MATRIZ = [
   ['get', '/api/users/5/aprendiz', ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR']],
   ['patch', '/api/users/5/aprendiz', ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR']],
   ['get', '/api/users/5', ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR']],
-  ['patch', '/api/users/5/estado', ['ADMINISTRADOR', 'JEFE_SEGURIDAD']],
   ['post', '/api/users/celador', ['JEFE_SEGURIDAD']],
   ['post', '/api/users/jefe', ['ADMINISTRADOR']],
   ['post', '/api/users/asignar-celador', ['ADMINISTRADOR', 'JEFE_SEGURIDAD']],
@@ -165,7 +164,7 @@ describe('GET /users/:id y /me', () => {
     expect(res.body.datos.roles).toEqual(['INVITADO']);
   });
   // HALLAZGO: el control del CELADOR también se aplica a /me → no puede ver su PROPIO perfil
-  test.failing('CELADOR debería poder ver su propio perfil en GET /me (hoy recibe 403)', async () => {
+  test('DEFECTO · CELADOR puede ver su propio perfil en GET /me → 200', async () => {
     datos();
     expect((await api(CELADOR).get('/api/users/me')).status).toBe(200);
   });
@@ -330,9 +329,39 @@ describe('PATCH /users/:id/estado (desactivar / activar)', () => {
     expect((await patch(0)).status).toBe(404);
   });
   test('id inválido → 400', async () => { expect((await patch(0, 0)).status).toBe(400); });
-  test('JEFE puede desactivar a cualquier usuario, incluido un ADMIN (la query no valida el rol del objetivo)', async () => {
+  test('DEFECTO · JEFE no puede reactivar invitados → 403', async () => {
+    expect((await patch(1, 9, JEFE)).status).toBe(403);
+  });
+  test.each([['APRENDIZ', APRENDIZ], ['INVITADO', INVITADO]])('%s no puede reactivar invitados → 403', async (_rol, usuario) => {
+    expect((await api(usuario).patch('/api/users/9/estado').send({ estado: 1 })).status).toBe(403);
+    expect(db.query).not.toHaveBeenCalled();
+  });
+  test('DEFECTO · CELADOR no puede desactivar invitados → 403', async () => {
+    expect((await patch(0, 9, CELADOR)).status).toBe(403);
+  });
+  test('DEFECTO · JEFE no puede desactivar un ADMIN → 403', async () => {
     db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
-    expect((await patch(0, 1, JEFE)).status).toBe(200);
+    expect((await patch(0, 1, JEFE)).status).toBe(403);
+  });
+  test('DEFECTO · CELADOR puede reactivar un invitado → 200', async () => {
+    db.query.mockResolvedValue([{ affectedRows: 1 }]);
+    const res = await api(CELADOR).patch('/api/users/9/estado').send({ estado: 1 });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ ok: true, mensaje: 'Estado actualizado.' });
+  });
+  test('DEFECTO · reactivar invitado activa usuario, cuenta y rol y fija vencimiento a seis meses', async () => {
+    const inicio = new Date();
+    const esperado = new Date(inicio);
+    esperado.setMonth(esperado.getMonth() + 6);
+    db.query.mockResolvedValue([{ affectedRows: 1 }]);
+    const res = await api(ADMIN).patch('/api/users/9/estado').send({ estado: 1, expira_en: '2099-01-01' });
+    expect(res.status).toBe(200);
+    expect(db.query.mock.calls.some(([sql]) => /UPDATE usuario_rol/.test(sql))).toBe(true);
+    const cuenta = db.query.mock.calls.find(([sql]) => /UPDATE cuenta/.test(sql));
+    expect(cuenta).toBeDefined();
+    const vencimiento = cuenta[1].find((value) => value instanceof Date || (typeof value === 'string' && /^\d{4}-\d\d-\d\d/.test(value)));
+    expect(vencimiento).toBeDefined();
+    expect(Math.abs(new Date(vencimiento).getTime() - esperado.getTime())).toBeLessThan(3000);
   });
 });
 
@@ -485,9 +514,4 @@ describe('PATCH /users/me/password', () => {
 });
 
 // ═════════════ Pendientes de decisión ═════════════
-describe('Pendientes de decisión (reglas de negocio)', () => {
-  test.todo('PATCH /:id/estado: ¿puede un JEFE_SEGURIDAD desactivar a un ADMINISTRADOR? Hoy updateUserState no valida el rol del objetivo');
-  test.todo('GET|PATCH /:id/aprendiz: el CELADOR solo debería ver invitados (como en showUserId), hoy puede leer y EDITAR cualquier aprendiz');
-  test.todo('POST /asignar-celador: storeSecurityChiefGuard no verifica que los ids tengan rol JEFE_SEGURIDAD / CELADOR');
-  test.todo('PATCH /me: el UPDATE de correo y el de usuario no están en una transacción (actualización parcial si falla el segundo)');
-});
+// Los contratos confirmados se expresan arriba como pruebas DEFECTO visibles para Jest.

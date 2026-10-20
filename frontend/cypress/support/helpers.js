@@ -166,6 +166,13 @@ export const crearVehiculoApi = (rol, campos = motoBase(), archivos = []) =>
 export const crearCentroApi = (nombre = `Centro Prueba ${unico()}`) =>
   cy.apiCall('admin', 'POST', '/core/centros', { body: { nombre_centro: nombre } }).then((r) => { esperarOk(r, 201); return r.body.datos; });
 
+/** Radica una PQRS como el rol indicado y devuelve su identificador. */
+export const crearPqrsApi = (rol, asunto, cuerpo = 'Creada por Cypress') =>
+  cy.apiCall(rol, 'POST', '/pqrs', { body: { asunto, cuerpo } }).then((r) => {
+    expect(r.status, 'radicación de PQRS').to.eq(201);
+    return r.body.id_pqrs;
+  });
+
 /**
  * Deja el cupo del rol en `estado` y como el MÁS RECIENTEMENTE actualizado.
  * GET /quota ordena por updated_at y la interfaz solo carga los primeros 20 cupos (H-09),

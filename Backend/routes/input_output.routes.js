@@ -36,7 +36,7 @@ router.post(
 
 router.get(
   '/',
-  allowRoles(ROLES.ADMIN, ROLES.JEFE, ROLES.CELADOR),
+  allowRoles(ROLES.JEFE, ROLES.CELADOR),
   indexInputOutput
 );
 
@@ -59,4 +59,3 @@ router.patch(
 );
 
 export default router;
-

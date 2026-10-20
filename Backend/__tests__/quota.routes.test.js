@@ -109,12 +109,14 @@ describe('PATCH /quota/:idUsuario/:idVehiculo (solo ADMIN)', () => {
     expect(db.query).not.toHaveBeenCalled();
   });
   test('ids inválidos → 400', async () => { expect((await api(ADMIN).patch('/api/quota/x/2').send({ estado: 1 })).status).toBe(400); });
-  test('habilitar (1) primero desactiva los demás cupos del usuario (regla: 1 cupo activo) y audita al admin', async () => {
+  test('habilitar (1) actualiza el cupo y audita al admin; después desactiva los demás (regla: 1 cupo activo)', async () => {
     db.query.mockResolvedValue([{ affectedRows: 1 }]);
     const res = await patch(1);
     expect(res.body.mensaje).toBe('Cupo habilitado.');
-    expect(sqlsOf(db.query)[0]).toContain('id_vehiculo<>?');
-    expect(db.query.mock.calls[1][1]).toEqual([1, 7, 7, 2]);      // estado, admin(token), usuario, vehículo
+    expect(db.query).toHaveBeenCalledTimes(2);
+    expect(db.query.mock.calls[0][1]).toEqual([1, 7, 7, 2]);      // estado, admin(token), usuario, vehículo
+    expect(sqlsOf(db.query)[1]).toContain('id_vehiculo<>?');
+    expect(db.query.mock.calls[1][1]).toEqual([7, 2]);            // usuario, vehículo que se conserva
   });
   test('deshabilitar (0) hace una sola query', async () => {
     db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
@@ -130,9 +132,14 @@ describe('PATCH /quota/:idUsuario/:idVehiculo (solo ADMIN)', () => {
     db.query.mockResolvedValueOnce([{ affectedRows: 0 }]);
     expect((await patch(0)).status).toBe(404);
   });
-  test('DEFECTO · PATCH de cupo inexistente devuelve 404 después de desactivar otros cupos', async () => {
+  test('cupo inexistente con estado=1 → 404 y NO desactiva los otros cupos del usuario (defecto corregido)', async () => {
     mockSql(db.query, [[/^UPDATE auth_vehiculo SET estado=0/, [{ affectedRows: 1 }]], [/^UPDATE auth_vehiculo SET estado=/, [{ affectedRows: 0 }]]]);
     expect((await patch(1)).status).toBe(404);
+    expect(db.query).toHaveBeenCalledTimes(1);
     expect(sqlsOf(db.query).some((sql) => sql.startsWith('UPDATE auth_vehiculo SET estado=0'))).toBe(false);
+  });
+  test('falla la BD al actualizar → 500', async () => {
+    db.query.mockRejectedValueOnce(new Error('x'));
+    expect((await patch(1)).status).toBe(500);
   });
 });

@@ -1,37 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<<<<<<< HEAD
-<coverage generated="1792016287998" clover="3.2.0">
-  <project timestamp="1792016287998" name="All files">
-    <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0" elements="5" coveredelements="5" complexity="0" loc="5" ncloc="5" packages="1" files="1" classes="1"/>
-    <file name="auth.routes.js" path="C:\Users\Aprendiz\Downloads\Ficha-3311989-SECSS-Back-Front\Backend\routes\auth.routes.js">
-=======
-<coverage generated="1792435561021" clover="3.2.0">
-  <project timestamp="1792435561022" name="All files">
-    <metrics statements="88" coveredstatements="88" conditionals="10" coveredconditionals="9" methods="9" coveredmethods="9" elements="107" coveredelements="106" complexity="0" loc="88" ncloc="88" packages="1" files="7" classes="7"/>
-    <file name="attention.routes.js" path="C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\routes\attention.routes.js">
-      <metrics statements="13" coveredstatements="13" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-      <line num="26" count="1" type="stmt"/>
+<coverage generated="1792483410917" clover="3.2.0">
+  <project timestamp="1792483410917" name="All files">
+    <metrics statements="16" coveredstatements="16" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="4" elements="20" coveredelements="20" complexity="0" loc="16" ncloc="16" packages="1" files="1" classes="1"/>
+    <file name="user.routes.js" path="C:\Users\dayan\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\routes\user.routes.js">
+      <metrics statements="16" coveredstatements="16" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="4"/>
+      <line num="25" count="1" type="stmt"/>
+      <line num="27" count="2" type="stmt"/>
+      <line num="28" count="1" type="stmt"/>
       <line num="29" count="1" type="stmt"/>
       <line num="30" count="1" type="stmt"/>
       <line num="31" count="1" type="stmt"/>
       <line num="32" count="1" type="stmt"/>
+      <line num="33" count="1" type="stmt"/>
+      <line num="34" count="1" type="stmt"/>
+      <line num="35" count="1" type="stmt"/>
       <line num="36" count="1" type="stmt"/>
       <line num="37" count="1" type="stmt"/>
       <line num="38" count="1" type="stmt"/>
       <line num="39" count="1" type="stmt"/>
       <line num="40" count="1" type="stmt"/>
       <line num="41" count="1" type="stmt"/>
-      <line num="47" count="1" type="stmt"/>
-      <line num="48" count="1" type="stmt"/>
-    </file>
-    <file name="auth.routes.js" path="C:\Users\andresmunoz\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\routes\auth.routes.js">
->>>>>>> 797f5299637216bbc3d5eeea6c92dd0cb6bcc003
-      <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-      <line num="10" count="1" type="stmt"/>
-      <line num="11" count="1" type="stmt"/>
-      <line num="12" count="1" type="stmt"/>
-      <line num="13" count="1" type="stmt"/>
-      <line num="14" count="1" type="stmt"/>
     </file>
   </project>
 </coverage>

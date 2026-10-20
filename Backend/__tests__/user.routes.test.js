@@ -57,10 +57,16 @@ describe('Enrutamiento: el orden de las rutas importa', () => {
     expect((await api(ADMIN).get('/api/users/elegibles')).status).toBe(200);
   });
   test('PATCH /me/estado usa el id del TOKEN, no uno de la URL', async () => {
-    db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
+    mockSql(conn.query, [
+      [/^SELECT u\.id FROM usuario/, [[{ id: 7 }]]],
+      [/^SELECT r\.nombre_rol FROM usuario_rol/, [[{ nombre_rol: 'INVITADO' }]]],
+      [/^UPDATE usuario SET estado=/, [{ affectedRows: 1 }]],
+      [/^UPDATE cuenta SET estado=/, [{ affectedRows: 1 }]],
+    ]);
     const res = await api(INVITADO).patch('/api/users/me/estado').send({ estado: 0 });
     expect(res.status).toBe(200);
-    expect(db.query.mock.calls[0][1]).toEqual([0, 0, 7]);
+    expect(conn.query.mock.calls[0][1]).toEqual([7]);
+    expect(conn.query.mock.calls.find(([sql]) => /^UPDATE usuario SET estado=/.test(sql))[1]).toEqual([0, 7]);
   });
   test('GET /me/aprendiz usa el id del token', async () => {
     db.query.mockResolvedValueOnce([[{ ficha: 'F' }]]);
@@ -313,38 +319,52 @@ describe('PATCH /users/me', () => {
 
 // ═════════════ UPDATE estado ═════════════
 describe('PATCH /users/:id/estado (desactivar / activar)', () => {
+  const prepararEstado = ({ usuarios = [{ id: 3 }], roles = [{ nombre_rol: 'APRENDIZ' }] } = {}) => mockSql(conn.query, [
+    [/^SELECT u\.id FROM usuario/, [usuarios]],
+    [/^SELECT r\.nombre_rol FROM usuario_rol/, [roles]],
+    [/^UPDATE usuario SET estado=/, [{ affectedRows: 1 }]],
+    [/^UPDATE cuenta SET estado=/, [{ affectedRows: 1 }]],
+    [/^UPDATE usuario_rol SET estado=1/, [{ affectedRows: 1 }]],
+  ]);
   const patch = (estado, id = 3, u = ADMIN) => api(u).patch(`/api/users/${id}/estado`).send({ estado });
   test.each([[2], ['x'], [undefined], [-1]])('estado %p → 400 sin tocar la BD', async (estado) => {
     expect((await patch(estado)).status).toBe(400);
     expect(db.query).not.toHaveBeenCalled();
+    expect(conn.query).not.toHaveBeenCalled();
   });
   test.each([[0, '0'], [1, '1'], [1, 1]])('estado %p (enviado %p) se aplica a usuario Y cuenta', async (estado, enviado) => {
-    db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
+    prepararEstado();
     const res = await patch(enviado);
-    expect(db.query.mock.calls[0][1]).toEqual([estado, estado, 3]);
+    expect(conn.query.mock.calls.find(([sql]) => /^UPDATE usuario SET estado=/.test(sql))[1]).toEqual([estado, 3]);
+    expect(conn.query.mock.calls.find(([sql]) => /^UPDATE cuenta SET estado=/.test(sql))[1]).toEqual([estado, 3]);
     expect(res.body).toEqual({ ok: true, mensaje: 'Estado actualizado.' });
+    expect(conn.commit).toHaveBeenCalled();
   });
   test('usuario inexistente → 404', async () => {
-    db.query.mockResolvedValueOnce([{ affectedRows: 0 }]);
+    prepararEstado({ usuarios: [] });
     expect((await patch(0)).status).toBe(404);
+    expect(conn.rollback).toHaveBeenCalled();
   });
   test('id inválido → 400', async () => { expect((await patch(0, 0)).status).toBe(400); });
   test('DEFECTO · JEFE no puede reactivar invitados → 403', async () => {
+    prepararEstado({ roles: [{ nombre_rol: 'INVITADO' }] });
     expect((await patch(1, 9, JEFE)).status).toBe(403);
+    expect(conn.query.mock.calls.some(([sql]) => /^UPDATE /.test(sql))).toBe(false);
   });
   test.each([['APRENDIZ', APRENDIZ], ['INVITADO', INVITADO]])('%s no puede reactivar invitados → 403', async (_rol, usuario) => {
     expect((await api(usuario).patch('/api/users/9/estado').send({ estado: 1 })).status).toBe(403);
     expect(db.query).not.toHaveBeenCalled();
   });
   test('DEFECTO · CELADOR no puede desactivar invitados → 403', async () => {
+    prepararEstado({ roles: [{ nombre_rol: 'INVITADO' }] });
     expect((await patch(0, 9, CELADOR)).status).toBe(403);
   });
   test('DEFECTO · JEFE no puede desactivar un ADMIN → 403', async () => {
-    db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
+    prepararEstado({ roles: [{ nombre_rol: 'ADMINISTRADOR' }] });
     expect((await patch(0, 1, JEFE)).status).toBe(403);
   });
   test('DEFECTO · CELADOR puede reactivar un invitado → 200', async () => {
-    db.query.mockResolvedValue([{ affectedRows: 1 }]);
+    prepararEstado({ roles: [{ nombre_rol: 'INVITADO' }] });
     const res = await api(CELADOR).patch('/api/users/9/estado').send({ estado: 1 });
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ ok: true, mensaje: 'Estado actualizado.' });
@@ -353,11 +373,12 @@ describe('PATCH /users/:id/estado (desactivar / activar)', () => {
     const inicio = new Date();
     const esperado = new Date(inicio);
     esperado.setMonth(esperado.getMonth() + 6);
-    db.query.mockResolvedValue([{ affectedRows: 1 }]);
+    prepararEstado({ roles: [{ nombre_rol: 'INVITADO' }] });
     const res = await api(ADMIN).patch('/api/users/9/estado').send({ estado: 1, expira_en: '2099-01-01' });
     expect(res.status).toBe(200);
-    expect(db.query.mock.calls.some(([sql]) => /UPDATE usuario_rol/.test(sql))).toBe(true);
-    const cuenta = db.query.mock.calls.find(([sql]) => /UPDATE cuenta/.test(sql));
+    expect(conn.query.mock.calls.some(([sql]) => /UPDATE usuario_rol/.test(sql))).toBe(true);
+    expect(conn.query.mock.calls.some(([sql, params]) => /^UPDATE usuario SET estado=/.test(sql) && params[0] === 1)).toBe(true);
+    const cuenta = conn.query.mock.calls.find(([sql]) => /UPDATE cuenta SET estado=/.test(sql));
     expect(cuenta).toBeDefined();
     const vencimiento = cuenta[1].find((value) => value instanceof Date || (typeof value === 'string' && /^\d{4}-\d\d-\d\d/.test(value)));
     expect(vencimiento).toBeDefined();

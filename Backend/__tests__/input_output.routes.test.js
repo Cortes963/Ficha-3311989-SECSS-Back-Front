@@ -17,6 +17,7 @@ beforeEach(() => { conn = freshDb(db); clearStorage(); jest.spyOn(console, 'erro
 afterEach(() => console.error.mockRestore());
 
 const FUTURO = new Date(Date.now() + 24 * 3600e3).toISOString();
+const GENERICA = '3/6174426c-cc93-42c9-a968-28e5b470c31f.jpg';
 
 //  Autorización 
 describe('Matriz de autorización de /input_output', () => {
@@ -250,7 +251,7 @@ describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)',
   const vehiculo = { tipo_vehiculo: 'moto', marca: 'AKT', color: 'Rojo' };
   const persona = { tipo_documento: 'CC', numero_documento: '9', primer_nombre: 'Luis', primer_apellido: 'Gil', n_celular: '3', correo: 'l@g.co' };
   const bd = ({ usuarioExiste = true, rol = [{ id: 5 }] } = {}) => mockSql(conn.query, [
-    [/^SELECT id FROM usuario WHERE id=\? AND estado=1 FOR UPDATE/, [usuarioExiste ? [{ id: 9 }] : []]],
+    [/^SELECT id FROM usuario WHERE id=\? FOR UPDATE/, [usuarioExiste ? [{ id: 9 }] : []]],
     [/INSERT INTO usuario\s+\(/, [{ insertId: 60 }]],
     [/^SELECT id FROM rol/, [rol]],
     [/INSERT INTO vehiculo/, [{ insertId: 80 }]],

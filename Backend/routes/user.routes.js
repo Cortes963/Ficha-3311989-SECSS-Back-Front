@@ -35,10 +35,9 @@ r.get('/', allowRoles(ROLES.ADMIN, ROLES.JEFE, ROLES.CELADOR), indexUser);
 r.get('/:id/aprendiz', allowRoles(ROLES.ADMIN, ROLES.JEFE, ROLES.CELADOR), showAcademicDetail);
 r.patch('/:id/aprendiz', allowRoles(ROLES.ADMIN, ROLES.JEFE, ROLES.CELADOR), uploadAcademicEvidence, updateAcademicDetail);
 r.get('/:id', allowRoles(ROLES.ADMIN, ROLES.JEFE, ROLES.CELADOR), showUserId);
-r.patch('/:id/estado', allowRoles(ROLES.ADMIN, ROLES.JEFE), updateUserState);
+r.patch('/:id/estado', allowRoles(ROLES.ADMIN, ROLES.JEFE, ROLES.CELADOR), updateUserState);
 r.post('/celador', allowRoles(ROLES.JEFE), storeCelador);
 r.post('/jefe', allowRoles(ROLES.ADMIN), storeJefe);
 r.post('/asignar-celador', allowRoles(ROLES.ADMIN, ROLES.JEFE), storeSecurityChiefGuard);
 
 export default r;
-

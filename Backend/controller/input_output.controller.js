@@ -1,18 +1,21 @@
 import db from '../db.js';
 import { actorId, error, integer, page, required, ROLES } from '../lib.js';
 import { createUserWithAccount, assignRole } from '../services/user.service.js';
-import { saveUploadedFile } from '../services/fileStorage.service.js';
+import { saveUploadedFile, removeUploadedFile } from '../services/fileStorage.service.js';
 
-export async function indexInputOutput(req, res) {
+// Lista compartida por GET /input_output y GET /input_output/me.
+// `forcedUserId` (solo /me) obliga a filtrar por ese usuario sin depender de req.query:
+// en Express 5 req.query es de solo lectura, así que asignarle valores se pierde.
+async function listInputOutput(req, res, forcedUserId = null) {
   try {
     const { pagina, limite, offset } = page(req.query);
     const params = [];
     const filters = [];
     const ownOnly = req.user?.roles?.some((role) => [ROLES.APRENDIZ, ROLES.INVITADO].includes(role))
       && !req.user.roles.some((role) => [ROLES.ADMIN, ROLES.JEFE, ROLES.CELADOR].includes(role));
-    if (ownOnly) {
+    if (forcedUserId !== null || ownOnly) {
       filters.push('es.id_usuario_entra=?');
-      params.push(actorId(req));
+      params.push(forcedUserId ?? actorId(req));
     }
     if (req.query.id_usuario) { filters.push('es.id_usuario_entra=?'); params.push(integer(req.query.id_usuario, 'id_usuario')); }
     if (req.query.id_vehiculo) { filters.push('es.id_vehiculo=?'); params.push(integer(req.query.id_vehiculo, 'id_vehiculo')); }
@@ -57,9 +60,12 @@ export async function indexInputOutput(req, res) {
   } catch (err) { return error(res, err); }
 }
 
+export async function indexInputOutput(req, res) {
+  return listInputOutput(req, res);
+}
+
 export async function indexMyInputOutput(req, res) {
-  req.query.id_usuario = actorId(req);
-  return indexInputOutput(req, res);
+  try { return await listInputOutput(req, res, actorId(req)); } catch (err) { return error(res, err); }
 }
 
 export async function showInputOutput(req, res) {
@@ -105,9 +111,10 @@ export async function showInputOutput(req, res) {
 export async function storeInputOutput(req, res) {
   const connection = await db.getConnection();
   try {
-    required(req.body, ['id_usuario_entra', 'id_vehiculo']);
-    const idUsuario = integer(req.body.id_usuario_entra, 'id_usuario_entra');
-    const idVehiculo = integer(req.body.id_vehiculo, 'id_vehiculo');
+    const body = req.body ?? {};   // Express 5 deja req.body en undefined cuando la petición no trae cuerpo
+    required(body, ['id_usuario_entra', 'id_vehiculo']);
+    const idUsuario = integer(body.id_usuario_entra, 'id_usuario_entra');
+    const idVehiculo = integer(body.id_vehiculo, 'id_vehiculo');
     await connection.beginTransaction();
     const [quota] = await connection.query('SELECT 1 FROM auth_vehiculo WHERE id_usuario=? AND id_vehiculo=? AND estado=1 FOR UPDATE', [idUsuario, idVehiculo]);
     if (!quota.length) throw Object.assign(new Error('El usuario no tiene un cupo activo para ese vehículo.'), { status: 403 });
@@ -135,29 +142,32 @@ export async function updateInputOutputExit(req, res) {
   finally { connection.release(); }
 }
 
+// Alta de INVITADO NUEVO + vehículo + entrada.
+// Reglas: la cuenta del invitado vence automáticamente a los seis meses (se ignora expira_en del cliente) y
+// el alta solo aplica a personas nuevas: un id_usuario existente (activo o inactivo) responde 409, para que un
+// celador no pueda darle rol INVITADO ni un cupo ya aprobado a una cuenta que existe (aprendiz, jefe, etc.).
 export async function storeGuestInputOutput(req, res) {
   const connection = await db.getConnection();
+  const uploaded = [];
   try {
-    required(req.body, ['tipo_vehiculo','marca','color','expira_en']);
-    const hasExistingUser = req.body.id_usuario !== undefined && req.body.id_usuario !== null && req.body.id_usuario !== '';
-    if (!hasExistingUser) required(req.body, ['tipo_documento','numero_documento','primer_nombre','primer_apellido','n_celular','correo']);
+    const body = req.body ?? {};
+    required(body, ['tipo_vehiculo','marca','color']);
+    const hasExistingUser = body.id_usuario !== undefined && body.id_usuario !== null && body.id_usuario !== '';
+    if (!hasExistingUser) required(body, ['tipo_documento','numero_documento','primer_nombre','primer_apellido','n_celular','correo']);
     const names = ['imagen_url_vehiculo','imagen_url_identificacion_vehiculo','imagen_url_tarjeta_propiedad'];
-    const type = String(req.body.tipo_vehiculo).toUpperCase();
+    const type = String(body.tipo_vehiculo).toUpperCase();
     if (!['MOTO','BICICLETA'].includes(type)) throw Object.assign(new Error('tipo_vehiculo debe ser MOTO o BICICLETA.'), { status: 400 });
-    const expiration = new Date(req.body.expira_en);
-    if (Number.isNaN(expiration.getTime()) || expiration <= new Date()) throw Object.assign(new Error('expira_en debe ser una fecha futura válida.'), { status: 400 });
     await connection.beginTransaction();
-    let idUsuario;
-    let credentials = null;
     if (hasExistingUser) {
-      idUsuario = integer(req.body.id_usuario, 'id_usuario');
-      const [users] = await connection.query('SELECT id FROM usuario WHERE id=? AND estado=1 FOR UPDATE', [idUsuario]);
-      if (!users.length) throw Object.assign(new Error('Usuario no encontrado o inactivo.'), { status: 404 });
-    } else {
-      const created = await createUserWithAccount(connection, req.body);
-      idUsuario = created.id_usuario;
-      credentials = { correo: req.body.correo, password: created.password };
+      const [users] = await connection.query('SELECT id FROM usuario WHERE id=? FOR UPDATE', [integer(body.id_usuario, 'id_usuario')]);
+      if (!users.length) throw Object.assign(new Error('Usuario no encontrado.'), { status: 404 });
+      throw Object.assign(new Error('El usuario ya está registrado; el alta de invitado solo aplica a personas nuevas.'), { status: 409 });
     }
+    const expiration = new Date();
+    expiration.setMonth(expiration.getMonth() + 6);
+    const created = await createUserWithAccount(connection, { ...body, expira_en: expiration });
+    const idUsuario = created.id_usuario;
+    const credentials = { correo: body.correo, password: created.password };
     await assignRole(connection, idUsuario, ROLES.INVITADO);
     const genericImage = '3/6174426c-cc93-42c9-a968-28e5b470c31f.jpg';
     const paths = {
@@ -168,14 +178,19 @@ export async function storeGuestInputOutput(req, res) {
     for (const name of names) {
       if (!req.files?.[name]?.[0]) continue;
       const saved = await saveUploadedFile(req.files[name][0], actorId(req));
+      uploaded.push(saved.ruta);
       paths[name] = saved.ruta;
       await connection.query('INSERT INTO archivo (nombre_original,nombre_almacenado,mime_type,tamano,ruta,id_usuario_subida) VALUES (?,?,?,?,?,?)', [saved.nombre_original,saved.nombre_almacenado,saved.mime_type,saved.tamano,saved.ruta,actorId(req)]);
     }
-    const [vehicle] = await connection.query('INSERT INTO vehiculo (tipo_vehiculo,marca,color,imagen_url_tarjeta_propiedad,imagen_url_identificacion_vehiculo,imagen_url_vehiculo,estado) VALUES (?,?,?,?,?,?,1)', [type,req.body.marca,req.body.color,paths.imagen_url_tarjeta_propiedad,paths.imagen_url_identificacion_vehiculo,paths.imagen_url_vehiculo]);
+    const [vehicle] = await connection.query('INSERT INTO vehiculo (tipo_vehiculo,marca,color,imagen_url_tarjeta_propiedad,imagen_url_identificacion_vehiculo,imagen_url_vehiculo,estado) VALUES (?,?,?,?,?,?,1)', [type,body.marca,body.color,paths.imagen_url_tarjeta_propiedad,paths.imagen_url_identificacion_vehiculo,paths.imagen_url_vehiculo]);
     await connection.query('INSERT INTO auth_vehiculo (id_usuario,id_vehiculo,estado,id_usuario_administrador) VALUES (?,?,1,?)', [idUsuario,vehicle.insertId,actorId(req)]);
     await connection.query('INSERT INTO entrada_salida (id_usuario_entra,id_vehiculo,fecha_hora_ingreso,id_usuario_celador_ingreso) VALUES (?,?,NOW(),?)', [idUsuario,vehicle.insertId,actorId(req)]);
     await connection.commit();
-    return res.status(201).json({ ok:true, mensaje:'Invitado registrado y entrada creada.', id_usuario:idUsuario, id_vehiculo:vehicle.insertId, ...(credentials ? { credenciales_temporales: credentials } : {}) });
-  } catch (err) { await connection.rollback(); return error(res, err); }
+    return res.status(201).json({ ok:true, mensaje:'Invitado registrado y entrada creada.', id_usuario:idUsuario, id_vehiculo:vehicle.insertId, credenciales_temporales: credentials });
+  } catch (err) {
+    await Promise.all(uploaded.map(removeUploadedFile));
+    await connection.rollback();
+    return error(res, err);
+  }
   finally { connection.release(); }
 }

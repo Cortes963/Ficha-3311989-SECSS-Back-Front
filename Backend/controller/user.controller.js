@@ -106,7 +106,7 @@ export async function indexEligibleUsers(req, res) {
 export async function showUserId(req, res) {
   try {
     const id = integer(req.params.id, 'id');
-    if (req.user.roles.includes(ROLES.CELADOR)) {
+    if (req.user.roles.includes(ROLES.CELADOR) && id !== actorId(req)) {
       const [guestRole] = await db.query(
         `SELECT 1 FROM usuario_rol ur JOIN rol r ON r.id=ur.id_rol WHERE ur.id_usuario=? AND ur.estado=1 AND r.nombre_rol=?`,
         [id, ROLES.INVITADO]
@@ -195,11 +195,64 @@ export async function updateUser(req, res) {
 
 export async function updateUserState(req, res) {
   try {
+    const id = integer(req.params.id, 'id');
     const estado = Number(req.body.estado);
     if (![0, 1].includes(estado)) throw Object.assign(new Error('estado debe ser 0 o 1.'), { status: 400 });
-    const [result] = await db.query('UPDATE usuario u JOIN cuenta c ON c.id_usuario=u.id SET u.estado=?,c.estado=? WHERE u.id=?', [estado, estado, integer(req.params.id, 'id')]);
-    if (!result.affectedRows) return res.status(404).json({ ok: false, mensaje: 'Usuario no encontrado.' });
-    return res.json({ ok: true, mensaje: 'Estado actualizado.' });
+
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+      const [users] = await connection.query(
+        'SELECT u.id FROM usuario u JOIN cuenta c ON c.id_usuario=u.id WHERE u.id=? FOR UPDATE',
+        [id]
+      );
+      if (!users.length) {
+        await connection.rollback();
+        return res.status(404).json({ ok: false, mensaje: 'Usuario no encontrado.' });
+      }
+
+      const [roles] = await connection.query(
+        'SELECT r.nombre_rol FROM usuario_rol ur JOIN rol r ON r.id=ur.id_rol WHERE ur.id_usuario=?',
+        [id]
+      );
+      const targetRoles = roles.map((row) => row.nombre_rol);
+      const actorRoles = req.user.roles;
+      const isAdmin = actorRoles.includes(ROLES.ADMIN);
+      const isGuest = targetRoles.includes(ROLES.INVITADO);
+      const isAdminTarget = targetRoles.includes(ROLES.ADMIN);
+
+      if (!isAdmin && (
+        (actorRoles.includes(ROLES.JEFE) && estado === 1 && isGuest)
+        || (actorRoles.includes(ROLES.JEFE) && estado === 0 && isAdminTarget)
+        || (actorRoles.includes(ROLES.CELADOR) && (estado !== 1 || !isGuest))
+      )) {
+        await connection.rollback();
+        return res.status(403).json({ ok: false, mensaje: 'No tiene permisos para cambiar el estado de este usuario.' });
+      }
+
+      await connection.query('UPDATE usuario SET estado=? WHERE id=?', [estado, id]);
+      if (estado === 1 && isGuest) {
+        const expiration = new Date();
+        expiration.setMonth(expiration.getMonth() + 6);
+        await connection.query(
+          'UPDATE cuenta SET estado=?,expira_en=? WHERE id_usuario=?',
+          [estado, expiration, id]
+        );
+        await connection.query(
+          'UPDATE usuario_rol SET estado=1 WHERE id_usuario=? AND id_rol=(SELECT id FROM rol WHERE nombre_rol=?)',
+          [id, ROLES.INVITADO]
+        );
+      } else {
+        await connection.query('UPDATE cuenta SET estado=? WHERE id_usuario=?', [estado, id]);
+      }
+      await connection.commit();
+      return res.json({ ok: true, mensaje: 'Estado actualizado.' });
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
+    }
   } catch (err) { return error(res, err); }
 }
 

@@ -8,6 +8,10 @@ import db from '../db.js';
 import { actorId, error, integer, required } from '../lib.js';
 import { removeUploadedFile, saveUploadedFile } from '../services/fileStorage.service.js';
 
+// Imagen genérica para vehículos registrados sin fotos (la misma que usa el registro de invitados).
+// Las columnas imagen_url_* de `vehiculo` y `detalle_moto` no aceptan NULL, por eso no se puede guardar vacío.
+const GENERIC_IMAGE = '3/6174426c-cc93-42c9-a968-28e5b470c31f.jpg';
+
 function parseJsonValue(value) {
   if (typeof value !== 'string') return value;
   const trimmed = value.trim();
@@ -173,9 +177,9 @@ export async function storeVehicle(req, res) {
          imagen_url_identificacion_vehiculo, imagen_url_vehiculo, estado
        ) VALUES (?, ?, ?, ?, ?, ?, 1)`,
       [vehicleType, prepared.marca, prepared.color,
-       prepared.imagen_url_tarjeta_propiedad ?? null,
-       prepared.imagen_url_identificacion_vehiculo ?? null,
-       prepared.imagen_url_vehiculo ?? null]
+       prepared.imagen_url_tarjeta_propiedad ?? GENERIC_IMAGE,
+       prepared.imagen_url_identificacion_vehiculo ?? GENERIC_IMAGE,
+       prepared.imagen_url_vehiculo ?? GENERIC_IMAGE]
     );
 
     if (vehicleType === 'MOTO') {
@@ -183,8 +187,8 @@ export async function storeVehicle(req, res) {
         placa: coalesceDetailValue(prepared, ['placa', 'placa_moto']),
         cilindraje: coalesceDetailValue(prepared, ['cilindraje']),
         modelo: coalesceDetailValue(prepared, ['modelo']),
-        imagen_url_soat: prepared.imagen_url_soat ?? null,
-        imagen_url_tecnomecanica_vigente: prepared.imagen_url_tecnomecanica_vigente ?? null
+        imagen_url_soat: prepared.imagen_url_soat ?? GENERIC_IMAGE,
+        imagen_url_tecnomecanica_vigente: prepared.imagen_url_tecnomecanica_vigente ?? GENERIC_IMAGE
       };
       required(motoData, ['placa', 'cilindraje', 'modelo']);
       await connection.query(

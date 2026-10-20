@@ -1,4 +1,10 @@
 // Pruebas de caja negra del módulo vehicle, organizadas por historia de usuario:
+// HU-VH-01 Registrar vehículo · HU-VH-02 Consultar vehículos · HU-VH-03 Actualizar vehículo · HU-VH-04 Inactivar vehículo (API + interfaz).
+//
+// Requisitos: backend (puerto 4000), frontend (puerto 5173) y MySQL corriendo, con los usuarios semilla admin, jefe y celador
+// definidos en cypress.config.js. Los aprendices que registran vehículos y el invitado se crean DESECHABLES en este mismo spec:
+// registrar un vehículo desactiva el cupo activo del dueño y dañaría las pruebas de quota / input_output que usan aprendiz1 y aprendiz2,
+// y así el spec tampoco depende de que el invitado semilla tenga vehículo en la base de datos.
 import {
   esperarError,
   esperarOk,
@@ -14,6 +20,7 @@ import {
   IMAGENES_MOTO,
   INEXISTENTE,
   crearAprendiz,
+  crearInvitadoComo,
 } from '../support/helpers';
 
 const SIN_PERMISO = 'No tiene permisos para esta operación.';
@@ -21,6 +28,7 @@ const ID_INVALIDO = 'id debe ser un entero positivo.';
 const NO_ENCONTRADO = 'Vehículo no encontrado.';
 const IDS_INVALIDOS = ['abc', '0', '-1', '1.5'];
 const ROLES_STAFF = ['admin', 'jefe', 'celador'];
+const INVITADO = 'vehicleInvitado'; // invitado desechable (con vehículo y cupo activo), creado en el before
 
 // ── Aprendices desechables ────────────────────────────────────────────────────
 const duenio = {}; // dueño de los vehículos que crean las pruebas
@@ -76,6 +84,7 @@ before(() => {
   crearAprendizDesechable(duenio, 'vehicleDuenio');
   crearAprendizDesechable(otro, 'vehicleOtro');
   crearAprendizDesechable(vacio, 'vehicleVacio');
+  crearInvitadoComo(INVITADO);
 });
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -190,7 +199,7 @@ describe('HU-VH-01 · Registrar vehículo', () => {
       });
     });
 
-    [...ROLES_STAFF, 'invitado1'].forEach((rol) => it(`CP-VH-15: ${rol} no puede registrar vehículos → 403`, () => {
+    [...ROLES_STAFF, INVITADO].forEach((rol) => it(`CP-VH-15: ${rol} no puede registrar vehículos → 403`, () => {
       cy.apiCall(rol, 'POST', '/vehicle', { body: motoBase() }).then((r) => esperarError(r, 403, SIN_PERMISO));
     }));
 
@@ -328,7 +337,7 @@ describe('HU-VH-01 · Registrar vehículo', () => {
     });
 
     it('CP-UI-VH-12: el INVITADO no puede entrar a /vehiculos/nuevo', () => {
-      cy.uiLogin('invitado1');
+      cy.uiLogin(INVITADO);
       cy.visit('/vehiculos/nuevo');
       cy.location('pathname').should('eq', '/unauthorized');
     });
@@ -365,7 +374,7 @@ describe('HU-VH-02 · Consultar vehículos', () => {
     });
 
     it('CP-VH-20: el INVITADO puede consultar sus vehículos → 200', () => {
-      cy.apiCall('invitado1', 'GET', '/vehicle/me').then((r) => {
+      cy.apiCall(INVITADO, 'GET', '/vehicle/me').then((r) => {
         esperarOk(r);
         expect(r.body.datos).to.be.an('array').and.not.be.empty;
       });
@@ -464,7 +473,7 @@ describe('HU-VH-02 · Consultar vehículos', () => {
     });
 
     it('CP-UI-VH-19: el INVITADO consulta pero no ve Registrar, Editar ni Eliminar', () => {
-      cy.uiLogin('invitado1');
+      cy.uiLogin(INVITADO);
       cy.visit('/vehiculos');
       cy.contains('h2', 'Mis vehículos').should('be.visible');
       cy.contains('a', 'Consultar').should('be.visible');
@@ -643,7 +652,7 @@ describe('HU-VH-03 · Actualizar vehículo', () => {
     });
 
     it('CP-UI-VH-27: el INVITADO no puede entrar a la pantalla de edición', () => {
-      cy.uiLogin('invitado1');
+      cy.uiLogin(INVITADO);
       cy.visit('/vehiculos/1/editar');
       cy.location('pathname').should('eq', '/unauthorized');
     });

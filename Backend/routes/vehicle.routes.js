@@ -25,6 +25,7 @@ router.get('/:id', allowRoles(ROLES.APRENDIZ, ROLES.INVITADO), showVehicle);
 router.post('/', allowRoles(ROLES.APRENDIZ), uploadVehicleEvidence, storeVehicle);
 router.patch('/:id', allowRoles(ROLES.APRENDIZ, ROLES.INVITADO), uploadVehicleEvidence, updateVehicle);
 router.patch('/:id/inactivar', allowRoles(ROLES.APRENDIZ, ROLES.INVITADO), destroyVehicle);
+// La interfaz (botón "Eliminar") llama DELETE; es el mismo borrado lógico que /inactivar.
+router.delete('/:id', allowRoles(ROLES.APRENDIZ, ROLES.INVITADO), destroyVehicle);
 
 export default router;
-

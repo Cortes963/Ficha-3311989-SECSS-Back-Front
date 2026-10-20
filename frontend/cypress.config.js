@@ -8,7 +8,39 @@ export default defineConfig({
   e2e: {
     baseUrl: "http://localhost:5173",
     setupNodeEvents(on, config) {
-      // implement node event listeners here
+      // Las peticiones multipart y en paralelo se hacen desde Node (no desde el navegador):
+      // así no dependen del CORS de la API ni de que el fetch del navegador llegue al backend.
+      const base64ABytes = (b64) => Buffer.from(b64, "base64");
+      on("task", {
+        async apiMultipart({ url, method = "POST", token, campos = {}, archivos = [] }) {
+          const form = new FormData();
+          Object.entries(campos).forEach(([k, v]) => {
+            if (v !== undefined && v !== null) form.append(k, String(v));
+          });
+          archivos.forEach((a) => {
+            form.append(a.campo, new Blob([base64ABytes(a.contenidoB64)], { type: a.tipo }), a.nombre);
+          });
+          const r = await fetch(url, {
+            method,
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+            body: form,
+          });
+          return { status: r.status, body: await r.json().catch(() => null) };
+        },
+        async apiParalelo({ token, base, peticiones }) {
+          return Promise.all(
+            peticiones.map(async ({ method, path, body }) => {
+              const r = await fetch(`${base}${path}`, {
+                method,
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: body === undefined ? undefined : JSON.stringify(body),
+              });
+              return { status: r.status, body: await r.json().catch(() => null) };
+            })
+          );
+        },
+      });
+      return config;
     },
   },
   expose: {

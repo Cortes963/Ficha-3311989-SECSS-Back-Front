@@ -101,7 +101,7 @@ export const VehicleForm = ({
     if (!campos.color.trim()) nuevos.color = 'El color es obligatorio.';
 
     if (esMoto) {
-      if (!/^[A-Z]{3}\d{2}[A-Z0-9]$/.test(campos.placa.trim().toUpperCase())) {
+      if (!/^[A-Z]{3}\d{2}[A-Z]$/.test(campos.placa.trim().toUpperCase())) {
         nuevos.placa = 'Formato de placa inválido (ejemplo: ABC12G).';
       }
       const cilindraje = Number(campos.cilindraje);

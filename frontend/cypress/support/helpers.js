@@ -27,6 +27,8 @@ export const imagenMimeFalso = (campo) => ({
 });
 
 export const unico = () => `${Date.now()}`.slice(-8) + Math.floor(Math.random() * 100).toString().padStart(2, '0');
+/** Celular colombiano de 10 dígitos distinto en cada llamada (n_celular es único en la BD). */
+export const celularUnico = () => `3${unico().slice(-9)}`;
 export const futuro = (minutos = 60 * 24) => new Date(Date.now() + minutos * 60 * 1000).toISOString();
 export const pasado = (minutos = 60) => new Date(Date.now() - minutos * 60 * 1000).toISOString();
 
@@ -35,7 +37,7 @@ export const invitadoBase = (cambios = {}) => {
   const n = unico();
   return {
     tipo_documento: 'CC', numero_documento: n, primer_nombre: 'Invitado', segundo_nombre: '',
-    primer_apellido: 'Prueba', segundo_apellido: '', n_celular: '3001234567',
+    primer_apellido: 'Prueba', segundo_apellido: '', n_celular: celularUnico(),
     correo: `invitado.${n}@prueba.test`, tipo_vehiculo: 'MOTO', marca: 'Yamaha', color: 'Negro',
     expira_en: futuro(), ...cambios,
   };
@@ -47,7 +49,7 @@ export const esperarError = (res, status, mensaje) => {
   if (mensaje) expect(res.body.mensaje, 'mensaje').to.include(mensaje);
 };
 export const esperarOk = (res, status = 200) => {
-  expect(res.status, 'código HTTP').to.eq(status);
+  expect(res.status, `código HTTP (API: ${res.body?.mensaje ?? 'sin mensaje'})`).to.eq(status);
   expect(res.body.ok, 'ok').to.eq(true);
 };
 
@@ -128,7 +130,7 @@ export const datosAprendiz = (centro, cambios = {}) => {
   const n = unico();
   return {
     tipo_documento: 'CC', numero_documento: n, primer_nombre: 'Aprendiz', segundo_nombre: '',
-    primer_apellido: 'Prueba', segundo_apellido: '', n_celular: '3001234567',
+    primer_apellido: 'Prueba', segundo_apellido: '', n_celular: celularUnico(),
     correo: `aprendiz.${n}@prueba.test`, password: 'Prueba12345!', nombre_rol: 'APRENDIZ',
     'detalle_aprendiz[id_centro]': centro, 'detalle_aprendiz[ficha]': `F${n}`,
     'detalle_aprendiz[direccion]': 'Calle 1 # 2-3', 'detalle_aprendiz[fecha_vinculacion]': '2026-01-15', ...cambios,
@@ -144,7 +146,7 @@ export const crearAprendiz = (clave, cambios = {}) =>
     return cy.apiMultipart(null, '/auth/storeAuthRegister', datos, imagenesAprendiz()).then((r) => {
       esperarOk(r, 201);
       cy.registrarCredenciales(clave, { documento: datos.numero_documento, password: datos.password });
-      return { ...datos, id_usuario: r.body.id_usuario, documento: datos.numero_documento };
+      return cy.wrap({ ...datos, id_usuario: r.body.id_usuario, documento: datos.numero_documento }, { log: false });
     });
   });
 
@@ -154,7 +156,7 @@ export const crearInvitadoComo = (clave, cambios = {}) => {
   return cy.apiMultipart('celador', '/input_output/invitado', datos).then((r) => {
     esperarOk(r, 201);
     cy.registrarCredenciales(clave, { documento: datos.numero_documento, password: r.body.credenciales_temporales.password });
-    return { ...r.body, documento: datos.numero_documento, correo: datos.correo };
+    return cy.wrap({ ...r.body, documento: datos.numero_documento, correo: datos.correo }, { log: false });
   });
 };
 

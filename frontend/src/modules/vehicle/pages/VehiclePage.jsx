@@ -9,6 +9,9 @@ import {
   listarMisVehiculos
 } from '@/modules/vehicle/services/vehicleService';
 
+// La API manda estado_cupo como 1 (habilitado) o 0; también se acepta el texto "activo".
+const cupoActivo = (estado) => estado === 1 || estado === true || String(estado).toLowerCase() === 'activo';
+
 /**
  * Listado "Mis vehículos": punto de entrada del módulo.
  * Desde acá se navega a registrar (/vehiculos/nuevo), consultar
@@ -68,8 +71,8 @@ export const VehiclePage = () => {
       key: 'estado_cupo',
       label: 'Cupo',
       render: (fila) => (
-        <span className={`badge ${String(fila.estado_cupo).toLowerCase() === 'activo' ? 'text-bg-success' : 'text-bg-secondary'}`}>
-          {fila.estado_cupo || 'Sin asignar'}
+        <span className={`badge ${cupoActivo(fila.estado_cupo) ? 'text-bg-success' : 'text-bg-secondary'}`}>
+          {cupoActivo(fila.estado_cupo) ? 'Activo' : (fila.estado_cupo || 'Sin asignar')}
         </span>
       )
     },
@@ -111,7 +114,7 @@ export const VehiclePage = () => {
       <DataTable
         title="Mis vehículos"
         columns={columnas}
-        rows={vehiculos}
+        rows={vehiculos.map((vehiculo) => ({ ...vehiculo, identificador: identificadorVehiculo(vehiculo) }))}
         loading={cargando}
         actions={acciones}
         empty="Aún no tiene vehículos matriculados. Use «Registrar vehículo» para crear el primero."

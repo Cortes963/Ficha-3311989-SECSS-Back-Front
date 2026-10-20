@@ -69,15 +69,22 @@ Cypress.Commands.add('apiCall', (rol, method, path, opts = {}) => {
   return cy.sesionApi(rol).then((s) => enviar(`Bearer ${s.token}`));
 });
  
-/** multipart/form-data. archivos: [{ campo, nombre, tipo, contenido }]. Devuelve { status, body }. */
+/** multipart/form-data. archivos: [{ campo, nombre, tipo, contenido }]. Devuelve { status, body }.
+ *  Se envía desde Node (cy.task) para evitar el "Failed to fetch" por CORS del navegador. */
+const aBase64 = (contenido) => {
+  const bytes = contenido instanceof Uint8Array ? contenido : new Uint8Array(contenido);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+};
 Cypress.Commands.add('apiMultipartToken', (token, path, campos = {}, archivos = [], method = 'POST') => {
-    const form = new FormData();
-    Object.entries(campos).forEach(([k, v]) => { if (v !== undefined && v !== null) form.append(k, v); });
-    archivos.forEach((a) => form.append(a.campo, new Blob([a.contenido], { type: a.tipo }), a.nombre));
-    const promesa = fetch(`${apiUrl()}${path}`, {
-      method, headers: token ? { Authorization: `Bearer ${token}` } : {}, body: form,
-    }).then(async (r) => ({ status: r.status, body: await r.json().catch(() => null) }));
-    return cy.wrap(promesa, { timeout: 30000, log: false });
+  return cy.task('apiMultipart', {
+    url: `${apiUrl()}${path}`,
+    method,
+    token,
+    campos,
+    archivos: archivos.map(({ campo, nombre, tipo, contenido }) => ({ campo, nombre, tipo, contenidoB64: aBase64(contenido) })),
+  }, { timeout: 30000, log: false });
 });
 
 /** multipart/form-data autenticado por rol o público cuando rol es null. */
@@ -88,15 +95,8 @@ Cypress.Commands.add('apiMultipart', (rol, path, campos = {}, archivos = [], met
  
 /** Dispara varias peticiones JSON a la vez (pruebas de concurrencia). Devuelve [{ status, body }]. */
 Cypress.Commands.add('apiParalelo', (rol, peticiones) =>
-  cy.sesionApi(rol).then((s) => {
-    const promesas = peticiones.map(({ method, path, body }) =>
-      fetch(`${apiUrl()}${path}`, {
-        method,
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${s.token}` },
-        body: body === undefined ? undefined : JSON.stringify(body),
-      }).then(async (r) => ({ status: r.status, body: await r.json().catch(() => null) })));
-    return cy.wrap(Promise.all(promesas), { timeout: 30000, log: false });
-  }));
+  cy.sesionApi(rol).then((s) =>
+    cy.task('apiParalelo', { token: s.token, base: apiUrl(), peticiones }, { timeout: 30000, log: false })));
  
 /** Deja la sesión del frontend iniciada (token + usuario en localStorage) sin pasar por el formulario. */
 Cypress.Commands.add('uiLogin', (rol) => {

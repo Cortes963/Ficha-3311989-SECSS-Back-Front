@@ -28,6 +28,10 @@ app.use(express.json({ limit: '1mb' }));
 app.use('/storage', express.static(path.resolve(process.env.LOCAL_STORAGE_PATH || path.join(backendDirectory, 'storage'))));
 
 const mountApi = (prefix) => {
+  app.use(prefix, (_req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  });
   app.use(`${prefix}/core`, core);
   app.use(`${prefix}/auth`, auth);
   app.use(prefix, requireAuth);
@@ -43,6 +47,9 @@ mountApi('/api/web/v1');
 mountApi('/api');
 
 app.use((err, _req, res, _next) => {
+  if (err?.type === 'entity.parse.failed') {
+    return res.status(400).json({ ok: false, mensaje: 'El cuerpo de la solicitud contiene JSON malformado.' });
+  }
   console.error(err);
   res.status(500).json({ ok: false, mensaje: 'Error interno del servidor.' });
 });

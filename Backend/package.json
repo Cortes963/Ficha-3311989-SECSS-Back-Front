@@ -8,7 +8,8 @@
     "test": "jest --coverage",
     "check": "node --check app.js && node --check server.js && node --check db.js && node --check lib.js",
     "test:defectos": "jest --coverage=false -t \"DEFECTO\"",
-    "test:estables": "jest --coverage=false -t \"^((?!DEFECTO).)*$\""
+    "test:estables": "jest --coverage=false -t \"^((?!DEFECTO).)*$\"",
+    "seed:cypress": "node scripts/seed-cypress-quota.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -26,17 +26,20 @@ export const imagenMimeFalso = (campo) => ({
   campo, nombre: 'falsa.jpg', tipo: 'image/png', contenido: bytes(B64.png),
 });
 
-export const unico = () => `${Date.now()}`.slice(-8) + Math.floor(Math.random() * 100).toString().padStart(2, '0');
+export const unico = () => `${Date.now()}${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
 export const futuro = (minutos = 60 * 24) => new Date(Date.now() + minutos * 60 * 1000).toISOString();
 export const pasado = (minutos = 60) => new Date(Date.now() - minutos * 60 * 1000).toISOString();
 
 /** Campos válidos de POST /input_output/invitado. `undefined` en un campo = omitirlo. */
 export const invitadoBase = (cambios = {}) => {
   const n = unico();
+  const letra = () => String.fromCharCode(65 + Math.floor(Math.random() * 26));
   return {
     tipo_documento: 'CC', numero_documento: n, primer_nombre: 'Invitado', segundo_nombre: '',
-    primer_apellido: 'Prueba', segundo_apellido: '', n_celular: '3001234567',
+    primer_apellido: 'Prueba', segundo_apellido: '', n_celular: `3${n.slice(-9)}`,
     correo: `invitado.${n}@prueba.test`, tipo_vehiculo: 'MOTO', marca: 'Yamaha', color: 'Negro',
+    placa: `${letra()}${letra()}${letra()}${n.slice(-2)}${letra()}`, cilindraje: 125, modelo: 2024,
+    numero_marco: `CYP${n}`, clase_bicicleta: 'Montaña',
     expira_en: futuro(), ...cambios,
   };
 };

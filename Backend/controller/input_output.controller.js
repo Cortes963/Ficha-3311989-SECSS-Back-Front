@@ -17,7 +17,10 @@ async function listInputOutput(req, res, forcedUserId = null) {
       filters.push('es.id_usuario_entra=?');
       params.push(forcedUserId ?? actorId(req));
     }
-    if (req.query.id_usuario) { filters.push('es.id_usuario_entra=?'); params.push(integer(req.query.id_usuario, 'id_usuario')); }
+    if (forcedUserId === null && !ownOnly && req.query.id_usuario) {
+      filters.push('es.id_usuario_entra=?');
+      params.push(integer(req.query.id_usuario, 'id_usuario'));
+    }
     if (req.query.id_vehiculo) { filters.push('es.id_vehiculo=?'); params.push(integer(req.query.id_vehiculo, 'id_vehiculo')); }
     if (req.query.estado === 'DENTRO') filters.push('es.fecha_hora_salida IS NULL');
     if (req.query.estado === 'FUERA') filters.push('es.fecha_hora_salida IS NOT NULL');
@@ -154,9 +157,32 @@ export async function storeGuestInputOutput(req, res) {
     required(body, ['tipo_vehiculo','marca','color']);
     const hasExistingUser = body.id_usuario !== undefined && body.id_usuario !== null && body.id_usuario !== '';
     if (!hasExistingUser) required(body, ['tipo_documento','numero_documento','primer_nombre','primer_apellido','n_celular','correo']);
+    if (!hasExistingUser && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(body.correo))) {
+      throw Object.assign(new Error('correo debe tener un formato válido.'), { status: 400 });
+    }
     const names = ['imagen_url_vehiculo','imagen_url_identificacion_vehiculo','imagen_url_tarjeta_propiedad'];
     const type = String(body.tipo_vehiculo).toUpperCase();
     if (!['MOTO','BICICLETA'].includes(type)) throw Object.assign(new Error('tipo_vehiculo debe ser MOTO o BICICLETA.'), { status: 400 });
+    const detailFields = type === 'MOTO'
+      ? ['placa', 'cilindraje', 'modelo']
+      : ['numero_marco', 'clase_bicicleta'];
+    required(body, detailFields);
+    if (type === 'MOTO') {
+      const plate = String(body.placa).trim().toUpperCase();
+      if (!/^[A-Z]{3}\d{2}[A-Z0-9]$/.test(plate)) {
+        throw Object.assign(new Error('placa debe tener un formato válido (ejemplo: ABC12D).'), { status: 400 });
+      }
+      const displacement = Number(body.cilindraje);
+      if (!Number.isInteger(displacement) || displacement < 50 || displacement > 2000) {
+        throw Object.assign(new Error('cilindraje debe ser un entero entre 50 y 2000.'), { status: 400 });
+      }
+      const model = Number(body.modelo);
+      if (!Number.isInteger(model) || model < 1970 || model > new Date().getFullYear() + 1) {
+        throw Object.assign(new Error(`modelo debe ser un año entre 1970 y ${new Date().getFullYear() + 1}.`), { status: 400 });
+      }
+    } else if (String(body.numero_marco).trim().length < 5 || !String(body.clase_bicicleta).trim()) {
+      throw Object.assign(new Error('numero_marco debe tener al menos 5 caracteres y clase_bicicleta es obligatoria.'), { status: 400 });
+    }
     await connection.beginTransaction();
     if (hasExistingUser) {
       const [users] = await connection.query('SELECT id FROM usuario WHERE id=? FOR UPDATE', [integer(body.id_usuario, 'id_usuario')]);
@@ -183,6 +209,20 @@ export async function storeGuestInputOutput(req, res) {
       await connection.query('INSERT INTO archivo (nombre_original,nombre_almacenado,mime_type,tamano,ruta,id_usuario_subida) VALUES (?,?,?,?,?,?)', [saved.nombre_original,saved.nombre_almacenado,saved.mime_type,saved.tamano,saved.ruta,actorId(req)]);
     }
     const [vehicle] = await connection.query('INSERT INTO vehiculo (tipo_vehiculo,marca,color,imagen_url_tarjeta_propiedad,imagen_url_identificacion_vehiculo,imagen_url_vehiculo,estado) VALUES (?,?,?,?,?,?,1)', [type,body.marca,body.color,paths.imagen_url_tarjeta_propiedad,paths.imagen_url_identificacion_vehiculo,paths.imagen_url_vehiculo]);
+    if (type === 'MOTO') {
+      await connection.query(
+        `INSERT INTO detalle_moto
+           (id_vehiculo,placa,cilindraje,modelo,imagen_url_soat,imagen_url_tecnomecanica_vigente)
+         VALUES (?,?,?,?,?,?)`,
+        [vehicle.insertId, String(body.placa).trim().toUpperCase(), Number(body.cilindraje),
+          String(body.modelo), genericImage, genericImage]
+      );
+    } else {
+      await connection.query(
+        'INSERT INTO detalle_bicicleta (id_vehiculo,numero_marco,clase_bicicleta) VALUES (?,?,?)',
+        [vehicle.insertId, String(body.numero_marco).trim().toUpperCase(), body.clase_bicicleta]
+      );
+    }
     await connection.query('INSERT INTO auth_vehiculo (id_usuario,id_vehiculo,estado,id_usuario_administrador) VALUES (?,?,1,?)', [idUsuario,vehicle.insertId,actorId(req)]);
     await connection.query('INSERT INTO entrada_salida (id_usuario_entra,id_vehiculo,fecha_hora_ingreso,id_usuario_celador_ingreso) VALUES (?,?,NOW(),?)', [idUsuario,vehicle.insertId,actorId(req)]);
     await connection.commit();

@@ -100,12 +100,11 @@ describe('GET /input_output/me', () => {
   test('un id_usuario enviado por query NO permite ver registros de otro (/me ignora ?id_usuario)', async () => {
     lista();
     await api(APRENDIZ).get('/api/input_output/me?id_usuario=99');
-    expect(db.query.mock.calls[0][1]).toEqual([7, 99]);           // ownOnly + filtro explícito: el AND deja el resultado vacío
-    expect(sqlsOf(db.query)[0]).toContain('es.id_usuario_entra=? AND es.id_usuario_entra=?');
+    expect(db.query.mock.calls[0][1]).toEqual([7]);
+    expect(sqlsOf(db.query)[0]).toContain('WHERE es.id_usuario_entra=?');
+    expect(sqlsOf(db.query)[0].match(/es\.id_usuario_entra=\?/g)).toHaveLength(1);
   });
-  // HALLAZGO: en Express 5 req.query es un getter; "req.query.id_usuario = actorId(req)" se pierde.
-  // Un usuario con APRENDIZ + CELADOR escapa de ownOnly y ve TODOS los registros en /me.
-  test('DEFECTO · usuario con roles APRENDIZ+CELADOR ve solo sus registros en /me', async () => {
+  test('usuario con roles APRENDIZ+CELADOR ve solo sus registros en /me', async () => {
     lista();
     await api({ id: 7, roles: ['APRENDIZ', 'CELADOR'] }).get('/api/input_output/me');
     expect(db.query.mock.calls[0][1]).toEqual([7]);
@@ -248,7 +247,7 @@ describe('PATCH /input_output/salida/:id (registrar salida)', () => {
 
 //  CREATE invitado 
 describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)', () => {
-  const vehiculo = { tipo_vehiculo: 'moto', marca: 'AKT', color: 'Rojo' };
+  const vehiculo = { tipo_vehiculo: 'moto', marca: 'AKT', color: 'Rojo', placa: 'ABC12D', cilindraje: 125, modelo: 2024 };
   const persona = { tipo_documento: 'CC', numero_documento: '9', primer_nombre: 'Luis', primer_apellido: 'Gil', n_celular: '3', correo: 'l@g.co' };
   const bd = ({ usuarioExiste = true, rol = [{ id: 5 }] } = {}) => mockSql(conn.query, [
     [/^SELECT id FROM usuario WHERE id=\? FOR UPDATE/, [usuarioExiste ? [{ id: 9 }] : []]],
@@ -259,7 +258,7 @@ describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)',
   ]);
   const post = (b) => api(CELADOR).post('/api/input_output/invitado').send(b);
 
-  test.each([['tipo_vehiculo'], ['marca'], ['color']])('falta %s → 400', async (campo) => {
+  test.each([['tipo_vehiculo'], ['marca'], ['color'], ['placa'], ['cilindraje'], ['modelo']])('falta %s → 400', async (campo) => {
     const body = { ...vehiculo, ...persona }; delete body[campo];
     const res = await post(body);
     expect(res.status).toBe(400);
@@ -273,6 +272,18 @@ describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)',
   });
   test('tipo de vehículo fuera del catálogo → 400', async () => {
     expect((await post({ ...vehiculo, ...persona, tipo_vehiculo: 'CARRO' })).status).toBe(400);
+  });
+  test('correo con formato inválido → 400 antes de crear registros', async () => {
+    const res = await post({ ...vehiculo, ...persona, correo: 'a@' });
+    expect(res.status).toBe(400);
+    expect(res.body.mensaje).toContain('correo');
+    expect(conn.beginTransaction).not.toHaveBeenCalled();
+  });
+  test('placa con formato inválido → 400', async () => {
+    const res = await post({ ...vehiculo, ...persona, placa: 'placa falsa' });
+    expect(res.status).toBe(400);
+    expect(res.body.mensaje).toContain('placa');
+    expect(conn.beginTransaction).not.toHaveBeenCalled();
   });
   test('DEFECTO · id_usuario activo existente → 409 y no crea registros', async () => {
     bd();
@@ -312,6 +323,37 @@ describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)',
     expect(cuenta.slice(0, 3)).toEqual([60, 'l@g.co', 'HASH']);
     expect(Math.abs(new Date(cuenta[3]).getTime() - esperado.getTime())).toBeLessThan(2000); // ignora expira_en; vence en seis meses
   });
+  test('crea y asocia los detalles de la moto, incluida la placa', async () => {
+    bd();
+    const res = await post({ ...vehiculo, ...persona, placa: ' abc12d ' });
+    expect(res.status).toBe(201);
+    expect(conn.query).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO detalle_moto'),
+      [80, 'ABC12D', 125, '2024', GENERICA, GENERICA]
+    );
+  });
+  test('BICICLETA con número de marco corto → 400', async () => {
+    const res = await post({ ...persona, tipo_vehiculo: 'BICICLETA', marca: 'GW', color: 'Azul', numero_marco: '123', clase_bicicleta: 'Montaña' });
+    expect(res.status).toBe(400);
+    expect(res.body.mensaje).toContain('5 caracteres');
+    expect(conn.beginTransaction).not.toHaveBeenCalled();
+  });
+  test('crea los detalles de bicicleta con su número de marco', async () => {
+    bd();
+    const res = await post({
+      ...persona,
+      tipo_vehiculo: 'BICICLETA',
+      marca: 'GW',
+      color: 'Azul',
+      numero_marco: ' gw12345 ',
+      clase_bicicleta: 'Montaña',
+    });
+    expect(res.status).toBe(201);
+    expect(conn.query).toHaveBeenCalledWith(
+      'INSERT INTO detalle_bicicleta (id_vehiculo,numero_marco,clase_bicicleta) VALUES (?,?,?)',
+      [80, 'GW12345', 'Montaña']
+    );
+  });
   test('DEFECTO · expira_en enviado por el cliente se ignora', async () => {
     bd();
     const esperado = new Date();
@@ -333,7 +375,7 @@ describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)',
   test('multipart con imágenes: se guardan en disco bajo el id del CELADOR y reemplazan las genéricas', async () => {
     bd();
     const res = await api(CELADOR).post('/api/input_output/invitado')
-      .field('tipo_vehiculo', 'BICICLETA').field('marca', 'GW').field('color', 'Azul').field('tipo_documento', persona.tipo_documento).field('numero_documento', '19').field('primer_nombre', 'Luis').field('primer_apellido', 'Gil').field('n_celular', '3').field('correo', 'nuevo@g.co')
+      .field('tipo_vehiculo', 'BICICLETA').field('marca', 'GW').field('color', 'Azul').field('numero_marco', 'GW12345').field('clase_bicicleta', 'Montaña').field('tipo_documento', persona.tipo_documento).field('numero_documento', '19').field('primer_nombre', 'Luis').field('primer_apellido', 'Gil').field('n_celular', '3').field('correo', 'nuevo@g.co')
       .attach('imagen_url_vehiculo', PNG, { filename: 'v.png', contentType: 'image/png' })
       .attach('imagen_url_tarjeta_propiedad', PNG, { filename: 't.png', contentType: 'image/png' });
     expect(res.status).toBe(201);
@@ -355,7 +397,7 @@ describe('POST /input_output/invitado (alta de invitado + vehículo + entrada)',
   test('DEFECTO · si la BD falla tras guardar imágenes, los archivos deberían eliminarse', async () => {
     mockSql(conn.query, [[/INSERT INTO usuario/, [{ insertId: 60 }]], [/INSERT INTO cuenta/, [{}]], [/^SELECT id FROM rol/, [[{ id: 5 }]]], [/INSERT INTO archivo/, [{}]], [/INSERT INTO vehiculo/, new Error('db caída')], [/./, [{}]]]);
     const res = await api(CELADOR).post('/api/input_output/invitado')
-      .field('tipo_vehiculo', 'MOTO').field('marca', 'x').field('color', 'y').field('expira_en', FUTURO).field('tipo_documento', 'CC').field('numero_documento', '22').field('primer_nombre', 'Luis').field('primer_apellido', 'Gil').field('n_celular', '3').field('correo', 'l@g.co')
+      .field('tipo_vehiculo', 'MOTO').field('marca', 'x').field('color', 'y').field('placa', 'ABC12D').field('cilindraje', '125').field('modelo', '2024').field('expira_en', FUTURO).field('tipo_documento', 'CC').field('numero_documento', '22').field('primer_nombre', 'Luis').field('primer_apellido', 'Gil').field('n_celular', '3').field('correo', 'l@g.co')
       .attach('imagen_url_vehiculo', PNG, { filename: 'v.png', contentType: 'image/png' });
     expect(res.status).toBe(500);
     expect(storedFiles()).toHaveLength(0);

@@ -37,7 +37,7 @@ Cypress.Commands.add('registrarCredenciales', (rol, credenciales) => {
 Cypress.Commands.add('sesionApi', (rol) => {
   if (cache[rol]) return cy.wrap(cache[rol], { log: false });
   const cred = usuariosRuntime[rol];
-  if (!cred || !cred.documento) throw new Error(`Falta users.${rol} en cypress.expose.json`);
+  if (!cred?.documento || !cred?.password) throw new Error(`Faltan users.${rol}.documento o users.${rol}.password en cypress.expose.json`);
   return cy.request({
     method: 'POST',
     url: `${apiUrl()}/auth/storeAuthLogin`,
@@ -45,7 +45,8 @@ Cypress.Commands.add('sesionApi', (rol) => {
     failOnStatusCode: false,
     log: false,
   }).then(({ status, body }) => {
-    expect(status, `login del rol ${rol}`).to.eq(200);
+    const apiMessage = body?.mensaje ? ` API: ${body.mensaje}` : '';
+    expect(status, `login del rol ${rol} (HTTP ${status}).${apiMessage}`).to.eq(200);
     cache[rol] = { token: body.token, id: body.usuario.id, roles: body.usuario.roles, usuario: body.usuario };
     return cache[rol];
   });

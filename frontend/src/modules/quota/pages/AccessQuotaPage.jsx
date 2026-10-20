@@ -24,16 +24,13 @@ export const AccessQuotaPage = () => {
   }, [isPrivileged, user?.roles]);
 
   const changeState = async (row) => {
-  try {
-    const estado = (row.estado ?? row.estado_cupo) ? 0 : 1;
-    await actualizarEstadoCupo(row.id_usuario, row.id_vehiculo, estado);
-    setRows((items) => items.map((item) =>
-      item.id_usuario === row.id_usuario && item.id_vehiculo === row.id_vehiculo
-        ? { ...item, estado, estado_autorizacion: estado ? 'ACTIVO' : 'INACTIVO' }
-        : item
-    ));
-  } catch (e) { setError(e.message); }
-};
+    try {
+      const estado = (row.estado ?? row.estado_cupo) ? 0 : 1;
+      await actualizarEstadoCupo(row.id_usuario, row.id_vehiculo, estado);
+      setRows(await listarCupos());
+      setError('');
+    } catch (e) { setError(e.message); }
+  };
 
   const status = (value) => ({ 0: 'INACTIVO', 1: 'ACTIVO' }[value] || value || 'INACTIVO');
   return <>

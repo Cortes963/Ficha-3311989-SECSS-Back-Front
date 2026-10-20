@@ -129,13 +129,30 @@ describe('PATCH /quota/:idUsuario/:idVehiculo (solo ADMIN)', () => {
     expect((await patch('1')).status).toBe(200);
   });
   test('cupo inexistente → 404', async () => {
-    db.query.mockResolvedValueOnce([{ affectedRows: 0 }]);
+    mockSql(db.query, [
+      [/^UPDATE auth_vehiculo SET estado=/, [{ affectedRows: 0 }]],
+      [/^SELECT 1 FROM auth_vehiculo/, [[]]],
+    ]);
     expect((await patch(0)).status).toBe(404);
   });
+  test('cupo existente sin cambios → sigue siendo éxito y conserva la auditoría', async () => {
+    mockSql(db.query, [
+      [/^UPDATE auth_vehiculo SET estado=/, [{ affectedRows: 0 }]],
+      [/^SELECT 1 FROM auth_vehiculo/, [[{ 1: 1 }]]],
+    ]);
+    const res = await patch(0);
+    expect(res.status).toBe(200);
+    expect(res.body.mensaje).toBe('Cupo deshabilitado.');
+    expect(db.query.mock.calls[0][1]).toEqual([0, 7, 7, 2]);
+    expect(db.query.mock.calls[1][1]).toEqual([7, 2]);
+  });
   test('cupo inexistente con estado=1 → 404 y NO desactiva los otros cupos del usuario (defecto corregido)', async () => {
-    mockSql(db.query, [[/^UPDATE auth_vehiculo SET estado=0/, [{ affectedRows: 1 }]], [/^UPDATE auth_vehiculo SET estado=/, [{ affectedRows: 0 }]]]);
+    mockSql(db.query, [
+      [/^UPDATE auth_vehiculo SET estado=/, [{ affectedRows: 0 }]],
+      [/^SELECT 1 FROM auth_vehiculo/, [[]]],
+    ]);
     expect((await patch(1)).status).toBe(404);
-    expect(db.query).toHaveBeenCalledTimes(1);
+    expect(db.query).toHaveBeenCalledTimes(2);
     expect(sqlsOf(db.query).some((sql) => sql.startsWith('UPDATE auth_vehiculo SET estado=0'))).toBe(false);
   });
   test('falla la BD al actualizar → 500', async () => {

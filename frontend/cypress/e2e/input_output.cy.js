@@ -6,7 +6,7 @@ import {
   imagenGrande,
   archivoPdf,
   imagenMimeFalso,
-  futuro,
+
   pasado,
   invitadoBase,
   esperarError,
@@ -444,9 +444,12 @@ describe('Complementarias de input_output · API', () => {
         expect(r.body.total).to.be.a('number');
       });
     });
-    ['admin', 'jefe'].forEach((rol) => it(`CP-IO-14: ${rol} puede listar → 200`, () => {
-      cy.apiCall(rol, 'GET', '/input_output').then((r) => esperarOk(r));
-    }));
+    it('CP-IO-14: JEFE puede listar → 200', () => {
+      cy.apiCall('jefe', 'GET', '/input_output').then((r) => esperarOk(r));
+    });
+    it('CP-IO-14b: ADMIN no puede listar → 403', () => {
+      cy.apiCall('admin', 'GET', '/input_output').then((r) => esperarError(r, 403));
+    });
     ['aprendiz1', 'invitado1'].forEach((rol) => it(`CP-IO-15: ${rol} no puede listar → 403`, () => {
       cy.apiCall(rol, 'GET', '/input_output').then((r) => esperarError(r, 403));
     }));
@@ -582,25 +585,26 @@ describe('Complementarias de input_output · API', () => {
         });
       });
     });
-    it('CP-IO-53: usuario existente y activo → 201 sin credenciales', () => {
+    it('CP-IO-53: usuario existente y activo → 409 sin crear otro registro', () => {
       crearInvitado().then((u) => {
         enviar({ ...invitadoBase(), id_usuario: u.id_usuario, numero_documento: undefined, correo: undefined }).then((r) => {
-          esperarOk(r, 201);
-          expect(r.body.id_usuario).to.eq(u.id_usuario);
-          expect(r.body).to.not.have.property('credenciales_temporales');
+          esperarError(r, 409, 'El usuario ya está registrado;');
         });
       });
     });
     it('CP-IO-54: usuario inexistente → 404 y no se crea nada', () => {
-      enviar({ ...invitadoBase(), id_usuario: INEXISTENTE }).then((r) => esperarError(r, 404, 'Usuario no encontrado o inactivo.'));
+      enviar({ ...invitadoBase(), id_usuario: INEXISTENTE }).then((r) => esperarError(r, 404, 'Usuario no encontrado.'));
     });
     const inactivo = Cypress.expose('seed')?.usuarioInactivoId;
-    (inactivo ? it : it.skip)('CP-IO-54b: usuario inactivo → 404 (requiere seed.usuarioInactivoId)', () => {
-      enviar({ ...invitadoBase(), id_usuario: inactivo }).then((r) => esperarError(r, 404, 'Usuario no encontrado o inactivo.'));
+    (inactivo ? it : it.skip)('CP-IO-54b: usuario inactivo ya existente → 409 (requiere seed.usuarioInactivoId)', () => {
+      enviar({ ...invitadoBase(), id_usuario: inactivo }).then((r) => esperarError(r, 409, 'El usuario ya está registrado;'));
     });
-    ['tipo_vehiculo', 'marca', 'color', 'expira_en'].forEach((campo) => it(`CP-IO-55: falta ${campo} → 400`, () => {
+    ['tipo_vehiculo', 'marca', 'color', 'placa', 'cilindraje', 'modelo'].forEach((campo) => it(`CP-IO-55: falta ${campo} → 400`, () => {
       enviar(invitadoBase({ [campo]: undefined })).then((r) => esperarError(r, 400, `Falta el campo obligatorio: ${campo}.`));
     }));
+    it('CP-IO-55b: no requiere expira_en; el servidor define la vigencia → 201', () => {
+      enviar(invitadoBase({ expira_en: undefined })).then((r) => esperarOk(r, 201));
+    });
     ['tipo_documento', 'numero_documento', 'primer_nombre', 'primer_apellido', 'n_celular', 'correo'].forEach((campo) => {
       it(`CP-IO-56: invitado nuevo sin ${campo} → 400`, () => {
         enviar(invitadoBase({ [campo]: undefined })).then((r) => esperarError(r, 400, `Falta el campo obligatorio: ${campo}.`));
@@ -612,13 +616,8 @@ describe('Complementarias de input_output · API', () => {
     it('CP-IO-58: tipo_vehiculo inválido → 400', () => {
       enviar(invitadoBase({ tipo_vehiculo: 'CARRO' })).then((r) => esperarError(r, 400, 'tipo_vehiculo debe ser MOTO o BICICLETA.'));
     });
-    [['pasado', pasado()], ['ahora', new Date().toISOString()], ['texto', 'abc']].forEach(([nombre, valor]) => {
-      it(`CP-IO-59/60: expira_en ${nombre} → 400`, () => {
-        enviar(invitadoBase({ expira_en: valor })).then((r) => esperarError(r, 400, 'expira_en debe ser una fecha futura válida.'));
-      });
-    });
-    it('CP-IO-61: expira_en 1 minuto en el futuro → 201', () => {
-      enviar(invitadoBase({ expira_en: futuro(1) })).then((r) => esperarOk(r, 201));
+    it('CP-IO-59/60/61: la fecha de expiración enviada por el cliente se ignora', () => {
+      enviar(invitadoBase({ expira_en: pasado() })).then((r) => esperarOk(r, 201));
     });
     it('CP-IO-62: documento o correo duplicado → 409', () => {
       const a = invitadoBase();
@@ -759,8 +758,7 @@ describe('Complementarias de input_output · Interfaz', () => {
     const URL = '/entradas-salidas/invitado/nuevo';
     const llenar = (d) => {
       cy.get('select[name="tipo_documento"]').select(d.tipo_documento);
-      ['numero_documento', 'primer_nombre', 'primer_apellido', 'n_celular', 'correo', 'marca', 'color'].forEach((c) => cy.get(`#${c}`).clear().type(d[c]));
-      cy.get('#expira_en').type('2030-12-31T10:00');
+      ['numero_documento', 'primer_nombre', 'primer_apellido', 'n_celular', 'correo', 'marca', 'color', 'placa', 'cilindraje', 'modelo'].forEach((c) => cy.get(`#${c}`).clear().type(String(d[c])));
       cy.get('select[name="tipo_vehiculo"]').select(d.tipo_vehiculo);
     };
     beforeEach(() => { cy.uiLogin('celador'); cy.visit(URL); });
@@ -790,7 +788,8 @@ describe('Complementarias de input_output · Interfaz', () => {
     it('CP-UI-IO-20: selectores y tipos de campo', () => {
       cy.get('select[name="tipo_documento"] option').then(($o) => expect([...$o].map((o) => o.textContent)).to.deep.eq(['CC', 'CE', 'PPT']));
       cy.get('select[name="tipo_vehiculo"] option').then(($o) => expect([...$o].map((o) => o.textContent)).to.deep.eq(['MOTO', 'BICICLETA']));
-      cy.get('#expira_en').should('have.attr', 'type', 'datetime-local');
+      cy.get('#expira_en').should('not.exist');
+      cy.contains('La cuenta del invitado vence automáticamente a los seis meses.');
       cy.get('#correo').should('have.attr', 'type', 'email');
     });
   });

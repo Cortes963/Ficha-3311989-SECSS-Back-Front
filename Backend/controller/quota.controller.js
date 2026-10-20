@@ -118,7 +118,10 @@ export async function updateQuotaState(req,res){try{
     // 1) Primero se actualiza el cupo indicado (y se audita al administrador). Si no existe se responde 404
     //    sin haber tocado ningún otro cupo del usuario.
     const [r]=await db.query('UPDATE auth_vehiculo SET estado=?,id_usuario_administrador=? WHERE id_usuario=? AND id_vehiculo=?',[estado,actorId(req),user,vehicle]);
-    if(!r.affectedRows)return res.status(404).json({ok:false,mensaje:'Cupo no encontrado.'});
+    if(!r.affectedRows) {
+      const [rows]=await db.query('SELECT 1 FROM auth_vehiculo WHERE id_usuario=? AND id_vehiculo=?',[user,vehicle]);
+      if(!rows.length)return res.status(404).json({ok:false,mensaje:'Cupo no encontrado.'});
+    }
     // 2) Regla "un solo cupo activo por usuario": solo cuando el cupo existe y se habilita, se deshabilitan los demás.
     if(estado===1)await db.query('UPDATE auth_vehiculo SET estado=0 WHERE id_usuario=? AND id_vehiculo<>? AND estado=1',[user,vehicle]);
     res.json({ok:true,mensaje:estado?'Cupo habilitado.':'Cupo deshabilitado.'});

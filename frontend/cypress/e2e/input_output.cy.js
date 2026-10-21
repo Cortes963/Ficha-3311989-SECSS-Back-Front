@@ -764,7 +764,10 @@ describe('Complementarias de input_output · Interfaz', () => {
     const URL = '/entradas-salidas/invitado/nuevo';
     const llenar = (d) => {
       cy.get('select[name="tipo_documento"]').select(d.tipo_documento);
-      ['numero_documento', 'primer_nombre', 'primer_apellido', 'n_celular', 'correo', 'marca', 'color', 'placa', 'cilindraje', 'modelo'].forEach((c) => cy.get(`#${c}`).clear().type(String(d[c])));
+      ['numero_documento', 'primer_nombre', 'primer_apellido', 'n_celular', 'correo', 'marca', 'color', 'placa', 'cilindraje', 'modelo'].forEach((c) => {
+        cy.get(`#${c}`).clear();
+        cy.get(`#${c}`).type(String(d[c]));
+      });
       cy.get('select[name="tipo_vehiculo"]').select(d.tipo_vehiculo);
     };
     beforeEach(() => { cy.uiLogin('celador'); cy.visit(URL); });

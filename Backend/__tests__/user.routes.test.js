@@ -420,7 +420,10 @@ describe('POST /users/asignar-celador', () => {
   });
   test('ids no enteros → 400', async () => { expect((await post({ id_usuario_jefe_seguridad: 'a', id_usuario_celador: 2 })).status).toBe(400); });
   test('éxito → 201 con ids enteros', async () => {
-    db.query.mockResolvedValueOnce([{}]);
+    db.query.mockResolvedValueOnce([[
+      { id: 1, nombre_rol: 'JEFE_SEGURIDAD' },
+      { id: 2, nombre_rol: 'CELADOR' },
+    ]]);
     const res = await post({ id_usuario_jefe_seguridad: '1', id_usuario_celador: '2' });
     expect(res.status).toBe(201);
     expect(db.query.mock.calls[0][1]).toEqual([1, 2]);

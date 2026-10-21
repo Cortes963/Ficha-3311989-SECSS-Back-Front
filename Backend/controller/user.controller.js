@@ -298,8 +298,8 @@ export async function storeSecurityChiefGuard(req, res) {
        WHERE u.id IN (?,?) AND u.estado=1`,
       [jefeId, celadorId]
     );
-    const rolesJefe = roles.filter((row) => row.id === jefeId).map((row) => row.nombre_rol);
-    const rolesCelador = roles.filter((row) => row.id === celadorId).map((row) => row.nombre_rol);
+    const rolesJefe = roles.filter((row) => Number(row.id) === jefeId).map((row) => row.nombre_rol);
+    const rolesCelador = roles.filter((row) => Number(row.id) === celadorId).map((row) => row.nombre_rol);
     if (!rolesJefe.length || !rolesCelador.length) {
       throw Object.assign(new Error('Una referencia indicada no existe.'), { status: 400 });
     }

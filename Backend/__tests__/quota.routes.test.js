@@ -155,6 +155,7 @@ describe('PATCH /quota/:idUsuario/:idVehiculo (solo ADMIN)', () => {
     expect(db.query).toHaveBeenCalledTimes(2);
     expect(sqlsOf(db.query).some((sql) => sql.startsWith('UPDATE auth_vehiculo SET estado=0'))).toBe(false);
   });
+  
   test('falla la BD al actualizar → 500', async () => {
     db.query.mockRejectedValueOnce(new Error('x'));
     expect((await patch(1)).status).toBe(500);

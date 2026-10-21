@@ -53,18 +53,19 @@ describe('POST /auth/storeAuthLogin', () => {
     expect(bcrypt.compare).not.toHaveBeenCalled();
   });
   test('cuenta temporal vigente y bloqueo vencido NO impiden el login', async () => {
-    mockSql(db.query, [[/^SELECT c\.\*/, [[cuenta({ expira_en: FUTURO, bloqueada_hasta: PASADO })]]], [/^SELECT r\.nombre_rol/, [[]]], [/^UPDATE cuenta/, [{}]]]);
+    mockSql(db.query, [[/^SELECT c\.\*/, [[cuenta({ expira_en: FUTURO, bloqueada_hasta: PASADO })]]], [/^SELECT r\.nombre_rol/, [[{ nombre_rol: 'INVITADO' }]]], [/^UPDATE cuenta/, [{}]]]);
     bcrypt.compare.mockResolvedValueOnce(true);
     expect((await login()).status).toBe(200);
   });
   test('contraseña incorrecta → 401 y registra el intento fallido', async () => {
-    mockSql(db.query, [[/^SELECT c\.\*/, [[cuenta()]]], [/^UPDATE cuenta SET intentos_fallidos=IF/, [{}]]]);
+    mockSql(db.query, [[/^SELECT c\.\*/, [[cuenta()]]], [/^UPDATE cuenta\s+SET intentos_fallidos=IF/, [{}]]]);
     bcrypt.compare.mockResolvedValueOnce(false);
     const res = await login();
     expect(res.status).toBe(401);
     const upd = db.query.mock.calls.find(([s]) => s.includes('intentos_fallidos=IF'));
     expect(upd[1]).toEqual([1]);
-    expect(upd[0]).toContain('INTERVAL 15 MINUTE'); // bloqueo al 3er intento
+    expect(upd[0]).toContain('intentos_fallidos>=3'); // bloqueo al 3er intento, usando el contador actualizado
+    expect(upd[0]).toContain('INTERVAL 15 MINUTE');
   });
   test('login correcto: JWT con id y roles, resetea intentos y no filtra el hash', async () => {
     mockSql(db.query, [
@@ -80,8 +81,15 @@ describe('POST /auth/storeAuthLogin', () => {
     expect(JSON.stringify(res.body)).not.toContain('password_hash');
     expect(db.query.mock.calls.some(([s]) => s.includes('intentos_fallidos=0'))).toBe(true);
   });
+  test('usuario sin roles activos → 403 y no emite JWT (SECSS02-2)', async () => {
+    mockSql(db.query, [[/^SELECT c\.\*/, [[cuenta()]]], [/^SELECT r\.nombre_rol/, [[]]]]);
+    bcrypt.compare.mockResolvedValueOnce(true);
+    const res = await login();
+    expect(res.status).toBe(403);
+    expect(res.body).not.toHaveProperty('token');
+  });
   test('JWT_EXPIRES_IN se respeta (8h por defecto, 1h si se configura)', async () => {
-    const rutaFeliz = () => { mockSql(db.query, [[/^SELECT c\.\*/, [[cuenta()]]], [/^SELECT r\./, [[]]], [/^UPDATE/, [{}]]]); bcrypt.compare.mockResolvedValueOnce(true); };
+    const rutaFeliz = () => { mockSql(db.query, [[/^SELECT c\.\*/, [[cuenta()]]], [/^SELECT r\./, [[{ nombre_rol: 'APRENDIZ' }]]], [/^UPDATE/, [{}]]]); bcrypt.compare.mockResolvedValueOnce(true); };
     rutaFeliz();
     const a = jwt.decode((await login()).body.token);
     expect(a.exp - a.iat).toBe(8 * 3600);
@@ -98,14 +106,14 @@ describe('POST /auth/storeAuthLogin', () => {
     expect(JSON.stringify(res.body)).not.toContain('secreto');
   });
   // HALLAZGO: Express 5 deja req.body = undefined cuando la petición no trae cuerpo.
-  test('DEFECTO · petición SIN cuerpo debería responder 400', async () => {
+  test('petición SIN cuerpo responde 400', async () => {
     const res = await api().post(URL('storeAuthLogin'));
     expect(res.status).toBe(400);
   });
 });
 
 describe('POST /auth/storeAuthRegister (multipart)', () => {
-  const campos = { tipo_documento: 'CC', numero_documento: '1', primer_nombre: 'A', primer_apellido: 'B', n_celular: '3', correo: 'a@a.co', password: 'passwordlargo1', nombre_rol: 'APRENDIZ' };
+  const campos = { tipo_documento: 'CC', numero_documento: '1', primer_nombre: 'A', primer_apellido: 'B', n_celular: '3', correo: 'a@a.co', password: 'ClaveNueva1!', nombre_rol: 'APRENDIZ' };
   const detalle = { id_centro: '1', ficha: '3311989', direccion: 'Cll 1', fecha_vinculacion: '2026-01-01' };
   const IMAGENES = ['imagen_url_aprendiz', 'imagen_url_identificacion', 'imagen_url_carnet_sena'];
 
@@ -118,6 +126,7 @@ describe('POST /auth/storeAuthRegister (multipart)', () => {
     return r;
   };
   const bdOk = (rol = [{ id: 2 }]) => mockSql(conn.query, [
+    [/^SELECT id FROM centro/, [[{ id: 1 }]]],
     [/^INSERT INTO usuario /, [{ insertId: 10 }]], [/^SELECT id FROM rol/, [rol]], [/./, [{}]],
   ]);
 
@@ -126,7 +135,7 @@ describe('POST /auth/storeAuthRegister (multipart)', () => {
     const res = await registrar();
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ ok: true, id_usuario: 10 });
-    expect(bcrypt.hash).toHaveBeenCalledWith('passwordlargo1', 12);
+    expect(bcrypt.hash).toHaveBeenCalledWith('ClaveNueva1!', 12);
     expect(conn.commit).toHaveBeenCalled();
     expect(conn.release).toHaveBeenCalled();
     const files = storedFiles();
@@ -146,10 +155,27 @@ describe('POST /auth/storeAuthRegister (multipart)', () => {
     expect(res.status).toBe(403);
     expect(conn.beginTransaction).not.toHaveBeenCalled();
   });
-  test('contraseña de 9 caracteres → 400; de 10 supera esa validación (frontera)', async () => {
-    expect((await registrar({ body: { ...campos, password: '123456789' } })).status).toBe(400);
+  test.each([
+    ['menos de 8 caracteres', 'Ab1!'],
+    ['sin mayúscula', 'abcdefghij1!'],
+    ['sin número', 'Abcdefghij!'],
+    ['sin símbolo', 'Abcdefghij1'],
+  ])('contraseña inválida (%s) → 400 según SECSS02-11/24', async (_caso, password) => {
+    expect((await registrar({ body: { ...campos, password } })).status).toBe(400);
+    expect(conn.beginTransaction).not.toHaveBeenCalled();
+    expect(storedFiles()).toHaveLength(0);
+  });
+  test('SECSS02-11/24: contraseña válida en el mínimo exacto de 8 caracteres → 201', async () => {
     bdOk();
-    expect((await registrar({ body: { ...campos, password: '1234567890' } })).status).toBe(201);
+    expect((await registrar({ body: { ...campos, password: 'Clave12!' } })).status).toBe(201);
+  });
+  test('SECSS02-11: un centro inexistente o inactivo rechaza el registro antes de insertar usuario o archivos', async () => {
+    mockSql(conn.query, [[/^SELECT id FROM centro/, [[]]]]);
+    const res = await registrar({ det: { ...detalle, id_centro: '8' } });
+    expect(res.status).toBe(400);
+    expect(conn.query.mock.calls.some(([sql]) => /^INSERT INTO usuario\b/.test(sql))).toBe(false);
+    expect(conn.beginTransaction).not.toHaveBeenCalled();
+    expect(storedFiles()).toHaveLength(0);
   });
   test('detalle_aprendiz incompleto → 400 con el campo faltante', async () => {
     const { ficha, ...incompleto } = detalle;
@@ -190,7 +216,10 @@ describe('POST /auth/storeAuthRegister (multipart)', () => {
     expect(storedFiles()).toHaveLength(0);
   });
   test('documento duplicado (ER_DUP_ENTRY) → 409 + rollback', async () => {
-    mockSql(conn.query, [[/^INSERT INTO usuario /, Object.assign(new Error('dup'), { code: 'ER_DUP_ENTRY' })]]);
+    mockSql(conn.query, [
+      [/^SELECT id FROM centro/, [[{ id: 1 }]]],
+      [/^INSERT INTO usuario /, Object.assign(new Error('dup'), { code: 'ER_DUP_ENTRY' })],
+    ]);
     const res = await registrar();
     expect(res.status).toBe(409);
     expect(conn.rollback).toHaveBeenCalled();
@@ -239,21 +268,21 @@ describe('POST /auth/forgot-password', () => {
 describe('POST /auth/reset-password', () => {
   const reset = (b) => api().post(URL('reset-password')).send(b);
   test('faltan datos → 400', async () => { expect((await reset({ token: 't' })).status).toBe(400); });
-  test('contraseña corta → 400 sin consultar', async () => {
-    expect((await reset({ token: 't', password: 'corta' })).status).toBe(400);
+  test.each(['Ab1!', 'abcdefghij1!', 'Abcdefghij!', 'Abcdefghij1'])('contraseña que incumple SECSS02-24 → 400 sin consultar (%s)', async (password) => {
+    expect((await reset({ token: 't', password })).status).toBe(400);
     expect(db.query).not.toHaveBeenCalled();
   });
   test('token inválido, vencido o usado → 400 y no abre transacción', async () => {
     db.query.mockResolvedValueOnce([[]]);
-    expect((await reset({ token: 't', password: 'passwordlargo1' })).status).toBe(400);
+    expect((await reset({ token: 't', password: 'ClaveNueva1!' })).status).toBe(400);
     expect(db.getConnection).not.toHaveBeenCalled();
   });
   test('éxito: actualiza hash (costo 12), marca el token como usado y confirma', async () => {
     db.query.mockResolvedValueOnce([[{ id: 5, id_usuario: 1 }]]);
     conn.query.mockResolvedValue([{}]);
-    const res = await reset({ token: 't', password: 'passwordlargo1' });
+    const res = await reset({ token: 't', password: 'ClaveNueva1!' });
     expect(res.status).toBe(200);
-    expect(bcrypt.hash).toHaveBeenCalledWith('passwordlargo1', 12);
+    expect(bcrypt.hash).toHaveBeenCalledWith('ClaveNueva1!', 12);
     expect(conn.query.mock.calls[0][1]).toEqual(['HASH', 1]);
     expect(conn.query.mock.calls[1][0]).toContain('usado_en=NOW()');
     expect(conn.commit).toHaveBeenCalled();
@@ -261,14 +290,14 @@ describe('POST /auth/reset-password', () => {
   });
   test('busca el token por su HASH, nunca en claro', async () => {
     db.query.mockResolvedValueOnce([[]]);
-    await reset({ token: 'mi-token', password: 'passwordlargo1' });
+    await reset({ token: 'mi-token', password: 'ClaveNueva1!' });
     expect(db.query.mock.calls[0][1][0]).toMatch(/^[0-9a-f]{64}$/);
     expect(db.query.mock.calls[0][1][0]).not.toBe('mi-token');
   });
   test('falla dentro de la transacción → rollback, release y 500', async () => {
     db.query.mockResolvedValueOnce([[{ id: 5, id_usuario: 1 }]]);
     conn.query.mockRejectedValueOnce(new Error('x'));
-    const res = await reset({ token: 't', password: 'passwordlargo1' });
+    const res = await reset({ token: 't', password: 'ClaveNueva1!' });
     expect(res.status).toBe(500);
     expect(conn.rollback).toHaveBeenCalled();
     expect(conn.release).toHaveBeenCalled();

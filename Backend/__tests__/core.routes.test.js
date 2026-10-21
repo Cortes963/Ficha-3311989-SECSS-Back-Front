@@ -32,6 +32,7 @@ describe.each(PREFIJOS)('Rutas públicas de %s', (base) => {
     const res = await request(app).get(`${base}/centros-publicos`);
     expect(res.status).toBe(200);
     expect(res.body.datos).toEqual([{ id: 1, nombre_centro: 'CTPI' }]);
+    expect(db.query.mock.calls[0][0]).toContain('WHERE estado=1');
   });
   test('GET /centros-publicos con la BD caída → 500', async () => {
     db.query.mockRejectedValueOnce(new Error('x'));

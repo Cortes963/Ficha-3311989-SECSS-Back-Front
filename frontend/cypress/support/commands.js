@@ -24,6 +24,8 @@
 // -- This will overwrite an existing command -- HEAD
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
+import { registrarUsuario } from './usuarios';
+
 const apiUrl = () => Cypress.expose('apiUrl');
 const cache = {}; // sesiones por rol (se reinicia en cada spec)
 const usuariosRuntime = { ...(Cypress.expose('users') || {}) };
@@ -31,6 +33,7 @@ const usuariosRuntime = { ...(Cypress.expose('users') || {}) };
 /** Registra credenciales creadas durante la prueba para poder iniciar sesión por API. */
 Cypress.Commands.add('registrarCredenciales', (rol, credenciales) => {
   usuariosRuntime[rol] = credenciales;
+  registrarUsuario(rol, credenciales);
 });
  
 /** Inicia sesión por API (una vez por spec y rol). Devuelve { token, id, roles, usuario }. */

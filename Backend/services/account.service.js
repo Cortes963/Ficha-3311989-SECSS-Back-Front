@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 
 export function temporaryPassword() {
-  return crypto.randomBytes(9).toString('base64url');
+  return `Aa${crypto.randomBytes(8).toString('base64url')}1!`;
 }
 
 export async function createAccount(connection, { userId, correo, password, expiraEn = null }) {

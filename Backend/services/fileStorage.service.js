@@ -11,7 +11,15 @@ export async function saveUploadedFile(file, userId) {
   const extension = path.extname(file.originalname).toLowerCase();
   const filename = `${crypto.randomUUID()}${extension}`;
   const destination = path.join(directory, filename);
-  await fs.rename(file.path, destination);
+  // Multer writes to os.tmpdir(), which can be on a different volume from
+  // LOCAL_STORAGE_PATH on Windows. rename then fails with EPERM/EXDEV there.
+  try {
+    await fs.copyFile(file.path, destination);
+    await fs.rm(file.path, { force: true });
+  } catch (err) {
+    await fs.rm(destination, { force: true });
+    throw err;
+  }
   return {
     nombre_original: file.originalname,
     nombre_almacenado: filename,

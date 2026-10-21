@@ -30,7 +30,13 @@ export function page(query) {
   return { pagina, limite, offset: (pagina - 1) * limite };
 }
 export function required(body, fields) {
-  for (const field of fields) if (body[field] === undefined || body[field] === null || body[field] === '') throw Object.assign(new Error(`Falta el campo obligatorio: ${field}.`), { status: 400 });
+  const value = body ?? {};
+  for (const field of fields) if (value[field] === undefined || value[field] === null || value[field] === '') throw Object.assign(new Error(`Falta el campo obligatorio: ${field}.`), { status: 400 });
+}
+export function validatePassword(value) {
+  if (typeof value !== 'string' || value.length < 8 || !/[A-Z]/.test(value) || !/\d/.test(value) || !/[^A-Za-z0-9]/.test(value)) {
+    throw Object.assign(new Error('La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo.'), { status: 400 });
+  }
 }
 export function error(res, err) {
   if (err?.code === 'ER_DUP_ENTRY') return res.status(409).json({ ok: false, mensaje: 'El registro ya existe.' });

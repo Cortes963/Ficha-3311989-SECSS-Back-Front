@@ -22,14 +22,14 @@ afterEach(() => console.error.mockRestore());
 const TODOS = ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR', 'APRENDIZ', 'INVITADO'];
 const MATRIZ = [
   ['get', '/api/users/me/aprendiz', ['APRENDIZ', 'ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR']],
-  ['patch', '/api/users/me/aprendiz', ['APRENDIZ', 'ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR']],
+  ['patch', '/api/users/me/aprendiz', ['APRENDIZ']],
   ['patch', '/api/users/me', ['APRENDIZ', 'CELADOR', 'JEFE_SEGURIDAD', 'ADMINISTRADOR']],
   ['patch', '/api/users/me/estado', TODOS],
   ['patch', '/api/users/me/password', TODOS],
   ['get', '/api/users/elegibles', ['ADMINISTRADOR', 'JEFE_SEGURIDAD']],
   ['get', '/api/users', ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR']],
   ['get', '/api/users/5/aprendiz', ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR']],
-  ['patch', '/api/users/5/aprendiz', ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR']],
+  ['patch', '/api/users/5/aprendiz', ['APRENDIZ']],
   ['get', '/api/users/5', ['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'CELADOR']],
   ['post', '/api/users/celador', ['JEFE_SEGURIDAD']],
   ['post', '/api/users/jefe', ['ADMINISTRADOR']],
@@ -38,7 +38,8 @@ const MATRIZ = [
 describe('Matriz de autorización de /users (rol denegado → 403 y la BD no se toca)', () => {
   const casos = MATRIZ.flatMap(([m, url, ok]) => TODOS.filter((r) => !ok.includes(r)).map((r) => [m, url, r]));
   test.each(casos)('%s %s con rol %s → 403', async (metodo, url, rol) => {
-    const res = await api({ id: 7, roles: [rol] })[metodo](url).send({});
+    const body = metodo === 'patch' && url.includes('/aprendiz') ? { ficha: 'F-EDIT-TEST' } : {};
+    const res = await api({ id: 7, roles: [rol] })[metodo](url).send(body);
     expect(res.status).toBe(403);
     expect(db.query).not.toHaveBeenCalled();
     expect(db.getConnection).not.toHaveBeenCalled();
@@ -62,6 +63,7 @@ describe('Enrutamiento: el orden de las rutas importa', () => {
       [/^SELECT r\.nombre_rol FROM usuario_rol/, [[{ nombre_rol: 'INVITADO' }]]],
       [/^UPDATE usuario SET estado=/, [{ affectedRows: 1 }]],
       [/^UPDATE cuenta SET estado=/, [{ affectedRows: 1 }]],
+      [/^UPDATE usuario_rol SET estado=/, [{ affectedRows: 1 }]],
     ]);
     const res = await api(INVITADO).patch('/api/users/me/estado').send({ estado: 0 });
     expect(res.status).toBe(200);
@@ -169,8 +171,7 @@ describe('GET /users/:id y /me', () => {
     expect(res.status).toBe(200);
     expect(res.body.datos.roles).toEqual(['INVITADO']);
   });
-  // HALLAZGO: el control del CELADOR también se aplica a /me → no puede ver su PROPIO perfil
-  test('DEFECTO · CELADOR puede ver su propio perfil en GET /me → 200', async () => {
+  test('CELADOR puede ver su propio perfil en GET /me → 200', async () => {
     datos();
     expect((await api(CELADOR).get('/api/users/me')).status).toBe(200);
   });
@@ -203,7 +204,7 @@ describe('GET /users/:id/aprendiz', () => {
 // ═════════════ UPDATE detalle académico (upsert) ═════════════
 describe('PATCH /users/:id/aprendiz y /me/aprendiz', () => {
   const existe = (si) => mockSql(conn.query, [[/^SELECT 1 FROM detalle_aprendiz/, [si ? [{ 1: 1 }] : []]], [/./, [{}]]]);
-  const patch = (body = {}, url = '/api/users/5/aprendiz', u = ADMIN) => api(u).patch(url).send(body);
+  const patch = (body = {}, url = '/api/users/me/aprendiz', u = APRENDIZ) => api(u).patch(url).send(body);
 
   test('sin campos actualizables → 400, sin transacción y conexión liberada', async () => {
     const res = await patch({});
@@ -221,7 +222,7 @@ describe('PATCH /users/:id/aprendiz y /me/aprendiz', () => {
     existe(false);
     await patch({ ficha: '99' });
     const call = conn.query.mock.calls.find(([s]) => s.startsWith('INSERT INTO detalle_aprendiz'));
-    expect(call[1][0]).toBe(5);
+    expect(call[1][0]).toBe(7);
     expect(call[1][1]).toBeNull();
     expect(call[1]).toContain('99');
   });
@@ -233,7 +234,7 @@ describe('PATCH /users/:id/aprendiz y /me/aprendiz', () => {
   test('detalle_aprendiz como string JSON se aplana', async () => {
     existe(true);
     await patch({ detalle_aprendiz: JSON.stringify({ ficha: 'J' }) });
-    expect(conn.query.mock.calls.find(([s]) => s.startsWith('UPDATE detalle_aprendiz'))[1]).toEqual(['J', 5]);
+    expect(conn.query.mock.calls.find(([s]) => s.startsWith('UPDATE detalle_aprendiz'))[1]).toEqual(['J', 7]);
   });
   test('JSON inválido en detalle_aprendiz se ignora → 400 "sin campos"', async () => {
     expect((await patch({ detalle_aprendiz: '{roto' })).status).toBe(400);
@@ -241,30 +242,35 @@ describe('PATCH /users/:id/aprendiz y /me/aprendiz', () => {
   test('null explícito sí se actualiza (fecha_terminacion: null)', async () => {
     existe(true);
     await patch({ fecha_terminacion: null });
-    expect(conn.query.mock.calls.find(([s]) => s.startsWith('UPDATE detalle_aprendiz'))[1]).toEqual([null, 5]);
+    expect(conn.query.mock.calls.find(([s]) => s.startsWith('UPDATE detalle_aprendiz'))[1]).toEqual([null, 7]);
   });
   test('campos fuera de la lista blanca (id_usuario, estado) se ignoran → 400', async () => {
     expect((await patch({ id_usuario: 1, estado: 0 })).status).toBe(400);
   });
   test('id inválido → 400', async () => { expect((await patch({ ficha: 'a' }, '/api/users/x/aprendiz')).status).toBe(400); });
+  test('APRENDIZ no puede editar el detalle de otra cuenta → 403 sin escribir', async () => {
+    const res = await patch({ ficha: 'otro' }, '/api/users/8/aprendiz', APRENDIZ);
+    expect(res.status).toBe(403);
+    expect(conn.query).not.toHaveBeenCalled();
+  });
   test('con imagen: se guarda en disco bajo el id del USUARIO editado y su ruta entra al UPDATE', async () => {
     existe(true);
-    const res = await api(ADMIN).patch('/api/users/5/aprendiz').attach('imagen_url_aprendiz', PNG, { filename: 'a.png', contentType: 'image/png' });
+    const res = await api(APRENDIZ).patch('/api/users/me/aprendiz').attach('imagen_url_aprendiz', PNG, { filename: 'a.png', contentType: 'image/png' });
     expect(res.status).toBe(200);
     const files = storedFiles();
     expect(files).toHaveLength(1);
-    expect(files[0].startsWith('5/')).toBe(true);
-    expect(conn.query.mock.calls.find(([s]) => s.startsWith('UPDATE detalle_aprendiz'))[1]).toEqual([files[0], 5]);
+    expect(files[0].startsWith('7/')).toBe(true);
+    expect(conn.query.mock.calls.find(([s]) => s.startsWith('UPDATE detalle_aprendiz'))[1]).toEqual([files[0], 7]);
     expect(sqlsOf(conn.query).some((s) => s.startsWith('INSERT INTO archivo'))).toBe(true);
   });
   test('detalle_aprendiz enviado como campo multipart (string JSON) funciona', async () => {
     existe(true);
-    const res = await api(ADMIN).patch('/api/users/5/aprendiz').field('detalle_aprendiz', JSON.stringify({ ficha: 'M' }));
+    const res = await api(APRENDIZ).patch('/api/users/me/aprendiz').field('detalle_aprendiz', JSON.stringify({ ficha: 'M' }));
     expect(res.status).toBe(200);
   });
   test('si la BD falla tras guardar la imagen → se elimina el archivo huérfano + rollback', async () => {
     mockSql(conn.query, [[/^INSERT INTO archivo/, [{}]], [/^SELECT 1 FROM detalle_aprendiz/, new Error('db caída')]]);
-    const res = await api(ADMIN).patch('/api/users/5/aprendiz').attach('imagen_url_aprendiz', PNG, { filename: 'a.png', contentType: 'image/png' });
+    const res = await api(APRENDIZ).patch('/api/users/me/aprendiz').attach('imagen_url_aprendiz', PNG, { filename: 'a.png', contentType: 'image/png' });
     expect(res.status).toBe(500);
     expect(storedFiles()).toHaveLength(0);
     expect(conn.rollback).toHaveBeenCalled();
@@ -279,7 +285,7 @@ describe('PATCH /users/:id/aprendiz y /me/aprendiz', () => {
 
 // ═════════════ UPDATE perfil ═════════════
 describe('PATCH /users/me', () => {
-  beforeEach(() => db.query.mockResolvedValue([{}]));
+  beforeEach(() => conn.query.mockResolvedValue([{}]));
   const patch = (body, u = APRENDIZ) => api(u).patch('/api/users/me').send(body);
 
   test('INVITADO → 403 por el guard de la ruta, sin tocar la BD', async () => {
@@ -292,28 +298,37 @@ describe('PATCH /users/me', () => {
   });
   test('solo campos de usuario: UPDATE usuario + invalida el cupo activo', async () => {
     const res = await patch({ primer_nombre: 'Ana', n_celular: '300' });
-    const sqls = sqlsOf(db.query);
+    const sqls = sqlsOf(conn.query);
     expect(sqls[0]).toBe('UPDATE usuario SET primer_nombre=?,n_celular=? WHERE id=?');
-    expect(db.query.mock.calls[0][1]).toEqual(['Ana', '300', 7]);
+    expect(conn.query.mock.calls[0][1]).toEqual(['Ana', '300', 7]);
     expect(sqls[1]).toBe('UPDATE auth_vehiculo SET estado=0 WHERE id_usuario=? AND estado=1');
+    expect(conn.commit).toHaveBeenCalled();
     expect(res.body).toEqual({ ok: true, mensaje: 'Perfil actualizado.' });
   });
   test('solo correo: UPDATE cuenta, sin UPDATE usuario', async () => {
     await patch({ correo: 'n@n.co' });
-    const sqls = sqlsOf(db.query);
+    const sqls = sqlsOf(conn.query);
     expect(sqls[0]).toContain('UPDATE cuenta SET correo=?');
     expect(sqls.some((s) => s.startsWith('UPDATE usuario'))).toBe(false);
   });
   test('correo + campos: 3 UPDATE', async () => {
     await patch({ correo: 'n@n.co', primer_apellido: 'Z' }, CELADOR);
-    expect(db.query).toHaveBeenCalledTimes(3);
+    expect(conn.query).toHaveBeenCalledTimes(3);
   });
   test('campos fuera de la lista blanca (numero_documento, estado) se ignoran → 400', async () => {
     expect((await patch({ numero_documento: '1', estado: 0 })).status).toBe(400);
   });
   test('correo duplicado (ER_DUP_ENTRY) → 409', async () => {
-    db.query.mockRejectedValueOnce(Object.assign(new Error('dup'), { code: 'ER_DUP_ENTRY' }));
+    conn.query.mockRejectedValueOnce(Object.assign(new Error('dup'), { code: 'ER_DUP_ENTRY' }));
     expect((await patch({ correo: 'dup@x.co' })).status).toBe(409);
+    expect(conn.rollback).toHaveBeenCalled();
+    expect(conn.release).toHaveBeenCalled();
+  });
+  test('fallo después de cambiar correo → rollback atómico del perfil y cupo', async () => {
+    conn.query.mockResolvedValueOnce([{}]).mockRejectedValueOnce(new Error('fallo usuario'));
+    expect((await patch({ correo: 'nuevo@n.co', primer_nombre: 'Ana' })).status).toBe(500);
+    expect(conn.rollback).toHaveBeenCalled();
+    expect(conn.commit).not.toHaveBeenCalled();
   });
 });
 
@@ -324,7 +339,7 @@ describe('PATCH /users/:id/estado (desactivar / activar)', () => {
     [/^SELECT r\.nombre_rol FROM usuario_rol/, [roles]],
     [/^UPDATE usuario SET estado=/, [{ affectedRows: 1 }]],
     [/^UPDATE cuenta SET estado=/, [{ affectedRows: 1 }]],
-    [/^UPDATE usuario_rol SET estado=1/, [{ affectedRows: 1 }]],
+    [/^UPDATE usuario_rol SET estado=/, [{ affectedRows: 1 }]],
   ]);
   const patch = (estado, id = 3, u = ADMIN) => api(u).patch(`/api/users/${id}/estado`).send({ estado });
   test.each([[2], ['x'], [undefined], [-1]])('estado %p → 400 sin tocar la BD', async (estado) => {
@@ -332,11 +347,13 @@ describe('PATCH /users/:id/estado (desactivar / activar)', () => {
     expect(db.query).not.toHaveBeenCalled();
     expect(conn.query).not.toHaveBeenCalled();
   });
-  test.each([[0, '0'], [1, '1'], [1, 1]])('estado %p (enviado %p) se aplica a usuario Y cuenta', async (estado, enviado) => {
+  test.each([[0, '0'], [1, '1'], [1, 1]])('estado %p (enviado %p) sincroniza usuario, cuenta y rol', async (estado, enviado) => {
     prepararEstado();
     const res = await patch(enviado);
     expect(conn.query.mock.calls.find(([sql]) => /^UPDATE usuario SET estado=/.test(sql))[1]).toEqual([estado, 3]);
     expect(conn.query.mock.calls.find(([sql]) => /^UPDATE cuenta SET estado=/.test(sql))[1]).toEqual([estado, 3]);
+    const rol = conn.query.mock.calls.find(([sql]) => /^UPDATE usuario_rol SET estado=/.test(sql));
+    expect(rol?.[1]).toEqual(estado === 0 ? [3] : [3, 'APRENDIZ']);
     expect(res.body).toEqual({ ok: true, mensaje: 'Estado actualizado.' });
     expect(conn.commit).toHaveBeenCalled();
   });
@@ -346,7 +363,14 @@ describe('PATCH /users/:id/estado (desactivar / activar)', () => {
     expect(conn.rollback).toHaveBeenCalled();
   });
   test('id inválido → 400', async () => { expect((await patch(0, 0)).status).toBe(400); });
-  test('DEFECTO · JEFE no puede reactivar invitados → 403', async () => {
+  test('cada usuario puede desactivar su propia cuenta; sincroniza usuario, cuenta y roles', async () => {
+    prepararEstado({ usuarios: [{ id: 7 }], roles: [{ nombre_rol: 'APRENDIZ' }] });
+    const res = await api(APRENDIZ).patch('/api/users/me/estado').send({ estado: 0 });
+    expect(res.status).toBe(200);
+    expect(conn.query.mock.calls.find(([sql]) => /^UPDATE usuario_rol SET estado=/.test(sql))[1]).toEqual([7]);
+    expect(conn.commit).toHaveBeenCalled();
+  });
+  test('JEFE no puede reactivar invitados → 403', async () => {
     prepararEstado({ roles: [{ nombre_rol: 'INVITADO' }] });
     expect((await patch(1, 9, JEFE)).status).toBe(403);
     expect(conn.query.mock.calls.some(([sql]) => /^UPDATE /.test(sql))).toBe(false);
@@ -355,28 +379,29 @@ describe('PATCH /users/:id/estado (desactivar / activar)', () => {
     expect((await api(usuario).patch('/api/users/9/estado').send({ estado: 1 })).status).toBe(403);
     expect(db.query).not.toHaveBeenCalled();
   });
-  test('DEFECTO · CELADOR no puede desactivar invitados → 403', async () => {
+  test('CELADOR no puede desactivar invitados → 403', async () => {
     prepararEstado({ roles: [{ nombre_rol: 'INVITADO' }] });
     expect((await patch(0, 9, CELADOR)).status).toBe(403);
   });
-  test('DEFECTO · JEFE no puede desactivar un ADMIN → 403', async () => {
+  test('JEFE no puede desactivar un ADMIN → 403', async () => {
     prepararEstado({ roles: [{ nombre_rol: 'ADMINISTRADOR' }] });
     expect((await patch(0, 1, JEFE)).status).toBe(403);
   });
-  test('DEFECTO · CELADOR puede reactivar un invitado → 200', async () => {
+  test('CELADOR puede reactivar un invitado → 200', async () => {
     prepararEstado({ roles: [{ nombre_rol: 'INVITADO' }] });
     const res = await api(CELADOR).patch('/api/users/9/estado').send({ estado: 1 });
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ ok: true, mensaje: 'Estado actualizado.' });
   });
-  test('DEFECTO · reactivar invitado activa usuario, cuenta y rol y fija vencimiento a seis meses', async () => {
+  test('reactivar invitado activa usuario, cuenta y rol y fija vencimiento a seis meses', async () => {
     const inicio = new Date();
     const esperado = new Date(inicio);
     esperado.setMonth(esperado.getMonth() + 6);
     prepararEstado({ roles: [{ nombre_rol: 'INVITADO' }] });
     const res = await api(ADMIN).patch('/api/users/9/estado').send({ estado: 1, expira_en: '2099-01-01' });
     expect(res.status).toBe(200);
-    expect(conn.query.mock.calls.some(([sql]) => /UPDATE usuario_rol/.test(sql))).toBe(true);
+    const rol = conn.query.mock.calls.find(([sql]) => /^UPDATE usuario_rol SET estado=/.test(sql));
+    expect(rol?.[1]).toEqual([9, 'INVITADO']);
     expect(conn.query.mock.calls.some(([sql, params]) => /^UPDATE usuario SET estado=/.test(sql) && params[0] === 1)).toBe(true);
     const cuenta = conn.query.mock.calls.find(([sql]) => /UPDATE cuenta SET estado=/.test(sql));
     expect(cuenta).toBeDefined();
@@ -442,13 +467,19 @@ describe.each([
     expect(res.status).toBe(400);
     expect(res.body.mensaje).toContain('correo');
   });
-  test('usuario nuevo → 201 con credenciales temporales (12 car.), cuenta con HASH y rol asignado', async () => {
+  test.each(['Ab1!', 'abcdefghij1!', 'Abcdefghij!', 'Abcdefghij1'])('contraseña propia que incumple SECSS02-24 → 400 (%s)', async (password) => {
+    const res = await post({ usuario: { ...nuevoUsuario, password } });
+    expect(res.status).toBe(400);
+    expect(conn.query.mock.calls.some(([sql]) => String(sql).includes('INSERT INTO cuenta'))).toBe(false);
+    expect(conn.rollback).toHaveBeenCalled();
+  });
+  test('usuario nuevo → 201 con credenciales temporales que cumplen la política, cuenta con HASH y rol asignado', async () => {
     bdAlta({ existente: false });
     const res = await post({ usuario: nuevoUsuario });
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ mensaje: mensajeOk, id_usuario: 50 });
     expect(res.body.credenciales_temporales).toMatchObject({ correo: 'a@a.co' });
-    expect(res.body.credenciales_temporales.password).toMatch(/^[A-Za-z0-9_-]{12}$/);
+    expect(res.body.credenciales_temporales.password).toMatch(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/);
     const cuenta = conn.query.mock.calls.find(([s]) => s.includes('INSERT INTO cuenta'));
     expect(cuenta[1]).toEqual([50, 'a@a.co', 'NEW_HASH', null]);                // nunca la contraseña en claro
     expect(JSON.stringify(conn.query.mock.calls)).not.toContain(res.body.credenciales_temporales.password);
@@ -489,8 +520,8 @@ describe.each([
 });
 
 describe('POST /users/celador — reglas propias', () => {
-  test('no se puede asignar CELADOR a ADMIN/JEFE/APRENDIZ → 409 + rollback y NO se asigna rol', async () => {
-    bdAlta({ privilegiado: [{ nombre_rol: 'APRENDIZ' }] });
+  test.each(['ADMINISTRADOR', 'JEFE_SEGURIDAD', 'APRENDIZ', 'INVITADO'])('no se puede asignar CELADOR a usuario con rol activo %s → 409 + rollback y NO se asigna rol', async (nombre_rol) => {
+    bdAlta({ privilegiado: [{ nombre_rol }] });
     const res = await api(JEFE).post('/api/users/celador').send({ id_usuario: 9 });
     expect(res.status).toBe(409);
     expect(conn.rollback).toHaveBeenCalled();
@@ -507,28 +538,31 @@ describe('POST /users/celador — reglas propias', () => {
 describe('PATCH /users/me/password', () => {
   const patch = (b, u = APRENDIZ) => api(u).patch('/api/users/me/password').send(b);
   test('faltan campos → 400', async () => { expect((await patch({ password_actual: 'x' })).status).toBe(400); });
-  test('nueva < 10 caracteres → 400 sin consultar (frontera: 9 falla, 10 pasa)', async () => {
-    expect((await patch({ password_actual: 'x', password_nueva: '123456789' })).status).toBe(400);
+  test.each(['Ab1!', 'abcdefghij1!', 'Abcdefghij!', 'Abcdefghij1'])('contraseña que incumple SECSS02-24 → 400 antes de consultar la BD (%s)', async (password_nueva) => {
+    expect((await patch({ password_actual: 'x', password_nueva })).status).toBe(400);
     expect(db.query).not.toHaveBeenCalled();
+  });
+  test('SECSS02-24: contraseña válida de 8 caracteres pasa la política y llega a comprobar la clave actual', async () => {
     db.query.mockResolvedValueOnce([[]]);
-    expect((await patch({ password_actual: 'x', password_nueva: '1234567890' })).status).toBe(401); // pasó la validación
+    expect((await patch({ password_actual: 'x', password_nueva: 'Clave12!' })).status).toBe(401);
+    expect(db.query).toHaveBeenCalledTimes(1);
   });
   test('cuenta inexistente → 401 sin comparar', async () => {
     db.query.mockResolvedValueOnce([[]]);
-    expect((await patch({ password_actual: 'x', password_nueva: '1234567890' })).status).toBe(401);
+    expect((await patch({ password_actual: 'x', password_nueva: 'ClaveNueva1!' })).status).toBe(401);
     expect(bcrypt.compare).not.toHaveBeenCalled();
   });
   test('contraseña actual incorrecta → 401 y NO actualiza', async () => {
     db.query.mockResolvedValueOnce([[{ password_hash: 'H' }]]);
     bcrypt.compare.mockResolvedValueOnce(false);
-    expect((await patch({ password_actual: 'mala', password_nueva: '1234567890' })).status).toBe(401);
+    expect((await patch({ password_actual: 'mala', password_nueva: 'ClaveNueva1!' })).status).toBe(401);
     expect(db.query).toHaveBeenCalledTimes(1);
   });
   test('éxito: hash costo 12, limpia expira_en y filtra por el id del token', async () => {
     db.query.mockResolvedValueOnce([[{ password_hash: 'H' }]]).mockResolvedValueOnce([{}]);
     bcrypt.compare.mockResolvedValueOnce(true);
-    const res = await patch({ password_actual: 'ok', password_nueva: '1234567890' });
-    expect(bcrypt.hash).toHaveBeenCalledWith('1234567890', 12);
+    const res = await patch({ password_actual: 'ok', password_nueva: 'ClaveNueva1!' });
+    expect(bcrypt.hash).toHaveBeenCalledWith('ClaveNueva1!', 12);
     expect(db.query.mock.calls[1]).toEqual(['UPDATE cuenta SET password_hash=?,expira_en=NULL WHERE id_usuario=?', ['NEW_HASH', 7]]);
     expect(res.body).toEqual({ ok: true, mensaje: 'Contraseña actualizada.' });
   });

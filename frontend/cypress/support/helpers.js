@@ -45,13 +45,15 @@ export const invitadoBase = (cambios = {}) => {
 };
 
 export const esperarError = (res, status, mensaje) => {
-  expect(res.status, 'código HTTP').to.eq(status);
-  expect(res.body.ok, 'ok').to.eq(false);
-  if (mensaje) expect(res.body.mensaje, 'mensaje').to.include(mensaje);
+  if (res.status !== status) throw new Error(`código HTTP: esperado ${status}, recibido ${res.status}.`);
+  if (res.body?.ok !== false) throw new Error(`esperaba ok=false; respuesta: ${JSON.stringify(res.body)}`);
+  if (mensaje && !String(res.body?.mensaje || '').includes(mensaje)) {
+    throw new Error(`mensaje esperado "${mensaje}"; recibido "${res.body?.mensaje || ''}".`);
+  }
 };
 export const esperarOk = (res, status = 200) => {
-  expect(res.status, 'código HTTP').to.eq(status);
-  expect(res.body.ok, 'ok').to.eq(true);
+  if (res.status !== status) throw new Error(`código HTTP: esperado ${status}, recibido ${res.status}; ${res.body?.mensaje || ''}.`);
+  if (res.body?.ok !== true) throw new Error(`esperaba ok=true; respuesta: ${JSON.stringify(res.body)}`);
 };
 
 //  Preparación de estado (usa la API como precondición) 
@@ -131,7 +133,9 @@ export const datosAprendiz = (centro, cambios = {}) => {
   const n = unico();
   return {
     tipo_documento: 'CC', numero_documento: n, primer_nombre: 'Aprendiz', segundo_nombre: '',
-    primer_apellido: 'Prueba', segundo_apellido: '', n_celular: '3001234567',
+    // El teléfono también debe ser único: el helper se usa varias veces y los
+    // registros anteriores permanecen en la BD entre ejecuciones de Cypress.
+    primer_apellido: 'Prueba', segundo_apellido: '', n_celular: `3${n.slice(-9)}`,
     correo: `aprendiz.${n}@prueba.test`, password: 'Prueba12345!', nombre_rol: 'APRENDIZ',
     'detalle_aprendiz[id_centro]': centro, 'detalle_aprendiz[ficha]': `F${n}`,
     'detalle_aprendiz[direccion]': 'Calle 1 # 2-3', 'detalle_aprendiz[fecha_vinculacion]': '2026-01-15', ...cambios,
@@ -141,23 +145,30 @@ export const IMAGENES_APRENDIZ = ['imagen_url_aprendiz', 'imagen_url_identificac
 export const imagenesAprendiz = () => IMAGENES_APRENDIZ.map((c) => imagen(c, 'png'));
 
 /** Registra un aprendiz desechable por la API pública y lo deja disponible como rol `clave`. */
-export const crearAprendiz = (clave, cambios = {}) =>
-  idCentro().then((centro) => {
+export const crearAprendiz = (clave, cambios = {}) => {
+  const intentar = (intento = 1) => idCentro().then((centro) => {
     const datos = datosAprendiz(centro, cambios);
     return cy.apiMultipart(null, '/auth/storeAuthRegister', datos, imagenesAprendiz()).then((r) => {
+      // Un 409 en el alta suele ser una colisión de una clave única en la BD.
+      // Reintenta con documento, correo, teléfono y ficha nuevos; otros errores
+      // se reportan de inmediato para no ocultar defectos de negocio.
+      if (r.status === 409 && intento < 4) return intentar(intento + 1);
+      expect(r.status, `registro de ${clave}: HTTP ${r.status}; ${r.body?.mensaje || JSON.stringify(r.body)}`).to.eq(201);
       esperarOk(r, 201);
-      cy.registrarCredenciales(clave, { documento: datos.numero_documento, password: datos.password });
-      return { ...datos, id_usuario: r.body.id_usuario, documento: datos.numero_documento };
+      return cy.registrarCredenciales(clave, { documento: datos.numero_documento, password: datos.password })
+        .then(() => ({ ...datos, id_usuario: r.body.id_usuario, documento: datos.numero_documento }));
     });
   });
+  return intentar();
+};
 
 /** Registra un invitado desechable (con vehículo, cupo activo y entrada abierta) disponible como rol `clave`. */
 export const crearInvitadoComo = (clave, cambios = {}) => {
   const datos = invitadoBase(cambios);
   return cy.apiMultipart('celador', '/input_output/invitado', datos).then((r) => {
     esperarOk(r, 201);
-    cy.registrarCredenciales(clave, { documento: datos.numero_documento, password: r.body.credenciales_temporales.password });
-    return { ...r.body, documento: datos.numero_documento, correo: datos.correo };
+    return cy.registrarCredenciales(clave, { documento: datos.numero_documento, password: r.body.credenciales_temporales.password })
+      .then(() => ({ ...r.body, documento: datos.numero_documento, correo: datos.correo }));
   });
 };
 

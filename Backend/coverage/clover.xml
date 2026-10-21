@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1792483410917" clover="3.2.0">
-  <project timestamp="1792483410917" name="All files">
+<coverage generated="1792595872405" clover="3.2.0">
+  <project timestamp="1792595872405" name="All files">
     <metrics statements="16" coveredstatements="16" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="4" elements="20" coveredelements="20" complexity="0" loc="16" ncloc="16" packages="1" files="1" classes="1"/>
-    <file name="user.routes.js" path="C:\Users\dayan\OneDrive\Documentos\Ficha-3311989-SECSS-Back-Front\Backend\routes\user.routes.js">
+    <file name="user.routes.js" path="C:\Users\steve\Documents\Ficha-3311989-SECSS-Back-Front\Backend\routes\user.routes.js">
       <metrics statements="16" coveredstatements="16" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="4"/>
       <line num="25" count="1" type="stmt"/>
       <line num="27" count="2" type="stmt"/>
       <line num="28" count="1" type="stmt"/>
-      <line num="29" count="1" type="stmt"/>
+      <line num="29" count="11" type="stmt"/>
       <line num="30" count="1" type="stmt"/>
-      <line num="31" count="1" type="stmt"/>
+      <line num="31" count="2" type="stmt"/>
       <line num="32" count="1" type="stmt"/>
       <line num="33" count="1" type="stmt"/>
       <line num="34" count="1" type="stmt"/>

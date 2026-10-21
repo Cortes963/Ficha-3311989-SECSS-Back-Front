@@ -31,7 +31,7 @@ router.get('/centros', requireAuth, allowRoles(ROLES.ADMIN), async (_req, res, n
 
 router.get('/centros-publicos', async (_req, res, next) => {
   try {
-    const [data] = await db.query('SELECT id, nombre_centro FROM centro ORDER BY nombre_centro ASC');
+    const [data] = await db.query('SELECT id, nombre_centro FROM centro WHERE estado=1 ORDER BY nombre_centro ASC');
     return res.json({ ok: true, datos: data });
   } catch (e) {
     return next(e);

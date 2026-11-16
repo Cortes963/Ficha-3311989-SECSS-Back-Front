@@ -4,5 +4,6 @@
         "window.inactiveBorder": "#65c89b",
         "panel.border": "#65c89b"
     },
-    "peacock.color": "#42b883"
+    "peacock.color": "#42b883",
+    "chat.disableAIFeatures": false
 }

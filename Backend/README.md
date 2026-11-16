@@ -25,3 +25,19 @@ Por defecto escucha en `http://localhost:4000`.
 La API móvil de `api/` es un proceso separado, con sus propias copias de
 controladores, middleware, dependencias y conexión MySQL. Ambos procesos
 pueden usar la misma base de datos sin que uno importe el código del otro.
+
+## Datos de Cypress para cuota
+
+En PowerShell, desde `Backend/`, ejecuta lo siguiente contra una base local de
+pruebas:
+
+```powershell
+$env:CYPRESS_SEED_CONFIRM = '1'
+npm run seed:cypress
+```
+
+El sembrador lee las cuentas directamente de `frontend/cypress.config.js`,
+prepara los datos de ficha de los aprendices, reserva el usuario inactivo y los
+IDs de vehículo esperados y se puede ejecutar más de una vez. No lo ejecutes
+contra una base de producción: sincroniza las contraseñas de esas cuentas con
+la contraseña de prueba de Cypress y modifica sus roles/estados.

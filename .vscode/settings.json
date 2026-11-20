@@ -5,5 +5,6 @@
         "panel.border": "#65c89b"
     },
     "peacock.color": "#42b883",
-    "chat.disableAIFeatures": false
+    "chat.disableAIFeatures": false,
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

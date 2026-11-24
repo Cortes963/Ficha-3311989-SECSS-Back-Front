@@ -45,8 +45,8 @@ class VehicleRepository(private val apiService: SecssApiService) {
         callback: RepositoryCallback<String>
     ) {
         apiService.request(
-            method = "DELETE",
-            path = "/vehicle/$id",
+            method = "PATCH",
+            path = "/vehicle/$id/inactivar",
             token = token,
             callback = messageCallback("Vehículo retirado.", callback)
         )

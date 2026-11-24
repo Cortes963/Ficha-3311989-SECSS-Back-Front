@@ -6,8 +6,16 @@
         android:label="SECSS"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:usesCleartextTraffic="true">
+        <activity android:name=".ui.EntriesActivity" android:exported="false" />
+        <activity android:name=".ui.QuotaActivity" android:exported="false" />
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.VehicleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.HomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.LoginActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="true">
             <intent-filter>

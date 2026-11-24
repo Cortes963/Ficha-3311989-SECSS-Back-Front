@@ -97,8 +97,8 @@ class SecssApiService(context: Context) {
             } catch (exception: Exception) {
                 mainHandler.post {
                     callback.onFailure(
-                        "No se pudo conectar con SECSS en el puerto 4001. " +
-                            "Comprueba que el backend esté activo."
+                        "No se pudo conectar con SECSS. Comprueba que el backend esté activo " +
+                            "y que el dispositivo pueda alcanzarlo."
                     )
                 }
             } finally {
@@ -165,6 +165,6 @@ class SecssApiService(context: Context) {
         val emulator = Build.FINGERPRINT.startsWith("generic") ||
             Build.MODEL.contains("Emulator") ||
             Build.HARDWARE.contains("ranchu")
-        return if (emulator) "http://10.0.2.2:4001/api" else "http://127.0.0.1:4001/api"
+        return if (emulator) "http://10.0.2.2:4000/api" else "http://127.0.0.1:4000/api"
     }
 }

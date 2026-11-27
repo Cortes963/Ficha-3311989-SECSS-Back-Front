@@ -81,6 +81,21 @@ class HomeActivity : ComponentActivity() {
         homeCard(root, "Cupos", quotaDescription, "Abrir módulo Cupos") {
             startActivity(Intent(this, QuotaActivity::class.java))
         }
+        if (isOwnOnly()) {
+            homeCard(root, "PQRS", "Radica peticiones, quejas, reclamos o sugerencias y consulta la respuesta de la administración.", "Abrir módulo PQRS") {
+                startActivity(Intent(this, PqrsListActivity::class.java))
+            }
+        }
+        if (role == "CELADOR" || role == "JEFE_SEGURIDAD") {
+            val reportDescription = if (role == "CELADOR") {
+                "Registra reportes sobre lo ocurrido en el complejo y consulta los tuyos."
+            } else {
+                "Consulta los reportes registrados por los celadores."
+            }
+            homeCard(root, "Reportes", reportDescription, "Abrir módulo Reportes") {
+                startActivity(Intent(this, ReportListActivity::class.java))
+            }
+        }
         root.addView(UiComponents.button(this, "Cerrar sesión").apply {
             setOnClickListener { authViewModel.logout() }
         })

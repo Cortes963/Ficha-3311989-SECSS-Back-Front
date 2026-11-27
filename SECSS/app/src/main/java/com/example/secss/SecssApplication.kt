@@ -7,6 +7,8 @@ import com.example.secss.data.repository.AuthRepository
 import com.example.secss.data.repository.InputOutputRepository
 import com.example.secss.data.repository.QuotaRepository
 import com.example.secss.data.repository.VehicleRepository
+import com.example.secss.ui.PqrsRepository
+import com.example.secss.ui.ReportRepository
 
 class SecssApplication : Application() {
     val container: AppContainer by lazy { AppContainer(this) }
@@ -19,5 +21,7 @@ class AppContainer(application: Application) {
     val vehicleRepository = VehicleRepository(apiService)
     val inputOutputRepository = InputOutputRepository(apiService)
     val quotaRepository = QuotaRepository(apiService)
+    val pqrsRepository = PqrsRepository(apiService)
+    val reportRepository = ReportRepository(apiService)
 }
 

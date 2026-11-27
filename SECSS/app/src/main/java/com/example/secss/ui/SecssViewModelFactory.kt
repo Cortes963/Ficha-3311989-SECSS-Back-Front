@@ -21,6 +21,10 @@ class SecssViewModelFactory(
             InputOutputViewModel(container.inputOutputRepository) as T
         modelClass.isAssignableFrom(QuotaViewModel::class.java) ->
             QuotaViewModel(container.quotaRepository) as T
+        modelClass.isAssignableFrom(PqrsViewModel::class.java) ->
+            PqrsViewModel(container.pqrsRepository) as T
+        modelClass.isAssignableFrom(ReportViewModel::class.java) ->
+            ReportViewModel(container.reportRepository) as T
         else -> throw IllegalArgumentException("ViewModel no reconocido: ${modelClass.name}")
     }
 }

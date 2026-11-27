@@ -8,6 +8,18 @@
         android:usesCleartextTraffic="true">
         <activity android:name=".ui.EntriesActivity" android:exported="false" />
         <activity android:name=".ui.QuotaActivity" android:exported="false" />
+        <activity android:name=".ui.PqrsListActivity" android:exported="false" />
+        <activity android:name=".ui.PqrsDetailActivity" android:exported="false" />
+        <activity
+            android:name=".ui.PqrsFormActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false" />
+        <activity android:name=".ui.ReportListActivity" android:exported="false" />
+        <activity android:name=".ui.ReportDetailActivity" android:exported="false" />
+        <activity
+            android:name=".ui.ReportFormActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false" />
         <activity
             android:name=".ui.VehicleActivity"
             android:exported="false" />
